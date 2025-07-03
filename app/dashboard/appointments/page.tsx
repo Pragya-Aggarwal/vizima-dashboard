@@ -298,10 +298,13 @@ function AppointmentDetailsDialog({ appointment }: { appointment: (typeof appoin
 export default function AppointmentsPage() {
   const [selectedTab, setSelectedTab] = useState("appointments")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [search, setSearch] = useState('')
 
   const filteredAppointments = appointments.filter((appointment) => {
     if (statusFilter !== "all" && appointment.status !== statusFilter) return false
-    return true
+    return appointment.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      appointment.property?.toLowerCase().includes(search.toLowerCase()) ||
+      appointment.id?.toLowerCase().includes(search.toLowerCase())
   })
 
   const stats = {
@@ -313,71 +316,71 @@ export default function AppointmentsPage() {
   }
 
   // Add this handler function in your AppointmentsPage component
-const handleExportAppointments = () => {
-  try {
-    console.log('Export appointments button clicked');
-    console.log('Appointments data:', appointments); // Debug log
+  const handleExportAppointments = () => {
+    try {
+      console.log('Export appointments button clicked');
+      console.log('Appointments data:', appointments); // Debug log
 
-    if (!appointments || appointments.length === 0) {
-      console.error('No appointments data available');
-      return;
-    }
+      if (!appointments || appointments.length === 0) {
+        console.error('No appointments data available');
+        return;
+      }
 
-    // Format appointments data for export
-    const dataToExport = appointments.map(appointment => ({
-      'Appointment ID': appointment.id || 'N/A',
-      'Property': appointment.property || 'N/A',
-      'Date': appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
-      'Time': appointment.time || 'N/A',
-      'Status': appointment.status || 'N/A',
-      'Customer Name': appointment.user.name || 'N/A',
-      'Customer Email': appointment.user.email || 'N/A',
-      'Customer Phone': appointment.user.phone || 'N/A',
-      'Notes': appointment.notes || 'N/A',
-      'Created At': appointment.createdAt ? new Date(appointment.createdAt).toLocaleString() : 'N/A',
-    }));
+      // Format appointments data for export
+      const dataToExport = appointments.map(appointment => ({
+        'Appointment ID': appointment.id || 'N/A',
+        'Property': appointment.property || 'N/A',
+        'Date': appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+        'Time': appointment.time || 'N/A',
+        'Status': appointment.status || 'N/A',
+        'Customer Name': appointment.user.name || 'N/A',
+        'Customer Email': appointment.user.email || 'N/A',
+        'Customer Phone': appointment.user.phone || 'N/A',
+        'Notes': appointment.notes || 'N/A',
+        'Created At': appointment.createdAt ? new Date(appointment.createdAt).toLocaleString() : 'N/A',
+      }));
 
-    console.log('Data to export:', dataToExport);
+      console.log('Data to export:', dataToExport);
 
-    if (dataToExport.length === 0) {
-      console.error('No valid data to export');
-      return;
-    }
+      if (dataToExport.length === 0) {
+        console.error('No valid data to export');
+        return;
+      }
 
-    // Convert to CSV
-    const headers = Object.keys(dataToExport[0]);
-    let csvContent = headers.join(',') + '\n';
-    
-    dataToExport.forEach((item: any) => {
-      const row = headers.map(header => {
-        const value = item[header];
-        if (value === null || value === undefined) return '';
-        const stringValue = String(value);
-        return stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')
-          ? `"${stringValue.replace(/"/g, '""')}"`
-          : stringValue;
+      // Convert to CSV
+      const headers = Object.keys(dataToExport[0]);
+      let csvContent = headers.join(',') + '\n';
+
+      dataToExport.forEach((item: any) => {
+        const row = headers.map(header => {
+          const value = item[header];
+          if (value === null || value === undefined) return '';
+          const stringValue = String(value);
+          return stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')
+            ? `"${stringValue.replace(/"/g, '""')}"`
+            : stringValue;
+        });
+        csvContent += row.join(',') + '\n';
       });
-      csvContent += row.join(',') + '\n';
-    });
 
-    console.log('Generated CSV content:', csvContent);
+      console.log('Generated CSV content:', csvContent);
 
-    // Create and trigger download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `appointments_export_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      // Create and trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `appointments_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-    console.log('Export completed successfully');
-  } catch (error) {
-    console.error('Export error:', error);
-  }
-};
+      console.log('Export completed successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+    }
+  };
 
   return (
     <div className="space-y-6 mt-5 mx-5">
@@ -387,13 +390,13 @@ const handleExportAppointments = () => {
           <p className="text-muted-foreground">Manage property visit appointments and time slots</p>
         </div>
         <div className="flex space-x-2">
-        <Button 
-  variant="outline" 
-  onClick={handleExportAppointments}
->
-  <Download className="h-4 w-4 mr-2" />
-  Export
-</Button>
+          <Button
+            variant="outline"
+            onClick={handleExportAppointments}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
         </div>
       </div>
 
@@ -443,7 +446,7 @@ const handleExportAppointments = () => {
               <div className="flex justify-between items-center">
                 <CardTitle>Appointment List</CardTitle>
                 <div className="flex space-x-2">
-                  <Input placeholder="Search appointments..." className="w-64" />
+                  <Input placeholder="Search appointments..." className="w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Status" />

@@ -5,6 +5,7 @@ export const getUsers = async (data: any) => {
     const queryParams = new URLSearchParams();
     if (data.page) queryParams.append("page", data.page.toString());
     if (data.limit) queryParams.append("limit", data.limit.toString());
+    if (data.search) queryParams.append("search", data.search);
 
     // ✅ Fix: Add "?" before queryParams
     let response = await api.get(`/api/users?${queryParams.toString()}`);

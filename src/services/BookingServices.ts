@@ -7,6 +7,7 @@ export const getBookings = async (data: any) => {
     if (data.status) queryParams.append("status", data.status);
     if (data.paymentStatus) queryParams.append("paymentStatus", data.paymentStatus);
     if (data.property) queryParams.append("property", data.property);
+    if (data.search) queryParams.append("search", data.search);
     let response = await api.get(`/api/bookings/admin?${queryParams.toString()}`)
     return response.data;
 };
@@ -29,6 +30,7 @@ export const getVisitBookings = async (data: any) => {
     if (data.status) queryParams.append("status", data.status);
     if (data.paymentStatus) queryParams.append("paymentStatus", data.paymentStatus);
     if (data.property) queryParams.append("property", data.property);
+    if (data.search) queryParams.append("search", data.search);
     let response = await api.get(`/api/visit-bookings?${queryParams.toString()}`)
     return response.data;
 };

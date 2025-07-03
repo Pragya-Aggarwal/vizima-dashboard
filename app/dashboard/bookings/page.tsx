@@ -280,6 +280,7 @@ export default function BookingsPage() {
 
   const [selectedTab, setSelectedTab] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [search, setSearch] = useState('')
   useAuthRedirect();
 
   const filteredBookings = bookings.filter((booking) => {
@@ -308,16 +309,14 @@ export default function BookingsPage() {
     const payload: any = {
       page: currentPage,
       limit: ITEMS_PER_PAGE,
-
+      ...(search && { search }),
     };
     return getBookings(payload);
-  }, [
-    currentPage,
-  ]);
+  }, [currentPage, search]);
 
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: [currentPage],
+    queryKey: [currentPage, search],
     queryFn: fetchBooking,
   });
 
@@ -331,8 +330,6 @@ export default function BookingsPage() {
 
   console.log("booking data", bookingData, totalPages, totalRecord)
 
-
-
   // visitbookin
 
   // ----------- Visit Booking API -----------
@@ -340,9 +337,10 @@ export default function BookingsPage() {
     const payload: any = {
       page: currentPage,
       limit: ITEMS_PER_PAGE,
+      ...(search && { search }),
     };
     return getVisitBookings(payload);
-  }, [currentPage]);
+  }, [currentPage, search]);
 
   const {
     data: dataVisitBooking,
@@ -350,7 +348,7 @@ export default function BookingsPage() {
     isError: isErrorVisit,
     refetch: refetchVisit,
   } = useQuery({
-    queryKey: ["visitBookings", currentPage],
+    queryKey: ["visitBookings", currentPage, search],
     queryFn: fetchVisitBooking,
   });
 
@@ -360,18 +358,17 @@ export default function BookingsPage() {
 
   console.log("visit booking", visitBookingData)
   console.log("total page", totalPagesVisit, totalVisitRecord)
-  
 
   const handleExport = () => {
     try {
       console.log('Export button clicked');
       console.log('Bookings data:', bookings); // Debug: check bookings data
-      
+
       if (!bookings || bookings.length === 0) {
         console.error('No bookings data available');
         return;
       }
-  
+
       // Format bookings data for export
       const dataToExport = bookings.map(booking => ({
         'Booking ID': booking.id || 'N/A',
@@ -384,18 +381,18 @@ export default function BookingsPage() {
         'Payment Status': booking.paymentStatus || 'N/A',
         'Created At': booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A',
       }));
-  
+
       console.log('Data to export:', dataToExport); // Debug: check formatted data
-  
+
       if (dataToExport.length === 0) {
         console.error('No valid data to export');
         return;
       }
-  
+
       // Convert to CSV
       const headers = Object.keys(dataToExport[0]);
       let csvContent = headers.join(',') + '\n';
-      
+
       dataToExport.forEach((item: any) => {
         const row = headers.map(header => {
           const value = item[header];
@@ -407,9 +404,9 @@ export default function BookingsPage() {
         });
         csvContent += row.join(',') + '\n';
       });
-  
+
       console.log('Generated CSV content:', csvContent); // Debug: check CSV content
-  
+
       // Create and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -420,7 +417,7 @@ export default function BookingsPage() {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-  
+
       console.log('Export completed successfully');
     } catch (error) {
       console.error('Export error:', error);
@@ -435,16 +432,16 @@ export default function BookingsPage() {
           <p className="text-muted-foreground">Manage all property bookings and visits</p>
         </div>
         <div className="flex space-x-2">
-        <Button 
-  variant="outline" 
-  onClick={() => {
-    console.log('Export button clicked (from button)');
-    handleExport();
-  }}
->
-  <Download className="h-4 w-4 mr-2" />
-  Export
-</Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              console.log('Export button clicked (from button)');
+              handleExport();
+            }}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
           <Button variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -462,7 +459,9 @@ export default function BookingsPage() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {bookingData?.filter((u) => u.status === "confirmed").length}
+            </div>
             <p className="text-xs text-muted-foreground">Confirmed</p>
           </CardContent>
         </Card>
@@ -499,7 +498,7 @@ export default function BookingsPage() {
                 <CardTitle>Booking List</CardTitle>
                 <div className="flex space-x-2">
                   <div className="relative">
-                    <Input placeholder="Search bookings..." className="w-64" />
+                    <Input placeholder="Search bookings..." className="w-64" value={search} onChange={e => setSearch(e.target.value)} />
                   </div>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-32">
@@ -555,7 +554,7 @@ export default function BookingsPage() {
               </div>
             </CardHeader>
             <CardContent>
-             
+
               <VisitBookingTable
                 data={visitBookingData}                     // ✅ Use the correct visit data
                 loading={isLoadingVisit}                   // ✅ Correct loading state

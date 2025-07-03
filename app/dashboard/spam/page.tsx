@@ -247,6 +247,7 @@ function LeadDetailsDialog({ lead, type }: { lead: any; type: "spam" | "valid" }
 export default function SpamDetectionPage() {
   const [selectedTab, setSelectedTab] = useState("spam")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [search, setSearch] = useState('')
 
   const stats = {
     totalSpam: spamLeads.length,
@@ -255,6 +256,17 @@ export default function SpamDetectionPage() {
     accuracy: 94.5,
     autoDeleted: 15,
   }
+
+  const filteredSpamLeads = spamLeads.filter((lead) =>
+    lead.name?.toLowerCase().includes(search.toLowerCase()) ||
+    lead.email?.toLowerCase().includes(search.toLowerCase()) ||
+    lead.phone?.toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredValidLeads = validLeads.filter((lead) =>
+    lead.name?.toLowerCase().includes(search.toLowerCase()) ||
+    lead.email?.toLowerCase().includes(search.toLowerCase()) ||
+    lead.phone?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-6 mt-5 mx-5">
@@ -311,8 +323,8 @@ export default function SpamDetectionPage() {
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
-          <TabsTrigger value="spam">Spam Leads ({spamLeads.length})</TabsTrigger>
-          <TabsTrigger value="valid">Valid Leads ({validLeads.length})</TabsTrigger>
+          <TabsTrigger value="spam">Spam Leads ({filteredSpamLeads.length})</TabsTrigger>
+          <TabsTrigger value="valid">Valid Leads ({filteredValidLeads.length})</TabsTrigger>
           <TabsTrigger value="settings">AI Settings</TabsTrigger>
         </TabsList>
 
@@ -325,7 +337,7 @@ export default function SpamDetectionPage() {
                   AI Flagged Spam Leads
                 </CardTitle>
                 <div className="flex space-x-2">
-                  <Input placeholder="Search leads..." className="w-64" />
+                  <Input placeholder="Search leads..." className="w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Status" />
@@ -357,7 +369,7 @@ export default function SpamDetectionPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {spamLeads.map((lead) => (
+                  {filteredSpamLeads.map((lead) => (
                     <TableRow key={lead.id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
@@ -441,7 +453,7 @@ export default function SpamDetectionPage() {
                   Valid Leads
                 </CardTitle>
                 <div className="flex space-x-2">
-                  <Input placeholder="Search leads..." className="w-64" />
+                  <Input placeholder="Search leads..." className="w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
                   <Button variant="outline" size="sm">
                     <Filter className="h-4 w-4 mr-2" />
                     Filter
@@ -462,7 +474,7 @@ export default function SpamDetectionPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {validLeads.map((lead) => (
+                  {filteredValidLeads.map((lead) => (
                     <TableRow key={lead.id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">

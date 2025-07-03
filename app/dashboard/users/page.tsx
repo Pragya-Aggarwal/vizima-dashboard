@@ -1,12 +1,10 @@
 "use client"
 // dynamic
-import { useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 
 
 import { Label } from "@/components/ui/label"
-
-import { useState } from "react"
 import {
   Filter,
   Download,
@@ -394,22 +392,19 @@ function UserDetailsDialog({ user }: { user: (typeof users)[0] }) {
 export default function UsersPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [tagFilter, setTagFilter] = useState("all")
+  const [search, setSearch] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   useAuthRedirect();
 
-  const filteredUsers = users.filter((user) => {
-    if (statusFilter !== "all" && user.status !== statusFilter) return false
-    if (tagFilter !== "all" && user.tag !== tagFilter) return false
-    return true
-  })
+  // Add debounce for search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchQuery);
+      setCurrentPage(1); // Reset to first page on new search
+    }, 500);
 
-  const stats = {
-    total: users.length,
-    verified: users.filter((u) => u.status === "verified").length,
-    active: users.filter((u) => u.status === "active").length,
-    blocked: users.filter((u) => u.status === "blocked").length,
-    totalRevenue: users.reduce((sum, u) => sum + u.totalSpent, 0),
-  }
-
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // dynamic
   const [currentPage, setCurrentPage] = useState(1)
@@ -424,7 +419,7 @@ export default function UsersPage() {
 
 
 
-  const handleDetailModal = async (id) => {
+  const handleDetailModal = async (id: string) => {
 
     setDetailModalOpen(true)
     setTestimonialId(id)
@@ -432,7 +427,7 @@ export default function UsersPage() {
 
 
 
-  const handleUpdateModalOpen = (id) => {
+  const handleUpdateModalOpen = (id: string) => {
     setUpdateOpen(true)
     setTestimonialId(id)
     console.log("testimonial id in function", id)
@@ -466,20 +461,20 @@ export default function UsersPage() {
 
 
 
-  const fetchUser = useCallback(() => {
+  const fetchUsers = useCallback(() => {
     const payload: any = {
       page: currentPage,
       limit: ITEMS_PER_PAGE,
+      ...(search && { search }), // Only include search in payload if it has a value
     };
+    console.log('Fetching users with payload:', payload);
     return getUsers(payload);
-  }, [
-    currentPage,
-  ]);
+  }, [currentPage, search]);
 
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: [currentPage],
-    queryFn: fetchUser,
+    queryKey: [currentPage, search],
+    queryFn: fetchUsers,
   });
 
 
@@ -494,7 +489,7 @@ export default function UsersPage() {
 
   const handleDelete = async () => {
     try {
-      const res = await deleteUserbyId(testimonialId);
+      const res = await deleteUserbyId(testimonialId as string);
       toast.success("User deleted successfully");
       refetch();
       setDeleteModal(false);
@@ -505,7 +500,7 @@ export default function UsersPage() {
   };
 
 
-  const handleDeleteModalOpen = (id) => {
+  const handleDeleteModalOpen = (id: string) => {
     setDeleteModal(true)
     setTestimonialId(id)
     console.log("testimonial id in function", id)
@@ -513,70 +508,70 @@ export default function UsersPage() {
 
 
 
-// Add this handler function in your UsersPage component
-const handleExportUsers = () => {
-  try {
-    console.log('Export users button clicked');
-    console.log('Users data:', users); // Debug log
+  // Add this handler function in your UsersPage component
+  const handleExportUsers = () => {
+    try {
+      console.log('Export users button clicked');
+      console.log('Users data:', users); // Debug log
 
-    if (!users || users.length === 0) {
-      console.error('No users data available');
-      return;
-    }
+      if (!users || users.length === 0) {
+        console.error('No users data available');
+        return;
+      }
 
-    // Format users data for export
-    const dataToExport = users.map(user => ({
-      'User ID': user.id || 'N/A',
-      'Name': user.name || 'N/A',
-      'Email': user.email || 'N/A',
-      'Phone': user.phone || 'N/A',
-      'Role': user.tag || 'N/A',
-      'Status': user.status || 'N/A',
-      'Created At': user.joinDate ? new Date(user.joinDate).toLocaleString() : 'N/A',
-      'Last Login': user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never',
-    }));
+      // Format users data for export
+      const dataToExport = users.map(user => ({
+        'User ID': user.id || 'N/A',
+        'Name': user.name || 'N/A',
+        'Email': user.email || 'N/A',
+        'Phone': user.phone || 'N/A',
+        'Role': user.tag || 'N/A',
+        'Status': user.status || 'N/A',
+        'Created At': user.joinDate ? new Date(user.joinDate).toLocaleString() : 'N/A',
+        'Last Login': user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never',
+      }));
 
-    console.log('Data to export:', dataToExport);
+      console.log('Data to export:', dataToExport);
 
-    if (dataToExport.length === 0) {
-      console.error('No valid data to export');
-      return;
-    }
+      if (dataToExport.length === 0) {
+        console.error('No valid data to export');
+        return;
+      }
 
-    // Convert to CSV
-    const headers = Object.keys(dataToExport[0]);
-    let csvContent = headers.join(',') + '\n';
-    
-    dataToExport.forEach((item: any) => {
-      const row = headers.map(header => {
-        const value = item[header];
-        if (value === null || value === undefined) return '';
-        const stringValue = String(value);
-        return stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')
-          ? `"${stringValue.replace(/"/g, '""')}"`
-          : stringValue;
+      // Convert to CSV
+      const headers = Object.keys(dataToExport[0]);
+      let csvContent = headers.join(',') + '\n';
+
+      dataToExport.forEach((item: any) => {
+        const row = headers.map(header => {
+          const value = item[header];
+          if (value === null || value === undefined) return '';
+          const stringValue = String(value);
+          return stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')
+            ? `"${stringValue.replace(/"/g, '""')}"`
+            : stringValue;
+        });
+        csvContent += row.join(',') + '\n';
       });
-      csvContent += row.join(',') + '\n';
-    });
 
-    console.log('Generated CSV content:', csvContent);
+      console.log('Generated CSV content:', csvContent);
 
-    // Create and trigger download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      // Create and trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-    console.log('Export completed successfully');
-  } catch (error) {
-    console.error('Export error:', error);
-  }
-};
+      console.log('Export completed successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+    }
+  };
 
 
 
@@ -588,14 +583,14 @@ const handleExportUsers = () => {
           <p className="text-muted-foreground">Manage registered users and their data</p>
         </div>
         <div className="flex space-x-2">
-        <Button 
-  variant="outline" 
-  onClick={handleExportUsers}
-  disabled={!users || users.length === 0}
->
-  <Download className="h-4 w-4 mr-2" />
-  Export
-</Button>
+          <Button
+            variant="outline"
+            onClick={handleExportUsers}
+            disabled={!users || users.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
           <Button variant="outline">
             <Filter className="h-4 w-4 mr-2" />
             Advanced Filter
@@ -607,25 +602,25 @@ const handleExportUsers = () => {
       <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-2xl font-bold">{totalRecord}</div>
             <p className="text-xs text-muted-foreground">Total Users</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.verified}</div>
+            <div className="text-2xl font-bold text-green-600">{userData?.filter((u: any) => u.status === "verified").length}</div>
             <p className="text-xs text-muted-foreground">Verified</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.active}</div>
+            <div className="text-2xl font-bold text-blue-600">{userData?.filter((u: any) => u.status === "active").length}</div>
             <p className="text-xs text-muted-foreground">Active</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.blocked}</div>
+            <div className="text-2xl font-bold text-red-600">{userData?.filter((u: any) => u.status === "blocked").length}</div>
             <p className="text-xs text-muted-foreground">Blocked</p>
           </CardContent>
         </Card>
@@ -644,7 +639,12 @@ const handleExportUsers = () => {
             <div className="flex space-x-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input placeholder="Search users..." className="pl-10 w-64" />
+                <Input 
+                  placeholder="Search users..." 
+                  className="pl-10 w-64" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-32">
@@ -699,7 +699,7 @@ const handleExportUsers = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                userData?.map((user) => (
+                userData?.map((user: any) => (
                   <TableRow key={user?._id}>
                     <TableCell>
                       <div className="flex items-center space-x-3">
@@ -707,7 +707,7 @@ const handleExportUsers = () => {
                           <AvatarFallback>
                             {user?.name
                               ?.split(" ")
-                              ?.map((n) => n[0])
+                              ?.map((n: any) => n[0])
                               ?.join("")}
                           </AvatarFallback>
                         </Avatar>
