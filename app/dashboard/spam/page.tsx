@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Bot,
   Shield,
@@ -35,72 +35,8 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-
-const spamLeads = [
-  {
-    id: "SPM001",
-    name: "Fake User 1",
-    email: "fake1@tempmail.com",
-    phone: "+91 9999999999",
-    city: "Mumbai",
-    confidence: 95,
-    reasons: ["Temporary email", "Invalid phone pattern", "Suspicious behavior"],
-    detectedAt: "2024-01-16 10:30 AM",
-    status: "flagged",
-    source: "Contact Form",
-  },
-  {
-    id: "SPM002",
-    name: "Test Account",
-    email: "test@test.com",
-    phone: "+91 1234567890",
-    city: "Delhi",
-    confidence: 88,
-    reasons: ["Test email domain", "Sequential phone number"],
-    detectedAt: "2024-01-16 02:15 PM",
-    status: "flagged",
-    source: "Registration",
-  },
-  {
-    id: "SPM003",
-    name: "Bot User",
-    email: "bot@example.com",
-    phone: "+91 0000000000",
-    city: "Pune",
-    confidence: 92,
-    reasons: ["Bot-like behavior", "Invalid phone", "Rapid submissions"],
-    detectedAt: "2024-01-15 08:45 PM",
-    status: "confirmed_spam",
-    source: "Property Inquiry",
-  },
-]
-
-const validLeads = [
-  {
-    id: "VLD001",
-    name: "John Doe",
-    email: "john.doe@gmail.com",
-    phone: "+91 9876543210",
-    city: "Mumbai",
-    confidence: 15,
-    reasons: ["Valid email domain", "Proper phone format"],
-    detectedAt: "2024-01-16 11:00 AM",
-    status: "valid",
-    source: "Contact Form",
-  },
-  {
-    id: "VLD002",
-    name: "Sarah Wilson",
-    email: "sarah.w@outlook.com",
-    phone: "+91 9876543211",
-    city: "Bangalore",
-    confidence: 8,
-    reasons: ["Legitimate email", "Normal behavior pattern"],
-    detectedAt: "2024-01-16 01:30 PM",
-    status: "valid",
-    source: "Registration",
-  },
-]
+import { getSpamReports } from "@/src/services/SpamService"
+import { Dialog as ShadDialog, DialogTrigger as ShadDialogTrigger, DialogContent as ShadDialogContent, DialogHeader as ShadDialogHeader, DialogTitle as ShadDialogTitle, DialogDescription as ShadDialogDescription } from "@/components/ui/dialog"
 
 const aiSettings = {
   emailDomainCheck: true,
@@ -125,7 +61,7 @@ function LeadDetailsDialog({ lead, type }: { lead: any; type: "spam" | "valid" }
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Lead Details - {lead.id}</DialogTitle>
+          <DialogTitle>Lead Details - {lead._id}</DialogTitle>
           <DialogDescription>AI spam detection analysis and lead information</DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
@@ -188,7 +124,7 @@ function LeadDetailsDialog({ lead, type }: { lead: any; type: "spam" | "valid" }
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Lead ID:</span>
-                  <span className="font-mono text-sm">{lead.id}</span>
+                  <span className="font-mono text-sm">{lead._id}</span>
                 </div>
               </CardContent>
             </Card>
@@ -248,25 +184,85 @@ export default function SpamDetectionPage() {
   const [selectedTab, setSelectedTab] = useState("spam")
   const [statusFilter, setStatusFilter] = useState("all")
   const [search, setSearch] = useState('')
+  const [spamReports, setSpamReports] = useState<any[]>([])
+  const [totalDocs, setTotalDocs] = useState(0)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false)
+  const [filters, setFilters] = useState({
+    status: '',
+    severity: '',
+    contentType: '',
+    reportType: '',
+    sortBy: 'reportedAt',
+    sortOrder: 'desc',
+    limit: 20,
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const params = {
+          page,
+          limit: filters.limit,
+          ...(filters.status && filters.status !== 'all' && { status: filters.status }),
+          ...(filters.severity && filters.severity !== 'all' && { severity: filters.severity }),
+          ...(filters.contentType && filters.contentType !== 'all' && { contentType: filters.contentType }),
+          ...(filters.reportType && filters.reportType !== 'all' && { reportType: filters.reportType }),
+          ...(filters.sortBy && { sortBy: filters.sortBy }),
+          ...(filters.sortOrder && { sortOrder: filters.sortOrder }),
+          ...(search && { search }),
+        }
+        const res = await getSpamReports(params)
+        setSpamReports(res.data.docs)
+        setTotalDocs(res.data.totalDocs)
+        setPage(res.data.page)
+        setTotalPages(res.data.totalPages)
+      } catch (err: any) {
+        setError(err?.message || 'Failed to fetch spam reports')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [filters, search, page])
 
   const stats = {
-    totalSpam: spamLeads.length,
-    totalValid: validLeads.length,
-    todayDetected: 8,
-    accuracy: 94.5,
-    autoDeleted: 15,
+    totalSpam: totalDocs,
+    totalValid: 0, // Not available in new API
+    todayDetected: 0,
+    accuracy: 0,
+    autoDeleted: 0,
   }
 
-  const filteredSpamLeads = spamLeads.filter((lead) =>
-    lead.name?.toLowerCase().includes(search.toLowerCase()) ||
-    lead.email?.toLowerCase().includes(search.toLowerCase()) ||
-    lead.phone?.toLowerCase().includes(search.toLowerCase())
+  const filteredSpamReports = spamReports.filter((report) =>
+    report.userReportDetails?.reason?.toLowerCase().includes(search.toLowerCase()) ||
+    report.detectionResult?.reasons?.join(' ').toLowerCase().includes(search.toLowerCase()) ||
+    report.reportType?.toLowerCase().includes(search.toLowerCase()) ||
+    report.category?.toLowerCase().includes(search.toLowerCase())
   );
-  const filteredValidLeads = validLeads.filter((lead) =>
-    lead.name?.toLowerCase().includes(search.toLowerCase()) ||
-    lead.email?.toLowerCase().includes(search.toLowerCase()) ||
-    lead.phone?.toLowerCase().includes(search.toLowerCase())
-  );
+
+  const handleApplyFilters = () => {
+    setFilterDialogOpen(false)
+    setPage(1)
+  }
+  const handleResetFilters = () => {
+    setFilters({
+      status: '',
+      severity: '',
+      contentType: '',
+      reportType: '',
+      sortBy: 'reportedAt',
+      sortOrder: 'desc',
+      limit: 20,
+    })
+    setFilterDialogOpen(false)
+    setPage(1)
+  }
 
   return (
     <div className="space-y-6 mt-5 mx-5">
@@ -323,8 +319,8 @@ export default function SpamDetectionPage() {
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
-          <TabsTrigger value="spam">Spam Leads ({filteredSpamLeads.length})</TabsTrigger>
-          <TabsTrigger value="valid">Valid Leads ({filteredValidLeads.length})</TabsTrigger>
+          <TabsTrigger value="spam">Spam Leads ({filteredSpamReports.length})</TabsTrigger>
+          <TabsTrigger value="valid">Valid Leads ({0})</TabsTrigger>
           <TabsTrigger value="settings">AI Settings</TabsTrigger>
         </TabsList>
 
@@ -344,14 +340,113 @@ export default function SpamDetectionPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="flagged">Flagged</SelectItem>
-                      <SelectItem value="confirmed_spam">Confirmed</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="resolved">Resolved</SelectItem>
+                      <SelectItem value="dismissed">Dismissed</SelectItem>
+                      <SelectItem value="under_review">Under Review</SelectItem>
+                      <SelectItem value="false_positive">False Positive</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter
-                  </Button>
+                  <ShadDialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
+                    <ShadDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Filter className="h-4 w-4 mr-2" />
+                        Filter
+                      </Button>
+                    </ShadDialogTrigger>
+                    <ShadDialogContent className="max-w-md">
+                      <ShadDialogHeader>
+                        <ShadDialogTitle>Filter Spam Reports</ShadDialogTitle>
+                        <ShadDialogDescription>Apply filters to narrow down spam reports.</ShadDialogDescription>
+                      </ShadDialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Status</label>
+                          <Select value={filters.status || "all"} onValueChange={v => setFilters(f => ({ ...f, status: v }))}>
+                            <SelectTrigger><SelectValue placeholder="Any status" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="confirmed">Confirmed</SelectItem>
+                              <SelectItem value="resolved">Resolved</SelectItem>
+                              <SelectItem value="dismissed">Dismissed</SelectItem>
+                              <SelectItem value="under_review">Under Review</SelectItem>
+                              <SelectItem value="false_positive">False Positive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Severity</label>
+                          <Select value={filters.severity || "all"} onValueChange={v => setFilters(f => ({ ...f, severity: v }))}>
+                            <SelectTrigger><SelectValue placeholder="Any severity" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                              <SelectItem value="critical">Critical</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Content Type</label>
+                          <Select value={filters.contentType || "all"} onValueChange={v => setFilters(f => ({ ...f, contentType: v }))}>
+                            <SelectTrigger><SelectValue placeholder="Any content type" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="property">Property</SelectItem>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="booking">Booking</SelectItem>
+                              <SelectItem value="message">Message</SelectItem>
+                              <SelectItem value="review">Review</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Report Type</label>
+                          <Select value={filters.reportType || "all"} onValueChange={v => setFilters(f => ({ ...f, reportType: v }))}>
+                            <SelectTrigger><SelectValue placeholder="Any report type" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="automated">Automated</SelectItem>
+                              <SelectItem value="user_reported">User Reported</SelectItem>
+                              <SelectItem value="system_flagged">System Flagged</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Sort By</label>
+                          <Select value={filters.sortBy || "reportedAt"} onValueChange={v => setFilters(f => ({ ...f, sortBy: v }))}>
+                            <SelectTrigger><SelectValue placeholder="Sort by" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="reportedAt">Reported At</SelectItem>
+                              <SelectItem value="severity">Severity</SelectItem>
+                              <SelectItem value="confidence">Confidence</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Sort Order</label>
+                          <Select value={filters.sortOrder} onValueChange={v => setFilters(f => ({ ...f, sortOrder: v }))}>
+                            <SelectTrigger><SelectValue placeholder="Sort order" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="desc">Descending</SelectItem>
+                              <SelectItem value="asc">Ascending</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Limit</label>
+                          <Input type="number" min={1} max={100} value={filters.limit} onChange={e => setFilters(f => ({ ...f, limit: Number(e.target.value) }))} />
+                        </div>
+                        <div className="flex justify-end gap-2 pt-4">
+                          <Button variant="outline" onClick={handleResetFilters}>Reset</Button>
+                          <Button onClick={handleApplyFilters}>Apply</Button>
+                        </div>
+                      </div>
+                    </ShadDialogContent>
+                  </ShadDialog>
                 </div>
               </div>
             </CardHeader>
@@ -359,80 +454,32 @@ export default function SpamDetectionPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Lead</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Confidence</TableHead>
-                    <TableHead>Detected</TableHead>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Severity</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Confidence</TableHead>
+                    <TableHead>Reason</TableHead>
+                    <TableHead>Reported At</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSpamLeads.map((lead) => (
-                    <TableRow key={lead.id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback>
-                              {lead.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{lead.name}</p>
-                            <p className="text-sm text-muted-foreground">{lead.id}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center text-sm">
-                            <Mail className="h-3 w-3 mr-1" />
-                            {lead.email}
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <Phone className="h-3 w-3 mr-1" />
-                            {lead.phone}
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {lead.city}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{lead.source}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={lead.confidence} className="w-16 h-2" />
-                          <span className="text-sm font-medium text-red-600">{lead.confidence}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">{lead.detectedAt}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={lead.status === "confirmed_spam" ? "destructive" : "secondary"}>
-                          {lead.status === "confirmed_spam" ? (
-                            <XCircle className="h-3 w-3 mr-1" />
-                          ) : (
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                          )}
-                          {lead.status.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
+                  {filteredSpamReports.map((report) => (
+                    <TableRow key={report._id}>
+                      <TableCell>{report._id}</TableCell>
+                      <TableCell>{report.contentType}</TableCell>
+                      <TableCell>{report.category}</TableCell>
+                      <TableCell>{report.severity}</TableCell>
+                      <TableCell>{report.status}</TableCell>
+                      <TableCell>{report.detectionResult?.confidence ?? '-'}</TableCell>
+                      <TableCell>{report.userReportDetails?.reason || report.detectionResult?.reasons?.join(', ') || '-'}</TableCell>
+                      <TableCell>{report.reportedAt ? new Date(report.reportedAt).toLocaleString() : '-'}</TableCell>
                       <TableCell>
                         <div className="flex space-x-1">
-                          <LeadDetailsDialog lead={lead} type="spam" />
-                          <Button variant="ghost" size="sm" className="text-green-600">
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -474,62 +521,7 @@ export default function SpamDetectionPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredValidLeads.map((lead) => (
-                    <TableRow key={lead.id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback>
-                              {lead.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{lead.name}</p>
-                            <p className="text-sm text-muted-foreground">{lead.id}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center text-sm">
-                            <Mail className="h-3 w-3 mr-1" />
-                            {lead.email}
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <Phone className="h-3 w-3 mr-1" />
-                            {lead.phone}
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {lead.city}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{lead.source}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={lead.confidence} className="w-16 h-2" />
-                          <span className="text-sm font-medium text-green-600">{lead.confidence}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">{lead.detectedAt}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-1">
-                          <LeadDetailsDialog lead={lead} type="valid" />
-                          <Button variant="ghost" size="sm" className="text-red-600">
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {/* Placeholder for valid leads table */}
                 </TableBody>
               </Table>
             </CardContent>

@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { getBookings } from "@/src/services/BookingServices"
 import { getVisitBookings } from "@/src/services/BookingServices"
-import { useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 
 
@@ -43,89 +42,14 @@ import { Label } from "@/components/ui/label"
 import BookingTable from "@/src/components/Booking/List"
 import VisitBookingTable from "@/src/components/VisitBooking/List"
 import { useAuthRedirect } from "@/hooks/use-Redirect"
+import { format } from "date-fns"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
-const bookings = [
-  {
-    id: "BK001",
-    user: {
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+91 9876543210",
-    },
-    property: "Sunrise PG",
-    room: "A-101",
-    type: "Room",
-    status: "confirmed",
-    amount: 8500,
-    date: "2024-01-15",
-    checkIn: "2024-02-01",
-    checkOut: "2024-02-28",
-    source: "Vizima",
-    paymentStatus: "paid",
-    duration: "1 month",
-  },
-  {
-    id: "BK002",
-    user: {
-      name: "Sarah Wilson",
-      email: "sarah@example.com",
-      phone: "+91 9876543211",
-    },
-    property: "Green Valley Hostel",
-    room: "Visit Slot",
-    type: "Visit",
-    status: "pending",
-    amount: 0,
-    date: "2024-01-16",
-    checkIn: "2024-01-18",
-    checkOut: "2024-01-18",
-    source: "RentOk",
-    paymentStatus: "na",
-    duration: "1 day",
-  },
-  {
-    id: "BK003",
-    user: {
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      phone: "+91 9876543212",
-    },
-    property: "City Center PG",
-    room: "C-301",
-    type: "Room",
-    status: "confirmed",
-    amount: 9800,
-    date: "2024-01-14",
-    checkIn: "2024-01-20",
-    checkOut: "2024-04-20",
-    source: "Vizima",
-    paymentStatus: "paid",
-    duration: "3 months",
-  },
-  {
-    id: "BK004",
-    user: {
-      name: "Emma Davis",
-      email: "emma@example.com",
-      phone: "+91 9876543213",
-    },
-    property: "Sunrise PG",
-    room: "A-102",
-    type: "Room",
-    status: "cancelled",
-    amount: 8500,
-    date: "2024-01-13",
-    checkIn: "2024-01-25",
-    checkOut: "2024-02-25",
-    source: "Vizima",
-    paymentStatus: "refunded",
-    duration: "1 month",
-  },
-]
+
 
 function BookingDetailsDialog({ booking }: { booking: (typeof bookings)[0] }) {
   const [open, setOpen] = useState(false)
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -277,58 +201,145 @@ function BookingDetailsDialog({ booking }: { booking: (typeof bookings)[0] }) {
 }
 
 export default function BookingsPage() {
-
-  const [selectedTab, setSelectedTab] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [search, setSearch] = useState('')
-  useAuthRedirect();
-
-  const filteredBookings = bookings.filter((booking) => {
-    if (selectedTab === "room" && booking.type !== "Room") return false
-    if (selectedTab === "visit" && booking.type !== "Visit") return false
-    if (statusFilter !== "all" && booking.status !== statusFilter) return false
-    return true
-  })
-
-  const stats = {
-    total: bookings.length,
-    confirmed: bookings.filter((b) => b.status === "confirmed").length,
-    pending: bookings.filter((b) => b.status === "pending").length,
-    cancelled: bookings.filter((b) => b.status === "cancelled").length,
-    revenue: bookings.filter((b) => b.status === "confirmed").reduce((sum, b) => sum + b.amount, 0),
-  }
-
-
-  // dynamic
-
-  const [currentPage, setCurrentPage] = useState(1)
-
-  const ITEMS_PER_PAGE = 10;
-
-  const fetchBooking = useCallback(() => {
-    const payload: any = {
-      page: currentPage,
-      limit: ITEMS_PER_PAGE,
-      ...(search && { search }),
-    };
-    return getBookings(payload);
-  }, [currentPage, search]);
-
-
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: [currentPage, search],
-    queryFn: fetchBooking,
+  const [filters, setFilters] = useState({
+    status: "all" as "all" | "confirmed" | "pending" | "completed",
+    paymentStatus: "all" as "all" | "pending" | "paid" | "refunded",
+    bookingType: "all" as "all" | "room" | "visit",
+    dateRange: { from: undefined, to: undefined } as { from?: Date; to?: Date },
+    search: ""
   });
 
+  // State for client-side filtered data
+  const [selectedTab, setSelectedTab] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState('');
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalRecord, setTotalRecord] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [paginatedBookings, setPaginatedBookings] = useState<Booking[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+  useAuthRedirect();
 
-  console.log("Booking data by akib", data)
+  // Fetch bookings data from API
+  const fetchBookings = useCallback(async () => {
+    try {
+      const response = await getBookings({
+        page: 1,
+        limit: 10, // Adjust limit as needed or implement pagination
+        ...(filters.status !== "all" && { status: filters.status }),
+        ...(filters.paymentStatus !== "all" && { paymentStatus: filters.paymentStatus }),
+        ...(filters.bookingType !== "all" && { type: filters.bookingType }),
+        ...(filters.dateRange?.from && { startDate: format(filters.dateRange.from, 'yyyy-MM-dd') }),
+        ...(filters.dateRange?.to && { endDate: format(filters.dateRange.to, 'yyyy-MM-dd') }),
+        ...(filters.search && { search: filters.search }),
+      });
+      setBookings(response.data || []);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      setBookings([]);
+    }
+  }, [filters]);
+  console.log(paginatedBookings)
+  // Initial data fetch
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await getBookings({
+          page: 1,
+          limit: 10,
+        });
+        setBookings(response.data || []);
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const bookingData = data?.data || [];
-  const totalPages = data?.pagination?.totalPages;
-  const totalRecord = data?.pagination?.totalBookings;
+    loadInitialData();
+  }, []);
+
+  // Apply filters and fetch data when they change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchBookings();
+    }, 300); // Debounce search
+
+    return () => clearTimeout(timer);
+  }, [filters, fetchBookings]);
+
+  // Define Booking type at the top of the file
+  type Booking = {
+    _id: string;
+    id: string;
+    user: {
+      name: string;
+      email: string;
+      phone: string;
+    };
+    property: string;
+    room: string;
+    type: string;
+    status: string;
+    amount: number;
+    date: string;
+    checkIn: string;
+    checkOut: string;
+    source: string;
+    paymentStatus: string;
+    duration: string;
+    guests: number;
+    createdAt: string;
+    updatedAt: string;
+  };
+
+  // Apply tab filter to the fetched data
+  const filteredBookings = useMemo(() => {
+    let result = [...bookings];
+
+    // Apply tab filter
+    if (selectedTab === "room") {
+      result = result.filter(booking => booking.type === "Room");
+    } else if (selectedTab === "visit") {
+      result = result.filter(booking => booking.type === "Visit");
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      result = result.filter(booking => booking.status === statusFilter);
+    }
+
+    return result;
+  }, [bookings, selectedTab, statusFilter]);
+
+  // Calculate stats based on filtered bookings
+  const stats = useMemo(() => ({
+    total: filteredBookings.length,
+    confirmed: filteredBookings.filter((b) => b.status === "confirmed").length,
+    pending: filteredBookings.filter((b) => b.status === "pending").length,
+    completed: filteredBookings.filter((b) => b.status === "completed").length,
+    revenue: filteredBookings
+      .filter((b) => b.status === "confirmed")
+      .reduce((sum, b) => sum + (b.amount || 0), 0),
+  }), [filteredBookings])
 
 
-  console.log("booking data", bookingData, totalPages, totalRecord)
+
+  // Pagination effect
+  useEffect(() => {
+    const total = filteredBookings.length;
+    setTotalRecord(total);
+    setTotalPages(Math.ceil(total / ITEMS_PER_PAGE));
+
+    const paginated = filteredBookings.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+    );
+    setPaginatedBookings(paginated);
+  }, [filteredBookings, currentPage]);
 
   // visitbookin
 
@@ -338,17 +349,23 @@ export default function BookingsPage() {
       page: currentPage,
       limit: ITEMS_PER_PAGE,
       ...(search && { search }),
+      ...(statusFilter !== "all" && { status: statusFilter }),
     };
     return getVisitBookings(payload);
-  }, [currentPage, search]);
+  }, [currentPage, search, statusFilter]);
 
+  const handleApplyFilters = () => {
+    // Reset to first page when filters change
+    setCurrentPage(1);
+    fetchBookings();
+  }
   const {
     data: dataVisitBooking,
     isLoading: isLoadingVisit,
     isError: isErrorVisit,
     refetch: refetchVisit,
   } = useQuery({
-    queryKey: ["visitBookings", currentPage, search],
+    queryKey: [currentPage, search, statusFilter],
     queryFn: fetchVisitBooking,
   });
 
@@ -358,7 +375,17 @@ export default function BookingsPage() {
 
   console.log("visit booking", visitBookingData)
   console.log("total page", totalPagesVisit, totalVisitRecord)
-
+  const handleClearFilters = () => {
+    setFilters({
+      status: "all",
+      paymentStatus: "all",
+      bookingType: "all",
+      dateRange: { from: undefined, to: undefined },
+      search: ""
+    });
+    // Reset to first page when clearing filters
+    setCurrentPage(1);
+  };
   const handleExport = () => {
     try {
       console.log('Export button clicked');
@@ -453,33 +480,36 @@ export default function BookingsPage() {
       <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Total Bookings</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">
-              {bookingData?.filter((u) => u.status === "confirmed").length}
+              {stats.confirmed}
             </div>
             <p className="text-xs text-muted-foreground">Confirmed</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {stats.pending}
+            </div>
             <p className="text-xs text-muted-foreground">Pending</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.cancelled}</div>
-            <p className="text-xs text-muted-foreground">Cancelled</p>
+            <div className="text-2xl font-bold text-blue-600">
+              {stats.completed}
+            </div>
+            <p className="text-xs text-muted-foreground">Completed</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">₹{stats.revenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(stats.revenue)}
+            </div>
             <p className="text-xs text-muted-foreground">Total Revenue</p>
           </CardContent>
         </Card>
@@ -487,8 +517,8 @@ export default function BookingsPage() {
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
-          <TabsTrigger value="all">All Bookings ({bookings.length})</TabsTrigger>
-          <TabsTrigger value="visit">Visit Bookings ({bookings.filter((b) => b.type === "Visit").length})</TabsTrigger>
+          <TabsTrigger value="all">All Bookings ({filteredBookings.length})</TabsTrigger>
+          <TabsTrigger value="visit">Visit Bookings ({filteredBookings.filter((b) => b.type === "Visit").length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
@@ -497,10 +527,21 @@ export default function BookingsPage() {
               <div className="flex justify-between items-center">
                 <CardTitle>Booking List</CardTitle>
                 <div className="flex space-x-2">
-                  <div className="relative">
-                    <Input placeholder="Search bookings..." className="w-64" value={search} onChange={e => setSearch(e.target.value)} />
-                  </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Input
+                    placeholder="Search bookings..."
+                    className="w-64"
+                    value={filters.search}
+                    onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleApplyFilters();
+                      }
+                    }}
+                  />
+                  <Select
+                    value={filters.status}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}
+                  >
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -511,17 +552,179 @@ export default function BookingsPage() {
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    More Filters
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={Object.values(filters).some(filter =>
+                        (typeof filter === 'object' ?
+                          Object.values(filter).some(Boolean) :
+                          filter !== 'all' && filter !== ''
+                        )
+                        ) ? "bg-primary/10 border-primary" : ""}
+                      >
+                        <Filter className="h-4 w-4 mr-2" />
+                        {Object.values(filters).some(filter =>
+                        (typeof filter === 'object' ?
+                          Object.values(filter).some(Boolean) :
+                          filter !== 'all' && filter !== ''
+                        )
+                        ) ? "Filters Applied" : "Filter"}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="w-[95vw] max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl p-4 sm:p-6 overflow-y-auto max-h-[90vh]">
+                      <DialogHeader>
+                        <DialogTitle className="text-lg sm:text-xl">Filter Bookings</DialogTitle>
+                        <DialogDescription className="text-sm">Apply filters to narrow down bookings.</DialogDescription>
+                      </DialogHeader>
+
+                      <div className="space-y-4">
+                        {/* Search */}
+                        <div>
+                          <Label>Search</Label>
+                          <Input
+                            placeholder="Search bookings..."
+                            value={filters.search}
+                            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                          />
+                        </div>
+
+                        {/* Status */}
+                        <div>
+                          <Label>Status</Label>
+                          <Select
+                            value={filters.status}
+                            onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Statuses</SelectItem>
+                              <SelectItem value="confirmed">Confirmed</SelectItem>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Payment Status */}
+                        <div>
+                          <Label>Payment Status</Label>
+                          <Select
+                            value={filters.paymentStatus}
+                            onValueChange={(value) => setFilters(prev => ({ ...prev, paymentStatus: value as any }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Payment status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Payments</SelectItem>
+                              <SelectItem value="paid">Paid</SelectItem>
+                              <SelectItem value="unpaid">Unpaid</SelectItem>
+                              <SelectItem value="refunded">Refunded</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Booking Type */}
+                        <div>
+                          <Label>Booking Type</Label>
+                          <Select
+                            value={filters.bookingType}
+                            onValueChange={(value) => setFilters(prev => ({ ...prev, bookingType: value as any }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Booking type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Types</SelectItem>
+                              <SelectItem value="room">Room Booking</SelectItem>
+                              <SelectItem value="visit">Visit Booking</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Date Range */}
+                        <div>
+                          <Label>Date Range</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full justify-start text-left font-normal"
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {filters.dateRange?.from ? (
+                                  filters.dateRange.to ? (
+                                    <>
+                                      {format(filters.dateRange.from, "MMM dd, yyyy")} -{" "}
+                                      {format(filters.dateRange.to, "MMM dd, yyyy")}
+                                    </>
+                                  ) : (
+                                    format(filters.dateRange.from, "MMM dd, yyyy")
+                                  )
+                                ) : (
+                                  <span>Pick a date range</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                initialFocus
+                                mode="range"
+                                defaultMonth={filters.dateRange?.from}
+                                selected={filters.dateRange}
+                                onSelect={(range) => setFilters(prev => ({ ...prev, dateRange: range || { from: undefined, to: undefined } }))}
+                                numberOfMonths={2}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="flex justify-end gap-2 pt-4">
+                          <Button
+                            variant="outline"
+                            onClick={handleClearFilters}
+                            className="mr-2"
+                          >
+                            Clear All
+                          </Button>
+
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <BookingTable data={bookingData}
+              <BookingTable
+                data={paginatedBookings.map((booking: any) => ({
+                  _id: booking.id,
+                  fullName: booking?.fullName || 'N/A',
+                  email: booking?.email || 'N/A',
+                  phoneNumber: booking?.phoneNumber || 'N/A',
+                  guests: 1,
+                  property: booking?.property || 'N/A',
+                  gender: booking?.gender || 'N/A',
+                  checkIn: booking?.checkIn,
+                  checkOut: booking?.checkOut,
+                  sharing: booking?.sharing || 'N/A',
+                  totalAmount: booking?.totalAmount || 0,
+                  paymentStatus: booking?.paymentStatus || 'pending',
+                  status: booking?.status || 'pending',
+                  createdAt: booking?.createdAt || new Date().toISOString(),
+                }))}
                 loading={isLoading}
-                totalBookings={totalRecord} totalPages={totalPages} totalRecord={totalRecord} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                totalBookings={totalRecord}
+                totalPages={totalPages}
+                totalRecord={totalRecord}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+              />
             </CardContent>
           </Card>
         </TabsContent>

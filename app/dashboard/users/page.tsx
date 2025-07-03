@@ -465,9 +465,8 @@ export default function UsersPage() {
     const payload: any = {
       page: currentPage,
       limit: ITEMS_PER_PAGE,
-      ...(search && { search }), // Only include search in payload if it has a value
+      ...(search && { search }),
     };
-    console.log('Fetching users with payload:', payload);
     return getUsers(payload);
   }, [currentPage, search]);
 
@@ -484,8 +483,12 @@ export default function UsersPage() {
   const totalPages = data?.pagination?.totalPages;
   const totalRecord = data?.pagination?.totalUsers;
 
-  console.log("user data is", userData)
+  // Debug: log all status values
+  console.log('All user statuses:', userData.map((u: any) => u.status));
 
+  const filteredUsers = userData
+    .filter((user: any) => statusFilter === "all" || (user.isVerified == true ? "verified" === statusFilter.toLowerCase() : "unverified" === statusFilter.toLowerCase()))
+    .filter((user: any) => tagFilter === "all" || (user.role && user.role.toLowerCase() === tagFilter.toLowerCase()));
 
   const handleDelete = async () => {
     try {
@@ -639,11 +642,11 @@ export default function UsersPage() {
             <div className="flex space-x-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input 
-                  placeholder="Search users..." 
-                  className="pl-10 w-64" 
+                <Input
+                  placeholder="Search users..."
+                  className="pl-10 w-64"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -653,8 +656,7 @@ export default function UsersPage() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="verified">Verified</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="blocked">Blocked</SelectItem>
+                  <SelectItem value="unverified">Unverified</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={tagFilter} onValueChange={setTagFilter}>
@@ -663,10 +665,8 @@ export default function UsersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Tags</SelectItem>
-                  <SelectItem value="Lead">Lead</SelectItem>
-                  <SelectItem value="Verified">Verified</SelectItem>
-                  <SelectItem value="Premium">Premium</SelectItem>
-                  <SelectItem value="Spam">Spam</SelectItem>
+                  <SelectItem value="User">User</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -692,14 +692,14 @@ export default function UsersPage() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : userData?.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-6 text-muted-foreground text-sm">
                     No users found.
                   </TableCell>
                 </TableRow>
               ) : (
-                userData?.map((user: any) => (
+                filteredUsers.map((user: any) => (
                   <TableRow key={user?._id}>
                     <TableCell>
                       <div className="flex items-center space-x-3">
