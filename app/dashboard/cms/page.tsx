@@ -10,53 +10,55 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table"
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
 } from "@/components/ui/tabs"
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
 import FaqMain from "@/src/components/Faq"
 import BannerMain from "@/src/components/Banner"
+import CityMain from "@/src/components/City"
+import TestimonialMain from "@/src/components/Testimonial"
 
 // Local implementation of blog service
 const createBlog = async (data: any) => {
   try {
     const formData = new FormData();
-    
+
     // Append all fields to formData
     Object.entries(data).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -116,7 +118,7 @@ function CreateBlogDialog() {
   const [featuredImage, setFeaturedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   const {
     register,
     handleSubmit,
@@ -141,7 +143,7 @@ function CreateBlogDialog() {
         toast.error('Image size should be less than 5MB')
         return
       }
-      
+
       setFeaturedImage(file)
       const reader = new FileReader()
       reader.onloadend = () => {
@@ -173,7 +175,7 @@ function CreateBlogDialog() {
 
     try {
       setIsSubmitting(true)
-      
+
       const formData = {
         title: data.title,
         content: data.content,
@@ -186,7 +188,7 @@ function CreateBlogDialog() {
       }
 
       await createBlog(formData)
-      
+
       toast.success('Blog post created successfully!')
       reset()
       removeImage()
@@ -223,9 +225,9 @@ function CreateBlogDialog() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Blog Title *</Label>
-              <Input 
-                id="title" 
-                placeholder="Enter blog title" 
+              <Input
+                id="title"
+                placeholder="Enter blog title"
                 {...register('title', { required: 'Title is required' })}
                 className={errors.title ? 'border-red-500' : ''}
               />
@@ -254,10 +256,10 @@ function CreateBlogDialog() {
 
           <div className="space-y-2">
             <Label htmlFor="content">Content *</Label>
-            <Textarea 
-              id="content" 
-              placeholder="Write your blog content..." 
-              rows={8} 
+            <Textarea
+              id="content"
+              placeholder="Write your blog content..."
+              rows={8}
               {...register('content', { required: 'Content is required' })}
               className={errors.content ? 'border-red-500' : ''}
             />
@@ -270,26 +272,26 @@ function CreateBlogDialog() {
             <h3 className="text-lg font-semibold">SEO Settings</h3>
             <div className="space-y-2">
               <Label htmlFor="seoTitle">SEO Title</Label>
-              <Input 
-                id="seoTitle" 
-                placeholder="SEO optimized title" 
+              <Input
+                id="seoTitle"
+                placeholder="SEO optimized title"
                 {...register('seoTitle')}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="metaDescription">Meta Description</Label>
-              <Textarea 
-                id="metaDescription" 
-                placeholder="Meta description for search engines" 
-                rows={3} 
+              <Textarea
+                id="metaDescription"
+                placeholder="Meta description for search engines"
+                rows={3}
                 {...register('metaDescription')}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="tags">Tags (comma separated)</Label>
-              <Input 
-                id="tags" 
-                placeholder="pg, hostel, mumbai, accommodation" 
+              <Input
+                id="tags"
+                placeholder="pg, hostel, mumbai, accommodation"
                 {...register('tags')}
               />
             </div>
@@ -338,13 +340,13 @@ function CreateBlogDialog() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <input 
-              type="checkbox" 
-              id="publish" 
-              className="hidden" 
+            <input
+              type="checkbox"
+              id="publish"
+              className="hidden"
               {...register('isPublished')}
             />
-            <Switch 
+            <Switch
               id="publish-switch"
               checked={true}
               onCheckedChange={(checked) => {
@@ -355,17 +357,17 @@ function CreateBlogDialog() {
           </div>
 
           <div className="flex justify-end space-x-2">
-            <Button 
+            <Button
               type="button"
-              variant="outline" 
+              variant="outline"
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               type="button"
-              variant="outline" 
+              variant="outline"
               onClick={() => {
                 handleSubmit((data) => {
                   onSubmit({ ...data, isPublished: false })
@@ -375,7 +377,7 @@ function CreateBlogDialog() {
             >
               {isSubmitting ? 'Saving...' : 'Save as Draft'}
             </Button>
-            <Button 
+            <Button
               type="submit"
               disabled={isSubmitting}
             >
@@ -422,7 +424,7 @@ function ViewBlogDialog({ blog, open, onOpenChange }: { blog: Blog | null, open:
             <span>{blog.views} views</span>
           </div>
         </DialogHeader>
-        
+
         <div className="prose max-w-none py-4">
           {blog.content ? (
             <div dangerouslySetInnerHTML={{ __html: blog.content }} />
@@ -430,7 +432,7 @@ function ViewBlogDialog({ blog, open, onOpenChange }: { blog: Blog | null, open:
             <p className="text-muted-foreground">No content available.</p>
           )}
         </div>
-        
+
         {blog.tags && blog.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-4 border-t">
             {blog.tags.map((tag, index) => (
@@ -446,12 +448,12 @@ function ViewBlogDialog({ blog, open, onOpenChange }: { blog: Blog | null, open:
 }
 
 export default function CMSPage() {
-  const [selectedTab, setSelectedTab] = useState("blogs");
+  const [selectedTab, setSelectedTab] = useState("allbanners");
   const [search, setSearch] = useState('');
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
   const [viewingBlog, setViewingBlog] = useState<Blog | null>(null);
-  
+
   // Fetch blogs on component mount
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -460,7 +462,7 @@ export default function CMSPage() {
         // const response = await fetch('https://api.vizima.in/blogs');
         // const data = await response.json();
         // setBlogs(data);
-        
+
         // Mock data for now
         setBlogs([
           {
@@ -487,10 +489,10 @@ export default function CMSPage() {
         toast.error('Failed to load blogs');
       }
     };
-    
+
     fetchBlogs();
   }, []);
-  
+
   const handleEditBlog = (blog: Blog) => {
     setEditingBlog(blog);
     // You can open an edit dialog here or navigate to an edit page
@@ -498,7 +500,7 @@ export default function CMSPage() {
     console.log('Editing blog:', blog);
     toast.info(`Editing: ${blog.title}`);
   };
-  
+
   const handleViewBlog = (blog: Blog) => {
     setViewingBlog(blog);
   };
@@ -513,7 +515,7 @@ export default function CMSPage() {
         //     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         //   }
         // });
-        
+
         // Update local state
         setBlogs(blogs.filter(blog => blog.id !== blogId));
         toast.success('Blog post deleted successfully');
@@ -523,14 +525,14 @@ export default function CMSPage() {
       }
     }
   };
-  
+
   // Filter blogs based on search query
-  const filteredBlogs = blogs.filter(blog => 
+  const filteredBlogs = blogs.filter(blog =>
     (blog.title?.toLowerCase() || '').includes(search.toLowerCase()) ||
     (blog.category?.toLowerCase() || '').includes(search.toLowerCase()) ||
     (blog.status?.toLowerCase() || '').includes(search.toLowerCase())
   );
-  
+
   // Mock data for other tabs
   const banners = [
     {
@@ -561,151 +563,25 @@ export default function CMSPage() {
             <Globe className="h-4 w-4 mr-2" />
             Preview Site
           </Button>
-          <CreateBlogDialog />
+          {/* <CreateBlogDialog /> */}
         </div>
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
-          <TabsTrigger value="blogs">Blogs</TabsTrigger>
+          {/* <TabsTrigger value="blogs">Blogs</TabsTrigger> */}
           <TabsTrigger value="allbanners">Banners</TabsTrigger>
           <TabsTrigger value="cities">Cities</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="faqs">Faqs</TabsTrigger>
-
           {/* <TabsTrigger value="pages">Static Pages</TabsTrigger> */}
-
         </TabsList>
 
-        <TabsContent value="blogs" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Blog Posts</CardTitle>
-                <div className="flex space-x-2">
-                  <Input placeholder="Search blogs..." className="w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
-                  <CreateBlogDialog />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Views</TableHead>
-                    <TableHead>Publish Date</TableHead>
-                    <TableHead>SEO</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBlogs.map((blog) => (
-                    <TableRow key={blog.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{blog.title}</p>
-                          <p className="text-sm text-muted-foreground">/{blog.slug}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{blog.category}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={blog.status === "published" ? "default" : "secondary"}>{blog.status}</Badge>
-                      </TableCell>
-                      <TableCell>{blog.views.toLocaleString()}</TableCell>
-                      <TableCell>{blog.publishDate}</TableCell>
-                      <TableCell>
-                        <div className="text-xs">
-                          <div className="text-green-600">✓ Title</div>
-                          <div className="text-green-600">✓ Meta</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-1">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleViewBlog(blog)}
-                            title="View Blog"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleEditBlog(blog)}
-                            title="Edit Blog"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-destructive"
-                            onClick={() => handleDeleteBlog(blog.id)}
-                            title="Delete Blog"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Remove Blogs Tab Content */}
+        {/* <TabsContent value="blogs" className="space-y-4"> ... </TabsContent> */}
 
-        <TabsContent value="banners" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Homepage Banners</CardTitle>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Banner
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                {banners.map((banner) => (
-                  <Card key={banner.id}>
-                    <CardContent className="p-4">
-                      <div className="aspect-video bg-muted rounded-lg mb-4 flex items-center justify-center">
-                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium">{banner.title}</h3>
-                            <p className="text-sm text-muted-foreground">{banner.subtitle}</p>
-                          </div>
-                          <Badge variant={banner.status === "active" ? "default" : "secondary"}>{banner.status}</Badge>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <Badge variant="outline">{banner.position}</Badge>
-                          <div className="flex space-x-1">
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="allbanners" className="space-y-4">
+          <BannerMain />
         </TabsContent>
 
         {/* <TabsContent value="cities" className="space-y-4">
@@ -765,41 +641,17 @@ export default function CMSPage() {
 
         {/* City Management Section */}
         <TabsContent value="cities" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cities</CardTitle>
-              <CardDescription>Manage available cities and their properties</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">City management coming soon</p>
-            </CardContent>
-          </Card>
+          <CityMain />
         </TabsContent>
 
         {/* Testimonials Section */}
         <TabsContent value="testimonials" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Testimonials</CardTitle>
-              <CardDescription>Manage customer testimonials</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Testimonial management coming soon</p>
-            </CardContent>
-          </Card>
+          <TestimonialMain />
         </TabsContent>
 
         {/* FAQ Section */}
         <TabsContent value="faqs" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>FAQs</CardTitle>
-              <CardDescription>Manage frequently asked questions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">FAQ management coming soon</p>
-            </CardContent>
-          </Card>
+          <FaqMain />
         </TabsContent>
 
         {/* Banners Section */}
@@ -849,12 +701,12 @@ export default function CMSPage() {
           </Card>
         </TabsContent>
       </Tabs>
-      
+
       {/* View Blog Dialog */}
-      <ViewBlogDialog 
-        blog={viewingBlog} 
-        open={!!viewingBlog} 
-        onOpenChange={(open) => !open && setViewingBlog(null)} 
+      <ViewBlogDialog
+        blog={viewingBlog}
+        open={!!viewingBlog}
+        onOpenChange={(open) => !open && setViewingBlog(null)}
       />
     </div>
   )
