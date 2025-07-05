@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from "sonner";
 import { useAuthRedirect } from "@/hooks/use-Redirect"
 import { PropertyFormData } from "@/src/components/Property/Schema/property-schema"
@@ -39,6 +39,7 @@ type ApiResponse = {
 
 export default function PropertiesPage() {
   // State management
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -55,7 +56,7 @@ export default function PropertiesPage() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  
+
   useAuthRedirect(); // Ensure user is authenticated
 
   interface PropertyResponse {
@@ -171,6 +172,10 @@ export default function PropertiesPage() {
     try {
       await addProperty(formData);
       toast.success('Property added successfully');
+
+      // Invalidate and refetch properties query
+      await queryClient.invalidateQueries({ queryKey: ['properties'] });
+
       onSuccess();
       setOpen(false);
     } catch (error) {
@@ -181,15 +186,15 @@ export default function PropertiesPage() {
 
   return (
     <div className="space-y-6 p-4">
-      <Header 
+      <Header
         open={open}
         setOpen={setOpen}
         onSubmit={handleAddProperty}
         onExport={handleExport}
         properties={properties}
       />
-      
-      <PropertyList 
+
+      <PropertyList
         properties={properties}
         search={search}
         setSearch={setSearch}
@@ -221,7 +226,7 @@ export default function PropertiesPage() {
         isFeaturedTouched={isFeaturedTouched}
         setIsFeaturedTouched={setIsFeaturedTouched}
       />
-      
+
       {!isLoading && totalPages > 1 && (
         <div className="mt-4">
           <Pagination

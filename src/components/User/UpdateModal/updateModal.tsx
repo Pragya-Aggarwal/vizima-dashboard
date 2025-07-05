@@ -53,15 +53,17 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
             imageUrl: "",
             isVisible: false,
         }
+    });
 
-    })const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove } = useFieldArray({
         control,
         name: "nearbyPlaces",
     });
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: SchemaFormData) => {onSubmit(data, () => {
+    const onFormSubmit = (data: SchemaFormData) => {
+        onSubmit(data, () => {
             reset();
             setOpen(false);
         });
@@ -263,7 +265,8 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                                                 if (!file) return;
                                                 try {
                                                     const url = await uploadToCloudinary(file);
-                                                    field.onChange(url); // ✅ only set single URL} catch (err) {
+                                                    field.onChange(url); // ✅ only set single URL
+                                                } catch (err) {
                                                     console.error("Upload failed:", err);
                                                 }
                                             }}

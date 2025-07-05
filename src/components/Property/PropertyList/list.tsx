@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import { useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -174,6 +175,7 @@ type PropertyListProps = {
 
 const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, type, setType, sharingType, setsharingType, isLoading, bathrooms, setBathrooms, bedrooms, setBedrooms, isAvailable, setIsAvailable, isFeatured, setIsFeatured, isAvailableTouched, setIsAvailableTouched, isFeaturedTouched, setIsFeaturedTouched, sortOrder, setSortOrder, sortBy, setSortBy, city, setCity, state, setState, selectedAmenities, setSelectedAmenities }) => {
 
+    const queryClient = useQueryClient();
     const [selectedTab, setSelectedTab] = useState("vizima")
     const [open, setOpen] = useState(false)
     const [propertyId, setPropertyId] = useState<string | null | undefined>();
@@ -192,10 +194,13 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
             }
             const res = await updatePropertyById(propertyId, data)
             toast.success("Property updated successfully.");
+
+            // Invalidate and refetch properties query
+            await queryClient.invalidateQueries({ queryKey: ['properties'] });
+
             onSuccess();
             setOpen(false);
-            // refetch();
-            //} catch (error: any) {
+        } catch (error: any) {
             console.error("Error adding property:", error);
             toast.error(error?.response?.data?.message || "Failed to add property");
         }
@@ -641,7 +646,8 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                                                                 await deletePropertybyId(property._id);
                                                                                 toast.success("Property deleted successfully");
 
-                                                                                // refetch();
+                                                                                // Invalidate and refetch properties query
+                                                                                await queryClient.invalidateQueries({ queryKey: ['properties'] });
 
                                                                             } catch (err) {
                                                                                 toast.error("Failed to delete property");
@@ -780,7 +786,7 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                                         <Button variant="ghost" size="sm">
                                                             <Sync className="h-4 w-4" />
                                                         </Button>
-                                                        
+
                                                         <Button variant="ghost" size="sm">
                                                             <Eye className="h-4 w-4" />
                                                         </Button>
