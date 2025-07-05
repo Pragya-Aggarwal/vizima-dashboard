@@ -13,6 +13,7 @@ import {
   MapPin,
   CheckCircle,
   XCircle,
+  Trash,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -28,12 +29,12 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { getScheduleVisits, ScheduleVisit, GetScheduleVisitsParams } from "../../../src/services/ScheduleVisitService"
+import { getScheduleVisits, getScheduleVisitById, updateScheduleVisit, deleteScheduleVisit, ScheduleVisit, GetScheduleVisitsParams, UpdateScheduleVisitData } from "../../../src/services/ScheduleVisitService"
 import { FilterDialog } from "../../../src/components/appointments/FilterDialog"
 import { useToast } from "@/components/ui/use-toast"
 
 type TimeSlot = {
-  id: string;
+  _id: string;
   city: string;
   date: string;
   startTime: string;
@@ -156,7 +157,7 @@ function AppointmentDetailsDialog({ appointment }: { appointment: ScheduleVisit 
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Appointment Details - {appointment.id}</DialogTitle>
+          <DialogTitle>Appointment Details - {appointment._id}</DialogTitle>
           <DialogDescription>Complete appointment information and management options</DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
@@ -169,20 +170,18 @@ function AppointmentDetailsDialog({ appointment }: { appointment: ScheduleVisit 
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback>
-                      {appointment.user.name
-                        .split(" ")
+                      {appointment?.fullName
+                        ?.split(" ")
                         .map((n: string) => n[0])
-                        .join("")}
+                        .join("") || 'NA'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{appointment.user.name}</p>
-                    <p className="text-sm text-muted-foreground">{appointment.user.email}</p>
+                    <p className="font-medium">{appointment?.fullName || 'Unknown User'}</p>
+                    <p className="text-sm text-muted-foreground">{appointment?.email || 'N/A'}</p>
                   </div>
                 </div>
-                <div className="text-sm">
-                  <p>{appointment.user.phone}</p>
-                </div>
+
               </CardContent>
             </Card>
 
@@ -193,48 +192,34 @@ function AppointmentDetailsDialog({ appointment }: { appointment: ScheduleVisit 
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Property:</span>
-                  <span className="font-medium">{appointment.property.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">City:</span>
-                  <span className="font-medium">{appointment.property.city}</span>
+                  <span className="font-medium">{appointment.propertyName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Date:</span>
-                  <span className="font-medium">{appointment.visitDate}</span>
+                  <span className="font-medium">{appointment?.date}</span>
                 </div>
+
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Time:</span>
-                  <span className="font-medium">{appointment.visitTime}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <span className="text-sm text-muted-foreground">Sharing:</span>
                   <Badge
                     variant={
-                      appointment.status === "confirmed"
+                      appointment.sharing === "single"
                         ? "default"
-                        : appointment.status === "completed"
+                        : appointment.sharing === "double"
                           ? "default"
-                          : appointment.status === "pending"
-                            ? "secondary"
-                            : "destructive"
+                          : appointment.sharing === "triple"
+                            ? "destructive"
+                            : "outline"
                     }
                   >
-                    {appointment.status}
+                    {appointment.sharing}
                   </Badge>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Notes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">{appointment.notes}</p>
-            </CardContent>
-          </Card>
+
 
           <div className="flex justify-between">
             <div className="space-x-2">
@@ -242,12 +227,7 @@ function AppointmentDetailsDialog({ appointment }: { appointment: ScheduleVisit 
                 <Calendar className="h-4 w-4 mr-2" />
                 Reschedule
               </Button>
-              {appointment.status === "pending" && (
-                <Button variant="default">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Confirm
-                </Button>
-              )}
+
             </div>
             <div className="space-x-2">
               <Button variant="outline" onClick={() => setOpen(false)}>
@@ -260,6 +240,231 @@ function AppointmentDetailsDialog({ appointment }: { appointment: ScheduleVisit 
             </div>
           </div>
         </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// Edit Appointment Dialog Component
+function EditAppointmentDialog({ appointment, onSave }: { appointment: ScheduleVisit; onSave: (updatedAppointment: ScheduleVisit) => void }) {
+  const [open, setOpen] = useState(false)
+  const [formData, setFormData] = useState<UpdateScheduleVisitData>({
+    sharing: appointment.sharing,
+    date: appointment?.date,
+    visitTime: appointment.visitTime,
+    gender: appointment.gender,
+    propertyName: appointment.propertyName,
+    fullName: appointment.fullName,
+    email: appointment.email,
+    mode: appointment.mode,
+  })
+
+  console.log(formData, "formData")
+  const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const updatedAppointment = await updateScheduleVisit(appointment._id, formData)
+      onSave(updatedAppointment)
+      setOpen(false)
+      toast({
+        title: "Success",
+        description: "Appointment updated successfully",
+      })
+    } catch (error) {
+      console.error('Error updating appointment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update appointment",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <Edit className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Appointment</DialogTitle>
+          <DialogDescription>Update appointment details</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  value={formData.fullName || ''}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  placeholder="Enter full name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email || ''}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="Enter email"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date">Visit Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData?.date?.split('T')[0] || ''}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="propertyName">Property Name</Label>
+                <Input
+                  id="propertyName"
+                  value={formData.propertyName || ''}
+                  onChange={(e) => setFormData({ ...formData, propertyName: e.target.value })}
+                  placeholder="Enter property name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sharing">Sharing</Label>
+                <Select value={formData.sharing} onValueChange={(value) => setFormData({ ...formData, sharing: value as any })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select sharing" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single">Single</SelectItem>
+                    <SelectItem value="double">Double</SelectItem>
+                    <SelectItem value="triple">Triple</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+
+            <div className="space-y-2">
+              <Label htmlFor="mode">Mode</Label>
+              <Select value={formData.mode} onValueChange={(value) => setFormData({ ...formData, mode: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="physical">Physical</SelectItem>
+                  <SelectItem value="virtual">Virtual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// Delete Confirmation Dialog Component
+function DeleteConfirmationDialog({ appointment, onDelete }: { appointment: ScheduleVisit; onDelete: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
+
+  const handleDelete = async () => {
+    setLoading(true)
+    try {
+      await deleteScheduleVisit(appointment._id)
+      onDelete()
+      setOpen(false)
+      toast({
+        title: "Success",
+        description: "Appointment deleted successfully",
+      })
+    } catch (error) {
+      console.error('Error deleting appointment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete appointment",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+          <Trash className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Delete Appointment</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this appointment? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
+            <p className="text-sm text-red-700 dark:text-red-300">
+              <strong>Appointment Details:</strong>
+            </p>
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {appointment.fullName} - {appointment.propertyName}
+            </p>
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Date: {appointment.date}
+            </p>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+            {loading ? 'Deleting...' : 'Delete Appointment'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
@@ -282,7 +487,7 @@ export default function AppointmentsPage() {
   const [filters, setFilters] = useState<Omit<GetScheduleVisitsParams, 'page' | 'limit'>>({});
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [sharingFilter, setSharingFilter] = useState('all');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(cityTimeSlots);
 
   // Fetch appointments from API
@@ -295,17 +500,17 @@ export default function AppointmentsPage() {
           ...filters,
           page: 1,
           limit: 50,
-
+          search: search || undefined, // Add search to API params
         }
         const res = await getScheduleVisits(params)
         setAppointments(res.data)
         setStats({
           total: res.total,
-          confirmed: res.data.filter((a: ScheduleVisit) => a.status === "confirmed").length,
-          pending: res.data.filter((a: ScheduleVisit) => a.status === "pending").length,
-          completed: res.data.filter((a: ScheduleVisit) => a.status === "completed").length,
-          cancelled: res.data.filter((a: ScheduleVisit) => a.status === "cancelled").length,
-          no_show: res.data.filter((a: ScheduleVisit) => a.status === "no_show").length,
+          confirmed: res.data.filter((a: ScheduleVisit) => a.sharing === "single").length,
+          pending: res.data.filter((a: ScheduleVisit) => a.sharing === "double").length,
+          completed: res.data.filter((a: ScheduleVisit) => a.sharing === "triple").length,
+          cancelled: 0, // Not using status-based filtering
+          no_show: 0, // Not using status-based filtering
         })
       } catch (err: any) {
         setError(err?.message || 'Failed to fetch appointments')
@@ -314,17 +519,22 @@ export default function AppointmentsPage() {
       }
     }
     fetchData()
-  }, [filters, statusFilter, search])
-
+  }, [filters, sharingFilter, search])
+  console.log(appointments, "appointments")
   // Filter dialog handlers
   const handleFilterChange = (newFilters: Omit<GetScheduleVisitsParams, 'page' | 'limit'>) => {
     setFilters(newFilters)
   }
   const handleResetFilters = () => {
-    setFilters({ status: '', propertyId: '', userId: '', dateFrom: '', dateTo: '', search: '' })
+    setFilters({ propertyId: '', userId: '', dateFrom: '', dateTo: '', search: '' })
   }
   const handleApplyFilters = () => {
     setFilterDialogOpen(false)
+  }
+
+  // Handle appointment deletion
+  const handleDeleteAppointment = (deletedAppointmentId: string) => {
+    setAppointments(appointments.filter(apt => apt._id !== deletedAppointmentId))
   }
 
   // Filter appointments based on search and status
@@ -335,20 +545,20 @@ export default function AppointmentsPage() {
     if (search) {
       const searchTerm = search.toLowerCase()
       result = result.filter((appointment: ScheduleVisit) =>
-      (appointment.user?.name?.toLowerCase().includes(searchTerm) ||
-        appointment.user?.email?.toLowerCase().includes(searchTerm) ||
-        appointment.property?.name?.toLowerCase().includes(searchTerm) ||
-        appointment.id?.toLowerCase().includes(searchTerm))
+      (appointment?.fullName?.toLowerCase().includes(searchTerm) ||
+        appointment?.email?.toLowerCase().includes(searchTerm) ||
+        appointment?.propertyName?.toLowerCase().includes(searchTerm) ||
+        appointment._id?.toLowerCase().includes(searchTerm))
       )
     }
 
-    // Apply status filter
-    if (statusFilter && statusFilter !== 'all') {
-      result = result.filter(appointment => appointment.status === statusFilter)
+    // Apply sharing filter
+    if (sharingFilter && sharingFilter !== 'all') {
+      result = result.filter(appointment => appointment.sharing === sharingFilter)
     }
 
     return result
-  }, [appointments, search, statusFilter])
+  }, [appointments, search, sharingFilter])
 
   // Export appointments to CSV
   const handleExportAppointments = () => {
@@ -364,8 +574,8 @@ export default function AppointmentsPage() {
 
       // Format appointments data for export with proper type safety
       const dataToExport = filteredAppointments.map((appointment: ScheduleVisit) => {
-        const visitDate = appointment.visitDate
-          ? new Date(appointment.visitDate).toLocaleDateString()
+        const date = appointment?.date
+          ? new Date(appointment?.date).toLocaleDateString()
           : 'N/A';
 
         const createdAt = appointment.createdAt
@@ -373,15 +583,12 @@ export default function AppointmentsPage() {
           : 'N/A';
 
         return {
-          'Appointment ID': appointment.id || 'N/A',
-          'Property': appointment.property?.name || 'N/A',
-          'Date': visitDate,
-          'Time': appointment.visitTime || 'N/A',
-          'Status': appointment.status?.toUpperCase() || 'N/A',
-          'Customer Name': appointment.user?.name || 'N/A',
-          'Customer Email': appointment.user?.email || 'N/A',
-          'Customer Phone': appointment.user?.phone || 'N/A',
-          'Notes': appointment.notes || 'N/A',
+          'Appointment ID': appointment._id || 'N/A',
+          'Property': appointment.propertyName || 'N/A',
+          'Date': date,
+          'Sharing': appointment.sharing?.toUpperCase() || 'N/A',
+          'Customer Name': appointment.fullName || 'N/A',
+          'Customer Email': appointment.email || 'N/A',
           'Created At': createdAt,
         };
       });
@@ -508,16 +715,15 @@ export default function AppointmentsPage() {
                 <CardTitle>Appointment List</CardTitle>
                 <div className="flex space-x-2">
                   <Input placeholder="Search appointments..." className="w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={sharingFilter} onValueChange={setSharingFilter}>
                     <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Status" />
+                      <SelectValue placeholder="Sharing" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="confirmed">Confirmed</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="all">All Sharing</SelectItem>
+                      <SelectItem value="single">Single</SelectItem>
+                      <SelectItem value="double">Double</SelectItem>
+                      <SelectItem value="triple">Triple</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -531,88 +737,83 @@ export default function AppointmentsPage() {
                     <TableHead>User</TableHead>
                     <TableHead>Property</TableHead>
                     <TableHead>Date & Time</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Notes</TableHead>
+                    <TableHead>sharing</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {appointments.map((appointment) => (
-                    <TableRow key={appointment.id}>
+                  {appointments.map((appointment, index) => (
+                    <TableRow key={index}>
                       <TableCell>
-                        <div className="font-medium">{appointment.id}</div>
-                        <div className="text-xs text-muted-foreground">Created: {new Date(appointment.createdAt).toLocaleDateString()}</div>
+                        <div className="font-medium">{appointment?._id}</div>
+                        <div className="text-xs text-muted-foreground">Created: {new Date(appointment?.createdAt).toLocaleDateString()}</div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback>
-                              {appointment.user.name
-                                .split(" ")
+                              {appointment?.fullName
+                                ?.split(" ")
                                 .map((n: string) => n[0])
-                                .join("")}
+                                .join("") || 'NA'}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{appointment.user.name}</p>
-                            <p className="text-xs text-muted-foreground">{appointment.user.phone}</p>
+                            <p className="font-medium">{appointment?.fullName || 'Unknown User'}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{appointment.property.name}</p>
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {appointment.property.city}
-                          </div>
+                          <p className="font-medium">{appointment.propertyName || 'Unknown Property'}</p>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {appointment.visitDate}
-                          </div>
-                          <div className="flex items-center text-muted-foreground">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {appointment.visitTime}
-                          </div>
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {appointment?.date}
                         </div>
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            appointment.status === "confirmed" || appointment.status === "completed"
+                            appointment.sharing === "single"
                               ? "default"
-                              : appointment.status === "pending"
-                                ? "secondary"
-                                : "destructive"
+                              : appointment.sharing === "double"
+                                ? "destructive"
+                                : appointment.sharing === "triple"
+                                  ? "secondary"
+                                  : "outline"
                           }
                         >
-                          {appointment.status === "confirmed" && <CheckCircle className="h-3 w-3 mr-1" />}
-                          {appointment.status === "pending" && <Clock className="h-3 w-3 mr-1" />}
-                          {appointment.status === "completed" && <CheckCircle className="h-3 w-3 mr-1" />}
-                          {appointment.status === "cancelled" && <XCircle className="h-3 w-3 mr-1" />}
-                          {appointment.status}
+                          {appointment.sharing === "single" && <CheckCircle className="h-3 w-3 mr-1" />}
+                          {appointment.sharing === "double" && <Clock className="h-3 w-3 mr-1" />}
+                          {appointment.sharing === "triple" && <CheckCircle className="h-3 w-3 mr-1" />}
+                          {appointment.sharing}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <p className="text-sm text-muted-foreground truncate max-w-32">{appointment.notes}</p>
-                      </TableCell>
+
                       <TableCell>
                         <div className="flex space-x-1">
-                          <AppointmentDetailsDialog appointment={appointment} />
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          {appointment.status === "pending" && (
+                          <AppointmentDetailsDialog key={`details-${appointment._id}`} appointment={appointment} />
+                          <EditAppointmentDialog
+                            key={`edit-${appointment._id}`}
+                            appointment={appointment}
+                            onSave={(updatedAppointment) => {
+                              setAppointments(appointments.map(apt =>
+                                apt._id === updatedAppointment._id ? updatedAppointment : apt
+                              ))
+                            }}
+                          />
+                          <DeleteConfirmationDialog
+                            key={`delete-${appointment._id}`}
+                            appointment={appointment}
+                            onDelete={() => handleDeleteAppointment(appointment._id)}
+                          />
+                          {appointment.sharing === "single" && (
                             <>
                               <Button variant="ghost" size="sm" className="text-green-600">
                                 <CheckCircle className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-red-600">
-                                <XCircle className="h-4 w-4" />
                               </Button>
                             </>
                           )}
@@ -643,8 +844,8 @@ export default function AppointmentsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {cityTimeSlots.map((citySlot, index) => (
-                  <Card key={index}>
+                {cityTimeSlots.map((citySlot) => (
+                  <Card key={`${citySlot.city}-${citySlot.date}`}>
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-center">
                         <CardTitle className="text-lg flex items-center">
@@ -665,9 +866,9 @@ export default function AppointmentsPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-6 gap-2">
-                        {citySlot.slots.map((slot, slotIndex) => (
+                        {citySlot.slots.map((slot, index) => (
                           <div
-                            key={slotIndex}
+                            key={`${citySlot.city}-${citySlot.date}-slot-${index}`}
                             className="p-2 border rounded-lg text-center text-sm bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
                           >
                             <Clock className="h-3 w-3 mx-auto mb-1" />

@@ -41,6 +41,11 @@ export const getVisitBookingById = async (id: string) => {
     return response.data;
 };
 
+export const deleteVisitBooking = async (id: string) => {
+    let response = await api.delete(`/api/visit-bookings/${id}`)
+    return response.data;
+};
+
 
 // 
 export const getBookingStats = async () => {

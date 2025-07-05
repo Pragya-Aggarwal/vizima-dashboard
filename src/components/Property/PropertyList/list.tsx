@@ -606,9 +606,6 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                                         >
                                                             <Edit className="h-4 w-4" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm">
-                                                            <Settings className="h-4 w-4" />
-                                                        </Button>
                                                         <AlertDialog>
                                                             <AlertDialogTrigger asChild>
                                                                 <button
@@ -784,9 +781,7 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                                         <Button variant="ghost" size="sm">
                                                             <Sync className="h-4 w-4" />
                                                         </Button>
-                                                        <Button variant="ghost" size="sm">
-                                                            <Settings className="h-4 w-4" />
-                                                        </Button>
+                                                        
                                                         <Button variant="ghost" size="sm">
                                                             <Eye className="h-4 w-4" />
                                                         </Button>

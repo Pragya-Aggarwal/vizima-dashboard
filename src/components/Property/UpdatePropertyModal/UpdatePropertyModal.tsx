@@ -175,7 +175,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                                 <SelectItem value="room">Room</SelectItem>
                                                 <SelectItem value="studio">Studio</SelectItem>
                                                 <SelectItem value="villa">Villa</SelectItem>
-                                                <SelectItem value="studio">PentHouse</SelectItem>
+                                                <SelectItem value="penthouse">PentHouse</SelectItem>
                                                 <SelectItem value="pg">PG</SelectItem>
                                                 <SelectItem value="hostel">Hostel</SelectItem>
                                             </SelectContent>

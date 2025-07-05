@@ -7,12 +7,25 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { Eye, Loader2, Trash2 } from "lucide-react";
 import LoadingIndicator from "@/src/common/LoadingIndicator/loading";
 import Pagination from "@/src/common/pagination/pagination";
 import BookingDetailsDialog from "./DetailModal";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { deleteVisitBooking } from "@/src/services/BookingServices";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Booking = {
     _id: string;
@@ -37,17 +50,54 @@ type Props = {
     currentPage: number;
     totalPages: number;
     setCurrentPage: (page: number) => void;
-
+    onDelete: () => void;
 };
 
-const BookingTable = ({ data, loading, totalBookings, totalRecord, currentPage, totalPages, setCurrentPage }: Props) => {
-
+const BookingTable = ({
+    data,
+    loading,
+    totalBookings,
+    totalRecord,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    onDelete,
+}: Props) => {
+    const router = useRouter();
     const [open, setOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const handleOpenModal = (id: string) => {
-        setSelectedId(id);
-        setOpen(true);
+    const handleViewDetails = (id: string) => {
+        console.log(id, "id");
+        router.push(`/dashboard/bookings/${id}`);
+    };
+
+    const handleDeleteClick = (id: string) => {
+        setDeletingId(id);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deletingId) return;
+
+        setIsDeleting(true);
+        try {
+            await deleteVisitBooking(deletingId);
+            toast.success("Booking deleted successfully");
+            if (onDelete) {
+                onDelete();
+            }
+        } catch (error) {
+            console.error("Failed to delete booking:", error);
+            toast.error("Failed to delete booking. Please try again.");
+        } finally {
+            setIsDeleting(false);
+            setDeleteDialogOpen(false);
+            setDeletingId(null);
+        }
     };
 
     return (
@@ -66,7 +116,6 @@ const BookingTable = ({ data, loading, totalBookings, totalRecord, currentPage, 
                         <TableHead>Status</TableHead>
                         <TableHead>Payment</TableHead>
                         <TableHead>Action</TableHead>
-
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -91,10 +140,21 @@ const BookingTable = ({ data, loading, totalBookings, totalRecord, currentPage, 
                                 <TableCell>{booking.email}</TableCell>
                                 <TableCell>{booking.phoneNumber}</TableCell>
                                 <TableCell>{booking.guests}</TableCell>
-                                <TableCell className="capitalize">{booking.sharing}</TableCell>
-                                <TableCell>{new Date(booking.checkIn).toLocaleDateString()}</TableCell>
-                                <TableCell>{new Date(booking.checkOut).toLocaleDateString()}</TableCell>
-                                <TableCell>₹ {booking.totalAmount ? booking.totalAmount.toLocaleString() : '0'}</TableCell>
+                                <TableCell className="capitalize">
+                                    {booking.sharing}
+                                </TableCell>
+                                <TableCell>
+                                    {new Date(booking.checkIn).toLocaleDateString()}
+                                </TableCell>
+                                <TableCell>
+                                    {new Date(booking.checkOut).toLocaleDateString()}
+                                </TableCell>
+                                <TableCell>
+                                    ₹{" "}
+                                    {booking.totalAmount
+                                        ? booking.totalAmount.toLocaleString()
+                                        : "0"}
+                                </TableCell>
                                 <TableCell>
                                     <Badge
                                         variant={
@@ -111,34 +171,106 @@ const BookingTable = ({ data, loading, totalBookings, totalRecord, currentPage, 
                                 <TableCell>
                                     <Badge
                                         variant={
-                                            booking.paymentStatus === "paid" ? "default" : "secondary"
+                                            booking.paymentStatus === "paid"
+                                                ? "default"
+                                                : "secondary"
                                         }
                                     >
                                         {booking.paymentStatus}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
-                                    <Button onClick={() => handleOpenModal(booking?._id)}>View</Button>
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleViewDetails(booking?._id)
+                                            }
+                                            title="View booking details"
+                                            className="h-8 w-8 p-0"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleDeleteClick(booking?._id)
+                                            }
+                                            title="Delete booking"
+                                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                            disabled={isDeleting}
+                                        >
+                                            {isDeleting &&
+                                            deletingId === booking?._id ? (
+                                                <Loader2
+                                                    className="h-4 w-4 animate-spin"
+                                                />
+                                            ) : (
+                                                <Trash2 className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
                                 </TableCell>
-
                             </TableRow>
                         ))
                     )}
                 </TableBody>
             </Table>
 
-            {loading == false && totalRecord != 0 &&
+            {loading == false && totalRecord != 0 && (
                 <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={(page) => setCurrentPage(page)}
                 />
-            }
-
+            )}
 
             {selectedId && (
-                <BookingDetailsDialog open={open} setOpen={setOpen} id={selectedId} />
+                <BookingDetailsDialog
+                    open={open}
+                    setOpen={setOpen}
+                    id={selectedId}
+                />
             )}
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete the booking record.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirmDelete}
+                            className="bg-red-600 hover:bg-red-700"
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? (
+                                <>
+                                    <Loader2
+                                        className="mr-2 h-4 w-4 animate-spin"
+                                    />
+                                    Deleting...
+                                </>
+                            ) : (
+                                "Delete"
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

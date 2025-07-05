@@ -31,7 +31,7 @@ export const propertySchema = z.object({
     isAvailable: z.boolean().default(false),
     isFeatured: z.boolean().default(false),
     rules: z.array(z.string()).optional().default([]),
-
+    microSiteLink: z.string().optional(),
     nearbyPlaces: z
         .array(
             z.object({

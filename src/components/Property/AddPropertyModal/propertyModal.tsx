@@ -45,6 +45,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
       type: "",
       city: "",
       area: "",
+      microSiteLink: "",
       rooms: 0,
       price: 0,
       deposit: 0,
@@ -124,7 +125,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                         <SelectItem value="room">Room</SelectItem>
                         <SelectItem value="studio">Studio</SelectItem>
                         <SelectItem value="villa">Villa</SelectItem>
-                        <SelectItem value="studio">PentHouse</SelectItem>
+                        <SelectItem value="penthouse">PentHouse</SelectItem>
                         <SelectItem value="pg">PG</SelectItem>
                         <SelectItem value="hostel">Hostel</SelectItem>
                       </SelectContent>
@@ -236,6 +237,11 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" {...register("description")} placeholder="Enter description" rows={3} />
               {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="microSiteLink">Microsite Link</Label>
+              <Input id="microSiteLink" {...register("microSiteLink")} placeholder="Enter microsite link" />
+              {errors.microSiteLink && <p className="text-sm text-red-500">{errors.microSiteLink.message}</p>}
             </div>
 
             {/* Location */}

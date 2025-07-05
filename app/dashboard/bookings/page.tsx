@@ -703,7 +703,7 @@ export default function BookingsPage() {
             <CardContent>
               <BookingTable
                 data={paginatedBookings.map((booking: any) => ({
-                  _id: booking.id,
+                  _id: booking._id,
                   fullName: booking?.fullName || 'N/A',
                   email: booking?.email || 'N/A',
                   phoneNumber: booking?.phoneNumber || 'N/A',

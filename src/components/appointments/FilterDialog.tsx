@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon, X } from "lucide-react"
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -11,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { GetScheduleVisitsParams } from "../../services/ScheduleVisitService"
-import { DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 interface FilterDialogProps {
   open: boolean
@@ -56,19 +55,14 @@ export function FilterDialog({
   }
 
   return (
-    <div className={cn("fixed inset-0 z-50 flex items-center justify-center", !open && "hidden")}>
-      <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
-      <div className="z-50 w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Filter Appointments</h3>
-          <button
-            className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
-            onClick={() => onOpenChange(false)}
-          >
-            <X className="h-5 w-5" />
-            <span className="sr-only">Close</span>
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Filter Appointments</DialogTitle>
+          <DialogDescription>
+            Filter appointments by status, date range, and more.
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
@@ -160,13 +154,13 @@ export function FilterDialog({
           </div>
         </div>
 
-        <div className="mt-6 flex justify-between">
+        <div className="mt-6 flex justify-end space-x-2">
           <Button variant="outline" onClick={handleReset}>
             Reset
           </Button>
           <Button onClick={handleApply}>Apply Filters</Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

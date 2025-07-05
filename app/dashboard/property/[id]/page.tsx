@@ -18,10 +18,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation"
 import { getPropertyById } from "@/src/services/propertyService";
-import { Eye } from "lucide-react";
+import { Eye, ArrowLeft } from "lucide-react";
 import LoadingIndicator from "@/src/common/LoadingIndicator/loading";
 import { commingSoon } from "@/src/common/common";
 import UpdatePropertyModal from "@/src/components/Property/UpdatePropertyModal/UpdatePropertyModal";
+import { useRouter } from "next/navigation";
 
 
 
@@ -56,6 +57,7 @@ interface PropertyDetail {
 
 
 const SinglePropertyPage = () => {
+    const router = useRouter();
 
     const params = useParams();
     const id = params?.id as string;
@@ -105,8 +107,15 @@ const SinglePropertyPage = () => {
 
 
     return (
-
         <div className="max-w-6xl mx-auto p-4 space-y-6">
+            <Button 
+                variant="outline" 
+                onClick={() => router.back()} 
+                className="mb-4 flex items-center gap-2"
+            >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Properties
+            </Button>
             {propertyDetail?.images?.length > 0 &&
                 <PropertySlider propertyDetail={propertyDetail} />
             }

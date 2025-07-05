@@ -11,7 +11,7 @@ export const getPropertiesfullInquiries = async (data: any) => {
     if (data.maxPrice) queryParams.append("maxPrice", data.maxPrice.toString());
     if (data.bedrooms) queryParams.append("bedrooms", data.bedrooms.toString());
     if (data.bathrooms) queryParams.append("bathrooms", data.bathrooms.toString());
-    if (data.search) queryParams.append("search", data.location);
+    if (data.search) queryParams.append("search", data.search);
     if (data.isAvailable) queryParams.append("isAvailable", data.isAvailable);
     if (data.isFeatured) queryParams.append("isFeatured", data.isFeatured);
     if (data.type) queryParams.append("type", data.type);

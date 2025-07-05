@@ -1247,16 +1247,17 @@ const LoginPage = () => {
       const response = await AuthServices.login(data);
       const token = response?.token;
       const user = response?.data?.user;
-      if (user) {
+      if (user && token) {
         localStorage.setItem("accessToken", token);
-        localStorage.setItem("admin-info", JSON.stringify(user))
+        localStorage.setItem("admin-info", JSON.stringify(user));
         toast.success("Logged in successfully");
         setTimeout(() => router.push("/dashboard"), 1000);
       } else {
-        toast.error(response.data?.message);
+        const errorMessage = response?.data?.message || "Invalid email or password";
+        toast.error(errorMessage);
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Something went wrong";
+      const errorMessage = error.response?.data?.message || "An error occurred during login";
       toast.error(errorMessage);
     }
   });
