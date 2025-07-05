@@ -69,9 +69,7 @@ const AddCityModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: SchemaFormData) => {
-        console.log("Submitted city add time", data);
-        onSubmit(data, () => {
+    const onFormSubmit = (data: SchemaFormData) => {onSubmit(data, () => {
             reset();
             setOpen(false);
         });
@@ -160,9 +158,7 @@ const AddCityModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
                                                 if (!file) return;
                                                 try {
                                                     const url = await uploadToCloudinary(file);
-                                                    field.onChange(url); // ✅ only set single URL
-                                                    console.log("Uploaded Image URL =>", url);
-                                                } catch (err) {
+                                                    field.onChange(url); // ✅ only set single URL} catch (err) {
                                                     console.error("Upload failed:", err);
                                                 }
                                             }}

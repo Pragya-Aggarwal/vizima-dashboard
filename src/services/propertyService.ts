@@ -19,6 +19,7 @@ export const getPropertiesfullInquiries = async (data: any) => {
     if (data.sortOrder) queryParams.append("sortOrder", data.sortOrder);
     if (data.sortBy) queryParams.append("sortBy", data.sortBy);
     if (data.amenities) queryParams.append("amenities", data.amenities);
+    if (data.microSiteLink) queryParams.append("microSiteLink", data.microSiteLink);
     let response = await api.get(`/api/properties?${queryParams.toString()}`)
     return response.data;
 };

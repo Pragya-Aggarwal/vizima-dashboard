@@ -196,7 +196,6 @@ export default function DashboardLayout({
     email: string;
   } | null>(null);
 
-  console.log("parsed user", parsedUser)
 
   useEffect(() => {
     const getUser = localStorage.getItem("admin-info");

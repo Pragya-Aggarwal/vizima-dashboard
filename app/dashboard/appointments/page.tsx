@@ -259,7 +259,7 @@ function EditAppointmentDialog({ appointment, onSave }: { appointment: ScheduleV
     mode: appointment.mode,
   })
 
-  console.log(formData, "formData")
+
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
 
@@ -520,7 +520,7 @@ export default function AppointmentsPage() {
     }
     fetchData()
   }, [filters, sharingFilter, search])
-  console.log(appointments, "appointments")
+
   // Filter dialog handlers
   const handleFilterChange = (newFilters: Omit<GetScheduleVisitsParams, 'page' | 'limit'>) => {
     setFilters(newFilters)
@@ -593,7 +593,7 @@ export default function AppointmentsPage() {
         };
       });
 
-      console.log('Data to export:', dataToExport);
+
 
       if (dataToExport.length === 0) {
         console.error('No valid data to export');
@@ -618,7 +618,7 @@ export default function AppointmentsPage() {
         csvContent += row.join(',') + '\n';
       });
 
-      console.log('Generated CSV content:', csvContent);
+
 
       // Create and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -631,7 +631,7 @@ export default function AppointmentsPage() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      console.log('Export completed successfully');
+
     } catch (error) {
       console.error('Export error:', error);
     }

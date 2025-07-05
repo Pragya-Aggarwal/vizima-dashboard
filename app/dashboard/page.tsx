@@ -152,8 +152,7 @@ export default function DashboardPage() {
 
   const { searchQuery } = useSearch();
 
-  console.log("bookingDta", bookingData)
-  console.log("propertydata", propertyData)
+
 
 
   useAuthRedirect();
@@ -201,20 +200,19 @@ export default function DashboardPage() {
       const responce = await getDashboardService()
       const bookingResponce = await getBookingStats()
       const propertyResponce = await getPropertyStats()
-      console.log("get Booking Stats", bookingResponce)
-      console.log("responce", responce)
+
       setDashboardData(responce?.data)
       setBookingData(bookingResponce?.data)
       setPropertyData(propertyResponce?.data)
     } catch (error) {
-      console.log(error)
+
     }
   }
 
   // Filter properties based on search query
   useEffect(() => {
     if (searchQuery) {
-      const filtered = allProperties.filter(property => 
+      const filtered = allProperties.filter(property =>
         property?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         property?.city?.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -320,8 +318,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-500">
-              {propertyData?.overview?.availableProperties !== undefined 
-                ? propertyData.overview.availableProperties 
+              {propertyData?.overview?.availableProperties !== undefined
+                ? propertyData.overview.availableProperties
                 : (propertyData?.totalProperties || 0) - (propertyData?.totalBookings || 0)
               }
             </div>
@@ -336,8 +334,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-500">
-              {propertyData?.overview?.averagePrice 
-                ? `₹${propertyData.overview.averagePrice.toFixed(0)}` 
+              {propertyData?.overview?.averagePrice
+                ? `₹${propertyData.overview.averagePrice.toFixed(0)}`
                 : 'N/A'}
             </div>
           </CardContent>
@@ -538,7 +536,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-      <Card>
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg">Booking Sources</CardTitle>
           </CardHeader>
@@ -560,7 +558,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-      <Card>
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg">Lead Summary</CardTitle>
           </CardHeader>
@@ -633,8 +631,8 @@ export default function DashboardPage() {
                       booking.status === "confirmed"
                         ? "default"
                         : booking.status === "pending"
-                        ? "secondary"
-                        : "destructive"
+                          ? "secondary"
+                          : "destructive"
                     }
                     className="text-xs"
                   >
@@ -648,44 +646,44 @@ export default function DashboardPage() {
       </Card>
 
       <Card>
-          <CardHeader>
-            <CardTitle>Top Performing Properties</CardTitle>
-            <CardDescription>Properties with highest occupancy and revenue</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topProperties.map((property, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{property.name}</p>
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                        <span>{property.occupancy}% occupied</span>
-                        <span>•</span>
-                        <div className="flex items-center">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-                          {property.rating}
-                        </div>
-                        <span>•</span>
-                        <div className="flex items-center">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {property.city}
-                        </div>
+        <CardHeader>
+          <CardTitle>Top Performing Properties</CardTitle>
+          <CardDescription>Properties with highest occupancy and revenue</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {topProperties.map((property, index) => (
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{property.name}</p>
+                    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                      <span>{property.occupancy}% occupied</span>
+                      <span>•</span>
+                      <div className="flex items-center">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                        {property.rating}
+                      </div>
+                      <span>•</span>
+                      <div className="flex items-center">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {property.city}
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-green-600">{property.revenue}</p>
-                    <p className="text-xs text-muted-foreground">this month</p>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-green-600">{property.revenue}</p>
+                  <p className="text-xs text-muted-foreground">this month</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* System Status */}
       <Card>

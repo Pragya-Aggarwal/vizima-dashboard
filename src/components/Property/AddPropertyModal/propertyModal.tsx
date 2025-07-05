@@ -72,9 +72,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const onFormSubmit = (data: PropertyFormData) => {
-    console.log("Submitted Data =>", data);
-    onSubmit(data, () => {
+  const onFormSubmit = (data: PropertyFormData) => {onSubmit(data, () => {
       // reset();
       reset({
         isAvailable: false,
@@ -544,9 +542,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                         if (!file) return;
                         try {
                           const url = await uploadToCloudinary(file);
-                          field.onChange([...(field.value || []), url]);
-                          console.log("Uploaded Image URL =>", url);
-                        } catch (err) {
+                          field.onChange([...(field.value || []), url]);} catch (err) {
                           console.error("Upload failed:", err);
                         }
                       }}

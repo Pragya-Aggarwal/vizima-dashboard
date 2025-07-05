@@ -77,9 +77,7 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: TestimonialFormData) => {
-        console.log("Submitted Data testimonial =>", data);
-        onSubmit(data, () => {
+    const onFormSubmit = (data: TestimonialFormData) => {onSubmit(data, () => {
             reset();
             setOpen(false);
         });
@@ -91,11 +89,7 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
         const fetchTestimonialData = async () => {
             if (testimonialId && open) {
                 try {
-                    const response = await getTestimonialById(testimonialId);
-
-
-                    console.log("single response data testinmonial" , response)
-                    const data = response?.data;
+                    const response = await getTestimonialById(testimonialId);const data = response?.data;
 
                     if (data) {
                         reset({
@@ -229,9 +223,7 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
                                                 if (!file) return;
                                                 try {
                                                     const url = await uploadToCloudinary(file);
-                                                    field.onChange(url); // ✅ only set single URL
-                                                    console.log("Uploaded Image URL =>", url);
-                                                } catch (err) {
+                                                    field.onChange(url); // ✅ only set single URL} catch (err) {
                                                     console.error("Upload failed:", err);
                                                 }
                                             }}

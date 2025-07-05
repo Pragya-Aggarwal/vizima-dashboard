@@ -72,10 +72,7 @@ const AddTestimonialModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps)
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: TestimonialFormData) => {
-        console.log("Submitted Data testimonial =>", data);
-
-        onSubmit(data, () => {
+    const onFormSubmit = (data: TestimonialFormData) => {onSubmit(data, () => {
             reset();
             setOpen(false);
         });
@@ -192,9 +189,7 @@ const AddTestimonialModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps)
                                                 if (!file) return;
                                                 try {
                                                     const url = await uploadToCloudinary(file);
-                                                    field.onChange(url); // ✅ only set single URL
-                                                    console.log("Uploaded Image URL =>", url);
-                                                } catch (err) {
+                                                    field.onChange(url); // ✅ only set single URL} catch (err) {
                                                     console.error("Upload failed:", err);
                                                 }
                                             }}

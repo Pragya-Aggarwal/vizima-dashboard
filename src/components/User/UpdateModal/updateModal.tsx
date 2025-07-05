@@ -54,21 +54,14 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
             isVisible: false,
         }
 
-    })
-
-
-    console.log("upfdate page id", testimonialId)
-
-    const { fields, append, remove } = useFieldArray({
+    })const { fields, append, remove } = useFieldArray({
         control,
         name: "nearbyPlaces",
     });
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: SchemaFormData) => {
-        console.log("Submitted Data for update user =>", data);
-        onSubmit(data, () => {
+    const onFormSubmit = (data: SchemaFormData) => {onSubmit(data, () => {
             reset();
             setOpen(false);
         });
@@ -82,8 +75,7 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
     //             try {
     //                 const response = await getUserById(testimonialId);
 
-    //                 console.log("single response data testinmonial update city page", response)
-    //                 const data = response;
+    ////                 const data = response;
 
 
     //                 if (data) {
@@ -271,9 +263,7 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                                                 if (!file) return;
                                                 try {
                                                     const url = await uploadToCloudinary(file);
-                                                    field.onChange(url); // ✅ only set single URL
-                                                    console.log("Uploaded Image URL =>", url);
-                                                } catch (err) {
+                                                    field.onChange(url); // ✅ only set single URL} catch (err) {
                                                     console.error("Upload failed:", err);
                                                 }
                                             }}

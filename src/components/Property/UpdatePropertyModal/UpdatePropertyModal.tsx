@@ -53,6 +53,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
             price: 0,
             deposit: 0,
             description: "",
+            microSiteLink: "",
             featured: false,
             amenities: [],
             bulkAccommodationType: [],
@@ -72,9 +73,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: PropertyFormData) => {
-        console.log("Submitted Data =>", data);
-        onSubmit(data, () => {
+    const onFormSubmit = (data: PropertyFormData) => {onSubmit(data, () => {
             reset();
             // reset({
             //     isAvailable: false,
@@ -92,11 +91,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
             if (propertyId && open) {
                 try {
                     const response = await getPropertyById(propertyId);
-                    const propertyData = response?.data?.property;
-
-                    console.log("single property data", propertyData)
-
-                    if (propertyData) {
+                    const propertyData = response?.data?.property;if (propertyData) {
                         // ✅ Fill form with the fetched data
                         reset({
                             title: propertyData.title || "",
@@ -107,6 +102,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             price: propertyData.price || 0,
                             deposit: propertyData.deposit || 0,
                             description: propertyData.description || "",
+                            microSiteLink: propertyData.microSiteLink || "",
                             featured: propertyData.featured || false,
                             amenities: propertyData.amenities || [],
                             bulkAccommodationType: propertyData.bulkAccommodationType || [],
@@ -287,6 +283,11 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             <Label htmlFor="description">Description</Label>
                             <Textarea id="description" {...register("description")} placeholder="Enter description" rows={3} />
                             {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="microSiteLink">Microsite Link</Label>
+                            <Input id="microSiteLink" {...register("microSiteLink")} placeholder="Enter microsite link" />
+                            {errors.microSiteLink && <p className="text-sm text-red-500">{errors.microSiteLink.message}</p>}
                         </div>
 
                         {/* Location */}
@@ -589,9 +590,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                                 if (!file) return;
                                                 try {
                                                     const url = await uploadToCloudinary(file);
-                                                    field.onChange([...(field.value || []), url]);
-                                                    console.log("Uploaded Image URL =>", url);
-                                                } catch (err) {
+                                                    field.onChange([...(field.value || []), url]);} catch (err) {
                                                     console.error("Upload failed:", err);
                                                 }
                                             }}

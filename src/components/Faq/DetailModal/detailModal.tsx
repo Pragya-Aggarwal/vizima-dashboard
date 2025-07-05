@@ -27,19 +27,12 @@ const DetailModal = ({ open, setOpen, testimonialId }: TestimonialModalProps) =>
 
 
   const [loading, setLoading] = useState(false);
-  const [detail, setDetail] = useState()
-
-
-  console.log("faq from state", detail)
-
-  useEffect(() => {
+  const [detail, setDetail] = useState()useEffect(() => {
     const fetch = async () => {
       if (testimonialId && open) {
         setLoading(true);
         try {
-          const res = await getFaqById(testimonialId);
-          console.log("single get in faq", res)
-          setDetail(res);
+          const res = await getFaqById(testimonialId);setDetail(res);
         } catch (err) {
           console.error("Failed to fetch faq", err);
         } finally {

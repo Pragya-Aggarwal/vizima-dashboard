@@ -241,7 +241,7 @@ export default function BookingsPage() {
       setBookings([]);
     }
   }, [filters]);
-  console.log(paginatedBookings)
+
   // Initial data fetch
   useEffect(() => {
     const loadInitialData = async () => {
@@ -373,8 +373,7 @@ export default function BookingsPage() {
   const totalPagesVisit = dataVisitBooking?.page || 1;
   const totalVisitRecord = dataVisitBooking?.total || 0;
 
-  console.log("visit booking", visitBookingData)
-  console.log("total page", totalPagesVisit, totalVisitRecord)
+
   const handleClearFilters = () => {
     setFilters({
       status: "all",
@@ -388,8 +387,6 @@ export default function BookingsPage() {
   };
   const handleExport = () => {
     try {
-      console.log('Export button clicked');
-      console.log('Bookings data:', bookings); // Debug: check bookings data
 
       if (!bookings || bookings.length === 0) {
         console.error('No bookings data available');
@@ -409,7 +406,7 @@ export default function BookingsPage() {
         'Created At': booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A',
       }));
 
-      console.log('Data to export:', dataToExport); // Debug: check formatted data
+
 
       if (dataToExport.length === 0) {
         console.error('No valid data to export');
@@ -432,7 +429,7 @@ export default function BookingsPage() {
         csvContent += row.join(',') + '\n';
       });
 
-      console.log('Generated CSV content:', csvContent); // Debug: check CSV content
+
 
       // Create and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -445,7 +442,7 @@ export default function BookingsPage() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      console.log('Export completed successfully');
+
     } catch (error) {
       console.error('Export error:', error);
     }
@@ -462,7 +459,7 @@ export default function BookingsPage() {
           <Button
             variant="outline"
             onClick={() => {
-              console.log('Export button clicked (from button)');
+
               handleExport();
             }}
           >

@@ -69,9 +69,7 @@ const AddFaqModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: SchemaFormData) => {
-        console.log("Submitted faq", data);
-        onSubmit(data, () => {
+    const onFormSubmit = (data: SchemaFormData) => {onSubmit(data, () => {
             reset();
             setOpen(false);
         });

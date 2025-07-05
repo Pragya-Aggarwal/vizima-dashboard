@@ -9,12 +9,7 @@ const api = axios.create({
         'Content-Type': 'application/json',
     },
 
-});
-
-console.log(api.defaults.baseURL);
-
-
-// Add auth token to requests
+});// Add auth token to requests
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -32,9 +27,7 @@ api.interceptors.response.use(
             // Handle unauthorized access
             localStorage.removeItem('accessToken');
             localStorage.removeItem('accessToken');
-            window.location.href = '/';
-            console.log("error", error)
-        }
+            window.location.href = '/';}
         return Promise.reject(error);
     }
 );

@@ -71,7 +71,7 @@ const SinglePropertyPage = () => {
 
     const propertyDetail = property?.data?.property as PropertyDetail;
 
-    console.log("property detail is ", propertyDetail)
+
 
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -99,18 +99,18 @@ const SinglePropertyPage = () => {
 
     const selectedImage = propertyDetail?.images?.[selectedImageIndex];
 
-    console.log("selected images", selectedImage)
 
 
-    console.log("property detail area", propertyDetail.area)
+
+
 
 
 
     return (
         <div className="max-w-6xl mx-auto p-4 space-y-6">
-            <Button 
-                variant="outline" 
-                onClick={() => router.back()} 
+            <Button
+                variant="outline"
+                onClick={() => router.back()}
                 className="mb-4 flex items-center gap-2"
             >
                 <ArrowLeft className="h-4 w-4" />

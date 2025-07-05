@@ -57,12 +57,7 @@ const CityMain = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: [currentPage],
         queryFn: fetchCities,
-    });
-
-
-    console.log("Cities data by akib", data)
-
-    const citiesData = data?.data || [];
+    });const citiesData = data?.data || [];
     const totalPages = data?.totalPages;
     const totalRecord = data?.total
 
@@ -85,15 +80,11 @@ const CityMain = () => {
 
     const handleUpdateModalOpen = (id) => {
         setUpdateOpen(true)
-        setTestimonialId(id)
-        console.log("testimonial id in function", id)
-    }
+        setTestimonialId(id)}
 
     const handleDeleteModalOpen = (id) => {
         setDeleteModal(true)
-        setTestimonialId(id)
-        console.log("testimonial id in function", id)
-    }
+        setTestimonialId(id)}
 
 
     const handleUpdate = async (
@@ -110,8 +101,7 @@ const CityMain = () => {
             onSuccess();
             setUpdateOpen(false);
             refetch();
-            // console.log("Server response =>", res);
-        } catch (error: any) {
+            //} catch (error: any) {
             console.error("Error adding property:", error);
             toast.error(error?.response?.data?.message || "Failed to update city");
         }

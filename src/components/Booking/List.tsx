@@ -7,7 +7,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Loader2, Trash2 } from "lucide-react";
+import { Eye, Loader2, Trash2, Edit } from "lucide-react";
 import LoadingIndicator from "@/src/common/LoadingIndicator/loading";
 import Pagination from "@/src/common/pagination/pagination";
 import BookingDetailsDialog from "./DetailModal";
@@ -69,15 +69,20 @@ const BookingTable = ({
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
-    const handleViewDetails = (id: string) => {
-        console.log(id, "id");
-        router.push(`/dashboard/bookings/${id}`);
+    const handleViewDetails = (id: string) => {router.push(`/dashboard/bookings/${id}`);
     };
 
     const handleDeleteClick = (id: string) => {
         setDeletingId(id);
         setDeleteDialogOpen(true);
+    };
+
+    const handleEditClick = (id: string) => {
+        setEditingId(id);
+        setEditModalOpen(true);
     };
 
     const handleConfirmDelete = async () => {
@@ -185,13 +190,24 @@ const BookingTable = ({
                                             variant="ghost"
                                             size="sm"
                                             onClick={() =>
-                                                handleViewDetails(booking?._id)
+                                                handleEditClick(booking?._id)
                                             }
                                             title="View booking details"
                                             className="h-8 w-8 p-0"
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Button>
+                                        {/* <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleEditClick(booking?._id)
+                                            }
+                                            title="Edit booking"
+                                            className="h-8 w-8 p-0"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </Button> */}
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -203,7 +219,7 @@ const BookingTable = ({
                                             disabled={isDeleting}
                                         >
                                             {isDeleting &&
-                                            deletingId === booking?._id ? (
+                                                deletingId === booking?._id ? (
                                                 <Loader2
                                                     className="h-4 w-4 animate-spin"
                                                 />
@@ -232,6 +248,14 @@ const BookingTable = ({
                     open={open}
                     setOpen={setOpen}
                     id={selectedId}
+                />
+            )}
+
+            {editingId && (
+                <BookingDetailsDialog
+                    open={editModalOpen}
+                    setOpen={setEditModalOpen}
+                    id={editingId}
                 />
             )}
 

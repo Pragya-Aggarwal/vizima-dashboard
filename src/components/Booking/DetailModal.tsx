@@ -219,10 +219,10 @@ const BookingDetailsDialog = ({ open, setOpen, id }: Props) => {
                                 <Button variant="outline" onClick={() => setOpen(false)}>
                                     Close
                                 </Button>
-                                <Button>
+                                {/* <Button>
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit Booking
-                                </Button>
+                                </Button> */}
                             </div>
                         </div>
                     </div>

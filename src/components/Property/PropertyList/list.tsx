@@ -195,8 +195,7 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
             onSuccess();
             setOpen(false);
             // refetch();
-            // console.log("Server response =>", res);
-        } catch (error: any) {
+            //} catch (error: any) {
             console.error("Error adding property:", error);
             toast.error(error?.response?.data?.message || "Failed to add property");
         }

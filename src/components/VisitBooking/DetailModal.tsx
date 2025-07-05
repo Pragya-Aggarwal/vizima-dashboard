@@ -38,10 +38,7 @@ type Props = {
 const BookingDetailsDialog = ({ open, setOpen, id }: Props) => {
 
     const [loading, setLoading] = useState(false);
-    const [booking, setBooking] = useState<any>(null);
-    console.log("visit booking detail modal", booking)
-
-    useEffect(() => {
+    const [booking, setBooking] = useState<any>(null);useEffect(() => {
         const fetchBooking = async () => {
             if (open && id) {
                 setLoading(true);

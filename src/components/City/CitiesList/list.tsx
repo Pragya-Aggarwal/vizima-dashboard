@@ -52,13 +52,7 @@ type CityListProps = {
 
 
 
-const CityList: FC<CityListProps> = ({ citiesData, isLoading, handleUpdateModalOpen, handleDetailModal, handleDeleteModalOpen }) => {
-
-
-    console.log("cities data in listing", citiesData, isLoading)
-
-
-  return (
+const CityList: FC<CityListProps> = ({ citiesData, isLoading, handleUpdateModalOpen, handleDetailModal, handleDeleteModalOpen }) => {return (
         <>
             <Table>
                 <TableHeader>

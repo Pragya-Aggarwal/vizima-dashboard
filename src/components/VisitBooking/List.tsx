@@ -102,11 +102,7 @@ const VisitBookingTable = ({
     setCurrentPage,
 }: Props) => {
     const [open, setOpen] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(null);
-
-    console.log("data on visit booking liat", selectedId)
-
-    const handleOpenModal = (id: string) => {
+    const [selectedId, setSelectedId] = useState<string | null>(null);const handleOpenModal = (id: string) => {
         setSelectedId(id);
         setOpen(true);
     };

@@ -430,7 +430,6 @@ export default function UsersPage() {
   const handleUpdateModalOpen = (id: string) => {
     setUpdateOpen(true)
     setTestimonialId(id)
-    console.log("testimonial id in function", id)
   }
 
 
@@ -477,14 +476,13 @@ export default function UsersPage() {
   });
 
 
-  console.log("User dynamic", data)
+
 
   const userData = data?.data || [];
   const totalPages = data?.pagination?.totalPages;
   const totalRecord = data?.pagination?.totalUsers;
 
-  // Debug: log all status values
-  console.log('All user statuses:', userData.map((u: any) => u.status));
+
 
   const filteredUsers = userData
     .filter((user: any) => statusFilter === "all" || (user.isVerified == true ? "verified" === statusFilter.toLowerCase() : "unverified" === statusFilter.toLowerCase()))
@@ -506,7 +504,6 @@ export default function UsersPage() {
   const handleDeleteModalOpen = (id: string) => {
     setDeleteModal(true)
     setTestimonialId(id)
-    console.log("testimonial id in function", id)
   }
 
 
@@ -514,8 +511,6 @@ export default function UsersPage() {
   // Add this handler function in your UsersPage component
   const handleExportUsers = () => {
     try {
-      console.log('Export users button clicked');
-      console.log('Users data:', users); // Debug log
 
       if (!users || users.length === 0) {
         console.error('No users data available');
@@ -534,7 +529,7 @@ export default function UsersPage() {
         'Last Login': user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never',
       }));
 
-      console.log('Data to export:', dataToExport);
+
 
       if (dataToExport.length === 0) {
         console.error('No valid data to export');
@@ -557,7 +552,7 @@ export default function UsersPage() {
         csvContent += row.join(',') + '\n';
       });
 
-      console.log('Generated CSV content:', csvContent);
+
 
       // Create and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -570,7 +565,7 @@ export default function UsersPage() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      console.log('Export completed successfully');
+
     } catch (error) {
       console.error('Export error:', error);
     }

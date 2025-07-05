@@ -9,23 +9,15 @@ export const AuthServices = {
         confirmPassword: string;
         name: string;
         phone: string;
-    }) => {
-        console.log(data);
-        const response = await api.post("/api/v1/auth/sign-up", data);
-        console.log(response.data);
-        return response.data;
+    }) => {const response = await api.post("/api/v1/auth/sign-up", data);return response.data;
     },
 
     //  otp Verify 
     verifyOTP: async (data: { email: string; otp: string }) => {
-        const response = await api.post("/api/v1/auth/verify-otp", data);
-        console.log("Response from verifyOTP:", response.data);
-        return response.data;
+        const response = await api.post("/api/v1/auth/verify-otp", data);return response.data;
     },
     reSendVerifyOTP: async (data: { email: string; }) => {
-        const response = await api.post("/api/v1/auth/resend-otp", data);
-        console.log("Response from verifyOTP:", response.data);
-        return response.data;
+        const response = await api.post("/api/v1/auth/resend-otp", data);return response.data;
     },
 
     //  Login API call

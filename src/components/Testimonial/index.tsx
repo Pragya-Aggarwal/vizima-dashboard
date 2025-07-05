@@ -69,22 +69,9 @@ const TestimonialMain = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['properties', currentPage],
         queryFn: fetchTestimonial,
-    });
-
-
-    console.log("testimonail data", data)
-
-    const testimonial = data?.data || [];
+    });const testimonial = data?.data || [];
     const totalPages = data?.page;
-    const totalRecord = data?.total
-
-    console.log("testimonial", testimonial)
-
-    console.log("total record", totalRecord, totalPages)
-
-
-
-    const handleAddTestimonial = async (
+    const totalRecord = data?.totalconst handleAddTestimonial = async (
         data: TestimonialFormData,
         onSuccess: () => void
     ) => {
@@ -102,15 +89,11 @@ const TestimonialMain = () => {
 
     const handleUpdateModalOpen = (id) => {
         setUpdateOpen(true)
-        setTestimonialId(id)
-        console.log("testimonial id in function", id)
-    }
+        setTestimonialId(id)}
 
     const handleDeleteModalOpen = (id) => {
         setDeleteModal(true)
-        setTestimonialId(id)
-        console.log("testimonial id in function", id)
-    }
+        setTestimonialId(id)}
 
 
     const handleUpdateTestimonial = async (
@@ -127,8 +110,7 @@ const TestimonialMain = () => {
             onSuccess();
             setUpdateOpen(false);
             refetch();
-            // console.log("Server response =>", res);
-        } catch (error: any) {
+            //} catch (error: any) {
             console.error("Error adding property:", error);
             toast.error(error?.response?.data?.message || "Failed to update testimonial");
         }

@@ -497,7 +497,7 @@ export default function CMSPage() {
     setEditingBlog(blog);
     // You can open an edit dialog here or navigate to an edit page
     // For now, we'll just log it
-    console.log('Editing blog:', blog);
+
     toast.info(`Editing: ${blog.title}`);
   };
 

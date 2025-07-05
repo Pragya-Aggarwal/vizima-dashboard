@@ -52,13 +52,7 @@ type TestimonialListProps = {
 
 
 
-const TestimonialList: FC<TestimonialListProps> = ({ testimonial, isLoading, handleUpdateModalOpen, handleDetailModal,handleDeleteModalOpen }) => {
-
-
-    console.log("testimonial in listing", testimonial, isLoading)
-
-
-    const testimonials = [
+const TestimonialList: FC<TestimonialListProps> = ({ testimonial, isLoading, handleUpdateModalOpen, handleDetailModal,handleDeleteModalOpen }) => {const testimonials = [
         {
             id: "TST001",
             name: "John Doe",
