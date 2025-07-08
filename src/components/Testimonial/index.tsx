@@ -69,9 +69,13 @@ const TestimonialMain = () => {
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['properties', currentPage],
         queryFn: fetchTestimonial,
-    });const testimonial = data?.data || [];
+    });
+    
+    const testimonial = data?.data || [];
     const totalPages = data?.page;
-    const totalRecord = data?.totalconst handleAddTestimonial = async (
+    const totalRecord = data?.total;
+
+    const handleAddTestimonial = async (
         data: TestimonialFormData,
         onSuccess: () => void
     ) => {
@@ -105,12 +109,12 @@ const TestimonialMain = () => {
                 toast.error("Toastimonial ID is missing");
                 return;
             }
-            const res = await updateTestimonialById(testimonialId, data)
-            toast.success("Toastimonial updated successfully.");
+            const res = await updateTestimonialById(testimonialId, data);
+            toast.success("Testimonial updated successfully.");
             onSuccess();
             setUpdateOpen(false);
             refetch();
-            //} catch (error: any) {
+        } catch (error: any) {
             console.error("Error adding property:", error);
             toast.error(error?.response?.data?.message || "Failed to update testimonial");
         }

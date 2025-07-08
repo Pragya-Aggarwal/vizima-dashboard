@@ -27,7 +27,9 @@ const DetailModal = ({ open, setOpen, testimonialId }: TestimonialModalProps) =>
 
 
   const [loading, setLoading] = useState(false);
-  const [detail, setDetail] = useState()useEffect(() => {
+  const [detail, setDetail] = useState();
+
+  useEffect(() => {
     const fetch = async () => {
       if (testimonialId && open) {
         setLoading(true);

@@ -1,5 +1,8 @@
 "use client"
-import { useEffect } from "react"
+
+import { useEffect, useState, useRef } from "react"
+import { useForm, Controller, useFieldArray } from "react-hook-form"
+import { Upload, Image as ImageIcon, Trash2 } from "lucide-react"
 
 import {
     Dialog,
@@ -7,91 +10,120 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-    Plus,
-    FolderSyncIcon as Sync,
-    Upload, ImageIcon, Trash2
-} from "lucide-react"
-
-import { useForm, Controller, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { X } from "lucide-react";
-import { Schema, SchemaFormData } from "../Schema/schema"
-import { useState } from "react"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
-import { useRef } from "react"
-// import { getTestimonialById } from "@/src/services/testmonialServices"
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { getCityById } from "@/src/services/cityServices"
+import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
+import { CityFormData } from "@/types/city"
 
-
-type SchemaModalProps = {
+type UpdateCityModalProps = {
     open: boolean
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
-    onSubmit: (data: SchemaFormData, onSuccess: () => void) => void
-    testimonialId: string | null;
-
+    onSubmit: (data: CityFormData, onSuccess: () => void) => void
+    cityId: string
 }
 
-const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProps) => {
-    const {
-        register, control, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset, trigger
-    } = useForm<SchemaFormData>({
-        resolver: zodResolver(Schema),
+const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) => {
+    const [isUploading, setIsUploading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
 
+    const {
+        register, 
+        control, 
+        handleSubmit, 
+        formState: { errors, isSubmitting }, 
+        setValue, 
+        watch, 
+        reset, 
+        trigger
+    } = useForm<CityFormData>({
         defaultValues: {
             name: "",
             order: 0,
             imageUrl: "",
             isVisible: false,
-        }
+        },
+    });
 
-    })const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove } = useFieldArray({
         control,
         name: "nearbyPlaces",
     });
 
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-    const onFormSubmit = (data: SchemaFormData) => {onSubmit(data, () => {
-            reset();
+        setIsUploading(true);
+        try {
+            const url = await uploadToCloudinary(file);
+            setValue("imageUrl", url);
+        } catch (error) {
+            console.error("Error uploading image:", error);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setValue("imageUrl", "");
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const onFormSubmit = (data: CityFormData) => {
+        const formData = {
+            ...data,
+            isVisible: data.isVisible ?? false,
+            order: Number(data.order) || 0,
+            nearbyPlaces: data.nearbyPlaces?.map(place => ({
+                ...place,
+                order: Number(place.order) || 0
+            })) || []
+        };
+        
+        onSubmit(formData, () => {
             setOpen(false);
+            reset();
         });
     };
 
-
-
     useEffect(() => {
         const fetchData = async () => {
-            if (testimonialId && open) {
-                try {
-                    const response = await getCityById(testimonialId);const data = response;
-
-
-                    if (data) {
-                        reset({
-                            name: data.name || "",
-                            imageUrl: data.imageUrl || "",
-                            order: data.order || 0,
-                            isVisible: data.isVisible ?? false,
-                        });
-                    }
-
-                } catch (err) {
-                    console.error("Failed to fetch testimonial:", err);
+            if (!cityId) return;
+            try {
+                const res = await getCityById(cityId);
+                if (res?.data) {
+                    const data = res.data;
+                    reset({
+                        name: data.name || "",
+                        imageUrl: data.imageUrl || "",
+                        isVisible: data.isVisible || false,
+                        order: data.order || 0,
+                        nearbyPlaces: data.nearbyPlaces?.map(place => ({
+                            name: place.name || "",
+                            description: place.description || "",
+                            imageUrl: place.imageUrl || "",
+                            order: place.order || 0
+                        })) || []
+                    });
                 }
+            } catch (error) {
+                console.error("Error fetching city:", error);
             }
         };
-
         fetchData();
-    }, [testimonialId, open, reset]);
+    }, [cityId, reset]);
 
 
 
@@ -104,7 +136,7 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    <form onSubmit={(e) => void handleSubmit(onFormSubmit)(e)} className="space-y-6">
+                    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
 
                         {/* Title & Type */}
                         <div className="grid grid-cols-2 gap-4">
@@ -117,15 +149,14 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                             {/* rating */}
 
                             <div className="space-y-2">
-                                <Label htmlFor="rating">Available</Label>
-
+                                <Label htmlFor="isVisible">Available</Label>
                                 <Controller
                                     control={control}
                                     name="isVisible"
-                                    render={({ field }) => (
+                                    render={({ field: { value, onChange } }) => (
                                         <Select
-                                            onValueChange={(val) => field.onChange(val === "true")}
-                                            value={field.value === true ? "true" : "false"}
+                                            onValueChange={(val: string) => onChange(val === "true")}
+                                            value={value ? "true" : "false"}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select availability" />
@@ -137,8 +168,9 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                                         </Select>
                                     )}
                                 />
-
-                                {errors.isVisible && <p className="text-sm text-red-500">{errors.isVisible.message}</p>}
+                                {errors.isVisible && (
+                                    <p className="text-sm text-red-500">{errors.isVisible.message}</p>
+                                )}
                             </div>
                         </div>
 
@@ -177,7 +209,8 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                                                 if (!file) return;
                                                 try {
                                                     const url = await uploadToCloudinary(file);
-                                                    field.onChange(url); // ✅ only set single URL} catch (err) {
+                                                    field.onChange(url); // ✅ only set single URL
+                                                } catch (err) {
                                                     console.error("Upload failed:", err);
                                                 }
                                             }}

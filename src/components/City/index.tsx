@@ -1,124 +1,107 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { toast } from "sonner"
-import { Plus} from "lucide-react"
+import { Plus } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-import DetailModal from "./DetailModal/detailModal"
-import { DeleteModal } from "@/src/common/DeleteModal/deleteModal"
-import { SchemaFormData } from "./Schema/schema"
-import { addcity } from "@/src/services/cityServices"
-
-// city data
-import { getCities } from "@/src/services/cityServices"
-import Pagination from "@/src/common/pagination/pagination"
-import { useCallback } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { useQuery } from "@tanstack/react-query"
+import { getCities, deleteCitybyId, updateCityById } from "@/src/services/cityServices"
+import { CityFormData } from "@/types/city"
+import Pagination from "@/src/common/pagination/pagination"
 import CityList from "./CitiesList/list"
 import AddCityModal from "./AddNewCity/AddNewCity"
 import UpdateModal from "./UpdateCity/updateCity"
-import { updateCityById } from "@/src/services/cityServices"
-import { deleteCitybyId } from "@/src/services/cityServices"
-
-
-
-
-
-
+import DetailModal from "./DetailModal/detailModal"
+import { DeleteModal } from "@/src/common/DeleteModal/deleteModal"
 
 const CityMain = () => {
 
     const [currentPage, setCurrentPage] = useState(1)
-    const [open, setOpen] = useState(false)
-    const [updateopen, setUpdateOpen] = useState(false)
-    const [detailModalopen, setDetailModalOpen] = useState(false)
-    const [deleteModal, setDeleteModal] = useState(false)
-
-
-    const [testimonialId, setTestimonialId] = useState<string | null | undefined>();
+    const [cityId, setCityId] = useState<string>("");
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [detailModalOpen, setDetailModalOpen] = useState(false);
+    const [updateOpen, setUpdateOpen] = useState(false);
+    const [addOpen, setAddOpen] = useState(false);
     const ITEMS_PER_PAGE = 10
 
-    const fetchCities = useCallback(() => {
-        const payload: any = {
-            page: currentPage,
+    const fetchCities = useCallback(async (page: number) => {
+        const payload = {
+            page,
             limit: ITEMS_PER_PAGE,
-
         };
         return getCities(payload);
-    }, [
-        currentPage,
-    ]);
-
+    }, [ITEMS_PER_PAGE]);
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: [currentPage],
-        queryFn: fetchCities,
-    });const citiesData = data?.data || [];
+        queryKey: ['cities', currentPage],
+        queryFn: () => fetchCities(currentPage),
+    });
+
+    const citiesData = data?.data || [];
     const totalPages = data?.totalPages;
     const totalRecord = data?.total
 
-
-    const handleAdd = async (
-        data: SchemaFormData,
+    const handleAdd = useCallback(async (
+        data: CityFormData,
         onSuccess: () => void
     ) => {
         try {
-            const res = await addcity(data);
+            await updateCityById("", data); // Empty string for new city
             toast.success("City added successfully!");
             onSuccess();
-            setOpen(false);
+            setAddOpen(false);
             refetch();
         } catch (error: any) {
             toast.error(error?.response?.data?.message || "Failed to add City");
         }
+    }, [refetch]);
+
+    const handleUpdateModalOpen = (id: string) => {
+        setUpdateOpen(true);
+        setCityId(id);
     };
 
+    const handleDeleteModalOpen = (id: string) => {
+        setDeleteModal(true);
+        setCityId(id);
+    };
 
-    const handleUpdateModalOpen = (id) => {
-        setUpdateOpen(true)
-        setTestimonialId(id)}
-
-    const handleDeleteModalOpen = (id) => {
-        setDeleteModal(true)
-        setTestimonialId(id)}
-
-
-    const handleUpdate = async (
-        data: SchemaFormData,
+    const handleUpdate = useCallback(async (
+        data: CityFormData,
         onSuccess: () => void
     ) => {
         try {
-            if (!testimonialId) {
+            if (!cityId) {
                 toast.error("City ID is missing");
                 return;
             }
-            const res = await updateCityById(testimonialId, data)
+            const res = await updateCityById(cityId, data);
             toast.success("City updated successfully.");
             onSuccess();
             setUpdateOpen(false);
             refetch();
-            //} catch (error: any) {
-            console.error("Error adding property:", error);
+        } catch (error: any) {
+            console.error("Error updating city:", error);
             toast.error(error?.response?.data?.message || "Failed to update city");
         }
+    }, [cityId, refetch]);
+
+    const handleDetailModal = (id: string) => {
+        setDetailModalOpen(true);
+        setCityId(id);
     };
 
-
-
-    const handleDetailModal = async (id) => {
-
-        setDetailModalOpen(true)
-        setTestimonialId(id)
-    }
-
-
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
+        if (!cityId) {
+            toast.error("City ID is missing");
+            return;
+        }
         try {
-            const res = await deleteCitybyId(testimonialId);
+            const res = await deleteCitybyId(cityId);
             toast.success("City deleted successfully");
             refetch();
             setDeleteModal(false);
@@ -126,9 +109,7 @@ const CityMain = () => {
             toast.error("Something went wrong while deleting city");
             console.error("Delete error:", error);
         }
-    };
-
-
+    }, [cityId, refetch]);
 
     return (
         <>
@@ -138,7 +119,7 @@ const CityMain = () => {
                     <CardHeader>
                         <div className="flex justify-between items-center">
                             <CardTitle>City Management</CardTitle>
-                            <Button onClick={() => setOpen(true)}>
+                            <Button onClick={() => setAddOpen(true)}>
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add City
                             </Button>
@@ -146,30 +127,51 @@ const CityMain = () => {
                     </CardHeader>
                     <CardContent>
 
-                        <CityList citiesData={citiesData} isLoading={isLoading} handleUpdateModalOpen={handleUpdateModalOpen} handleDetailModal={handleDetailModal} handleDeleteModalOpen={handleDeleteModalOpen} />
+                        <CityList 
+                            data={citiesData} 
+                            onEdit={handleUpdateModalOpen}
+                            onDelete={handleDeleteModalOpen}
+                            onView={handleDetailModal}
+                            isLoading={isLoading}
+                        />
 
                         {isLoading == false && totalRecord != 0 &&
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={(page) => setCurrentPage(page)}
-                            />
+                            totalPages > 1 && (
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={(page: number) => setCurrentPage(page)}
+                                />
+                            )
                         }
                     </CardContent>
                 </Card>
             </TabsContent>
 
-            <AddCityModal open={open} setOpen={setOpen} onSubmit={handleAdd} />
+            <AddCityModal open={addOpen} setOpen={setAddOpen} onSubmit={handleAdd} />
 
-            <UpdateModal open={updateopen} setOpen={setUpdateOpen} onSubmit={handleUpdate} testimonialId={testimonialId} />
+            <UpdateModal
+                open={updateOpen}
+                setOpen={setUpdateOpen}
+                cityId={cityId}
+                onSubmit={handleUpdate}
+            />
 
+            <DetailModal 
+                open={detailModalOpen} 
+                setOpen={setDetailModalOpen} 
+                cityId={cityId} 
+            />
 
-            <DetailModal open={detailModalopen} setOpen={setDetailModalOpen} testimonialId={testimonialId} />
-
-            <DeleteModal open={deleteModal} setOpen={setDeleteModal} testimonialId={testimonialId} handleDelete={handleDelete} />
+            <DeleteModal
+                open={deleteModal}
+                setOpen={setDeleteModal}
+                onDelete={handleDelete}
+                title="Delete City"
+                description="Are you sure you want to delete this city? This action cannot be undone."
+            />
 
         </>
-
 
     )
 

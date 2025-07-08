@@ -8,40 +8,50 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import { Star, MapPin, User } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Hash, Calendar } from "lucide-react";
+import { format } from "date-fns"
+import { City } from "@/types/city"
+import Image from "next/image"
 
-type TestimonialModalProps = {
-  open: boolean
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>
-  testimonialId: string | null;
+interface CityModalProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  cityId: string | null;
+};
 
-}
 import { getCityById } from "@/src/services/cityServices";
 import LoadingIndicator from "@/src/common/LoadingIndicator/loading"
 import { formatReadableDate } from "@/src/common/common";
 
-const DetailModal = ({ open, setOpen, testimonialId }: TestimonialModalProps) => {
-
-
+const DetailModal = ({ open, setOpen, cityId }: CityModalProps) => {
   const [loading, setLoading] = useState(false);
-  const [detail, setDetail] = useState()useEffect(() => {
-    const fetch = async () => {
-      if (testimonialId && open) {
+  const [detail, setDetail] = useState<City | null>(null);
+
+  useEffect(() => {
+    const fetchCity = async () => {
+      if (cityId && open) {
         setLoading(true);
         try {
-          const res = await getCityById(testimonialId);setDetail(res);
-        } catch (err) {
-          console.error("Failed to fetch testimonial", err);
+          const res = await getCityById(cityId);
+          setDetail(res.data);
+        } catch (error) {
+          console.error("Error fetching city:", error);
         } finally {
           setLoading(false);
         }
+      } else {
+        setDetail(null);
       }
     };
 
-    fetch();
-  }, [testimonialId, open]);
+    fetchCity();
+  }, [cityId, open]);
 
 
 
@@ -57,15 +67,21 @@ const DetailModal = ({ open, setOpen, testimonialId }: TestimonialModalProps) =>
         {loading ? (
           <div className="text-center text-sm text-muted-foreground"><LoadingIndicator/></div>
         ) : detail ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Image */}
-            <div className="flex justify-center">
-              <img
-                src={detail?.imageUrl}
-                alt={detail?.name}
-                className="w-32 h-32 rounded-full object-cover shadow"
-              />
-            </div>
+            {detail?.imageUrl && (
+              <div className="space-y-2">
+                <Label>Image</Label>
+                <div className="relative aspect-video overflow-hidden rounded-lg border">
+                  <Image
+                    src={detail.imageUrl}
+                    alt={detail.name || 'City image'}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Name */}
             <div className="text-center space-y-1">
@@ -78,8 +94,15 @@ const DetailModal = ({ open, setOpen, testimonialId }: TestimonialModalProps) =>
             <div className="flex justify-center items-center gap-3">
               <Badge variant={detail?.isVisible ? "default" : "secondary"}>
                 {detail?.isVisible ? (
-                  <div className="flex items-center gap-1">
-                    <Eye size={14} /> Visible
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is-visible"
+                      checked={detail?.isVisible || false}
+                      disabled
+                    />
+                    <Label htmlFor="is-visible">
+                      {detail?.isVisible ? "Visible" : "Hidden"}
+                    </Label>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1">
@@ -96,13 +119,12 @@ const DetailModal = ({ open, setOpen, testimonialId }: TestimonialModalProps) =>
             {/* Dates */}
             <div className="text-xs text-muted-foreground text-center mt-2 space-y-1">
               <div className="flex justify-center items-center gap-1">
-                <Calendar size={12} /> Created:{" "}
-                {formatReadableDate(detail?.createdAt)}
-              </div>
-              <div className="flex justify-center items-center gap-1">
-                <Calendar size={12} /> Updated:{" "}
-                {formatReadableDate(detail?.updatedAt)}
-
+                <p>
+                  Created: {detail?.createdAt ? format(new Date(detail.createdAt), 'PPpp') : 'N/A'}
+                </p>
+                <p>
+                  Updated: {detail?.updatedAt ? format(new Date(detail.updatedAt), 'PPpp') : 'N/A'}
+                </p>
               </div>
             </div>
           </div>

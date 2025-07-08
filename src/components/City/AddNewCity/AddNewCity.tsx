@@ -158,7 +158,8 @@ const AddCityModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
                                                 if (!file) return;
                                                 try {
                                                     const url = await uploadToCloudinary(file);
-                                                    field.onChange(url); // ✅ only set single URL} catch (err) {
+                                                    field.onChange(url); // ✅ only set single URL
+                                                } catch (err) {
                                                     console.error("Upload failed:", err);
                                                 }
                                             }}

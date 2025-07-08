@@ -51,8 +51,9 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
             imageUrl: "",
             isVisible: false,
         }
+    });
 
-    })const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove } = useFieldArray({
         control,
         name: "nearbyPlaces",
     });
