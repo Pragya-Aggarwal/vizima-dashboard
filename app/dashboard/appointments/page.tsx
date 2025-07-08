@@ -500,17 +500,22 @@ export default function AppointmentsPage() {
           ...filters,
           page: 1,
           limit: 50,
-          search: search || undefined, // Add search to API params
+          search: search || undefined,
+          sharing: sharingFilter !== 'all' ? sharingFilter : undefined, // Add sharing filter to API params
         }
         const res = await getScheduleVisits(params)
-        setAppointments(res.data)
+        const filteredData = sharingFilter === 'all' 
+          ? res.data 
+          : res.data.filter((a: ScheduleVisit) => a.sharing === sharingFilter)
+          
+        setAppointments(filteredData)
         setStats({
-          total: res.total,
-          confirmed: res.data.filter((a: ScheduleVisit) => a.sharing === "single").length,
-          pending: res.data.filter((a: ScheduleVisit) => a.sharing === "double").length,
-          completed: res.data.filter((a: ScheduleVisit) => a.sharing === "triple").length,
-          cancelled: 0, // Not using status-based filtering
-          no_show: 0, // Not using status-based filtering
+          total: filteredData.length,
+          confirmed: filteredData.filter((a: ScheduleVisit) => a.sharing === "single").length,
+          pending: filteredData.filter((a: ScheduleVisit) => a.sharing === "double").length,
+          completed: filteredData.filter((a: ScheduleVisit) => a.sharing === "triple").length,
+          cancelled: 0,
+          no_show: 0,
         })
       } catch (err: any) {
         setError(err?.message || 'Failed to fetch appointments')
@@ -537,28 +542,18 @@ export default function AppointmentsPage() {
     setAppointments(appointments.filter(apt => apt._id !== deletedAppointmentId))
   }
 
-  // Filter appointments based on search and status
+  // Filter appointments based on search (client-side filtering only for search)
   const filteredAppointments = useMemo(() => {
-    let result = [...appointments]
-
-    // Apply search filter
-    if (search) {
-      const searchTerm = search.toLowerCase()
-      result = result.filter((appointment: ScheduleVisit) =>
+    if (!search) return appointments;
+    
+    const searchTerm = search.toLowerCase()
+    return appointments.filter((appointment: ScheduleVisit) =>
       (appointment?.fullName?.toLowerCase().includes(searchTerm) ||
         appointment?.email?.toLowerCase().includes(searchTerm) ||
         appointment?.propertyName?.toLowerCase().includes(searchTerm) ||
         appointment._id?.toLowerCase().includes(searchTerm))
-      )
-    }
-
-    // Apply sharing filter
-    if (sharingFilter && sharingFilter !== 'all') {
-      result = result.filter(appointment => appointment.sharing === sharingFilter)
-    }
-
-    return result
-  }, [appointments, search, sharingFilter])
+    )
+  }, [appointments, search])
 
   // Export appointments to CSV
   const handleExportAppointments = () => {

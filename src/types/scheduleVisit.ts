@@ -38,4 +38,5 @@ export interface GetScheduleVisitsParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  sharing?: 'single' | 'double' | 'triple';
 }

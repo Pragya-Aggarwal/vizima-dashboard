@@ -219,7 +219,7 @@ export default function BookingsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [paginatedBookings, setPaginatedBookings] = useState<Booking[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 20;
   useAuthRedirect();
 
   // Fetch bookings data from API
@@ -248,8 +248,8 @@ export default function BookingsPage() {
       setIsLoading(true);
       try {
         const response = await getBookings({
-          page: 1,
-          limit: 10,
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
         });
         setBookings(response.data || []);
       } catch (error) {
@@ -515,7 +515,7 @@ export default function BookingsPage() {
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
           <TabsTrigger value="all">All Bookings ({filteredBookings.length})</TabsTrigger>
-          <TabsTrigger value="visit">Visit Bookings ({filteredBookings.filter((b) => b.type === "Visit").length})</TabsTrigger>
+          <TabsTrigger value="visit">Visit Bookings ({visitBookingData.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
