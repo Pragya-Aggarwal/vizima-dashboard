@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { useQuery } from "@tanstack/react-query"
-import { getCities, deleteCitybyId, updateCityById } from "@/src/services/cityServices"
+import { getCities, deleteCitybyId, updateCityById, addcity } from "@/src/services/cityServices"
 import { CityFormData } from "@/types/city"
 import Pagination from "@/src/common/pagination/pagination"
 import CityList from "./CitiesList/list"
@@ -50,7 +50,7 @@ const CityMain = () => {
         onSuccess: () => void
     ) => {
         try {
-            await updateCityById("", data); // Empty string for new city
+            await addcity(data); // Empty string for new city
             toast.success("City added successfully!");
             onSuccess();
             setAddOpen(false);
@@ -62,6 +62,7 @@ const CityMain = () => {
 
     const handleUpdateModalOpen = (id: string) => {
         setUpdateOpen(true);
+        console.log(id,"id")
         setCityId(id);
     };
 
@@ -71,15 +72,17 @@ const CityMain = () => {
     };
 
     const handleUpdate = useCallback(async (
+        id: string,
         data: CityFormData,
         onSuccess: () => void
     ) => {
+        console.log(id,"id")
         try {
-            if (!cityId) {
+            if (!id) {
                 toast.error("City ID is missing");
                 return;
             }
-            const res = await updateCityById(cityId, data);
+            const res = await updateCityById(id, data);
             toast.success("City updated successfully.");
             onSuccess();
             setUpdateOpen(false);
@@ -88,7 +91,7 @@ const CityMain = () => {
             console.error("Error updating city:", error);
             toast.error(error?.response?.data?.message || "Failed to update city");
         }
-    }, [cityId, refetch]);
+    }, [refetch]);
 
     const handleDetailModal = (id: string) => {
         setDetailModalOpen(true);
@@ -153,8 +156,8 @@ const CityMain = () => {
             <UpdateModal
                 open={updateOpen}
                 setOpen={setUpdateOpen}
+                onSubmit={(data, onSuccess) => handleUpdate(cityId, data, onSuccess)}
                 cityId={cityId}
-                onSubmit={handleUpdate}
             />
 
             <DetailModal 

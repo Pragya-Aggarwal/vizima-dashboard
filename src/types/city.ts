@@ -1,11 +1,13 @@
 export interface City {
-  id: string;
+  _id: string;
+  id?: string; // Keeping for backward compatibility
   name: string;
   imageUrl: string;
   isVisible: boolean;
   order: number;
   nearbyPlaces?: Array<{
-    id?: string;
+    _id?: string;
+    id?: string; // Keeping for backward compatibility
     name: string;
     description: string;
     imageUrl: string;

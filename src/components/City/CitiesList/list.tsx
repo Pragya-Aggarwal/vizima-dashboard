@@ -35,7 +35,7 @@ const CityList = ({ data: cities, isLoading, onEdit, onDelete, onView }: CityLis
                         </TableRow>
                     ) : cities?.length > 0 ? (
                         cities.map((city) => (
-                            <TableRow key={city.id}>
+                            <TableRow key={city._id}>
                                 <TableCell>
                                     <div className="flex items-center gap-3">
                                         {city.imageUrl ? (
@@ -73,14 +73,14 @@ const CityList = ({ data: cities, isLoading, onEdit, onDelete, onView }: CityLis
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => onView(city.id)}
+                                            onClick={() => onView(city._id)}
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Button>
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => onEdit(city.id)}
+                                            onClick={() => onEdit(city._id)}
                                         >
                                             <Edit className="h-4 w-4" />
                                         </Button>
@@ -88,7 +88,7 @@ const CityList = ({ data: cities, isLoading, onEdit, onDelete, onView }: CityLis
                                             variant="ghost"
                                             size="icon"
                                             className="text-red-500 hover:text-red-700"
-                                            onClick={() => onDelete(city.id)}
+                                            onClick={() => onDelete(city._id)}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>

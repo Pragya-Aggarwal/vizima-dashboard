@@ -35,7 +35,7 @@ type UpdateCityModalProps = {
 const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) => {
     const [isUploading, setIsUploading] = useState(false)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
-
+console.log(cityId,"cityId")
     const {
         register, 
         control, 
@@ -103,14 +103,14 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
             if (!cityId) return;
             try {
                 const res = await getCityById(cityId);
-                if (res?.data) {
-                    const data = res.data;
+                if (res) {
                     reset({
-                        name: data.name || "",
-                        imageUrl: data.imageUrl || "",
-                        isVisible: data.isVisible || false,
-                        order: data.order || 0,
-                        nearbyPlaces: data.nearbyPlaces?.map(place => ({
+                        name: res.name || "",
+                        imageUrl: res.imageUrl || "",
+                        isVisible: res.isVisible || false,
+                        order: res.order || 0,
+                        nearbyPlaces: res.nearbyPlaces?.map((place: any) => ({
+                            _id: place._id,
                             name: place.name || "",
                             description: place.description || "",
                             imageUrl: place.imageUrl || "",

@@ -23,8 +23,7 @@ export const deleteCitybyId = async (id: string) => {
 
 
 export const getCityById = async (id: string) => {
-
-    let response = await api.get(`/api/cities/${id}`)
+    const response = await api.get(`/api/cities/${id}`);
     return response.data;
 };
 
