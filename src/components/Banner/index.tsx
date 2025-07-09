@@ -22,21 +22,21 @@ import { SchemaFormData } from "./Schema/schema"
 
 // Local Banner interface that matches the expected type in DetailModal
 interface Banner {
-  _id: string;
-  title: string;
-  description: string;
-  image: string;
-  isActive: boolean;
-  order: number;
-  type: string;
-  targetAudience: string;
-  displayLocation: string[];
-  startDate: string;
-  endDate: string;
-  link: string;
-  createdAt: string;
-  updatedAt: string;
-  [key: string]: any; // Add index signature to allow additional properties
+    _id: string;
+    title: string;
+    description: string;
+    image: string;
+    isActive: boolean;
+    order: number;
+    type: string;
+    targetAudience: string;
+    displayLocation: string[];
+    startDate: string;
+    endDate: string;
+    link: string;
+    createdAt: string;
+    updatedAt: string;
+    [key: string]: any; // Add index signature to allow additional properties
 }
 
 // Services
@@ -77,7 +77,7 @@ const BannerMain = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [testimonialId, setTestimonialId] = useState<string | null | undefined>();
     const [selectedBanner, setSelectedBanner] = useState<Banner | null>(null);
-    
+
     const ITEMS_PER_PAGE = 10;
 
     // Define fetchBanners with useCallback
@@ -157,14 +157,14 @@ const BannerMain = () => {
             formData.append('order', String(data.order));
             formData.append('type', data.type);
             formData.append('targetAudience', data.targetAudience);
-            
+
             // Handle array fields
             if (Array.isArray(data.displayLocation)) {
                 data.displayLocation.forEach((location: string) => {
                     formData.append('displayLocation', location);
                 });
             }
-            
+
             // Handle dates
             if (data.startDate) {
                 formData.append('startDate', new Date(data.startDate).toISOString());
@@ -172,12 +172,12 @@ const BannerMain = () => {
             if (data.endDate) {
                 formData.append('endDate', new Date(data.endDate).toISOString());
             }
-            
+
             // Add the image file
             formData.append('image', selectedFile);
 
             await addBanner(formData);
-            
+
             toast.success("Banner added successfully!");
             setOpen(false);
             setSelectedFile(null);
@@ -259,7 +259,7 @@ const BannerMain = () => {
                 toast.error("Banner ID is missing");
                 return;
             }
-            
+
             const formData = new FormData();
             // Add all fields to formData
             formData.append('title', data.title);
@@ -269,14 +269,14 @@ const BannerMain = () => {
             formData.append('order', String(data.order));
             formData.append('type', data.type);
             formData.append('targetAudience', data.targetAudience);
-            
+
             // Handle array fields
             if (Array.isArray(data.displayLocation)) {
                 data.displayLocation.forEach((location: string) => {
                     formData.append('displayLocation', location);
                 });
             }
-            
+
             // Handle dates
             if (data.startDate) {
                 formData.append('startDate', new Date(data.startDate).toISOString());
@@ -284,14 +284,14 @@ const BannerMain = () => {
             if (data.endDate) {
                 formData.append('endDate', new Date(data.endDate).toISOString());
             }
-            
+
             // Handle image if a new one is selected
             if (selectedFile) {
                 formData.append('image', selectedFile);
             }
 
             await updateBannerById(testimonialId, formData);
-            
+
             toast.success("Banner updated successfully.");
             setUpdateOpen(false);
             setSelectedBanner(null);
@@ -314,9 +314,9 @@ const BannerMain = () => {
                 toast.error("Banner ID is missing");
                 return;
             }
-            
+
             await deleteBanner(testimonialId);
-            
+
             toast.success("Banner deleted successfully");
             setDeleteModal(false);
             setTestimonialId(null);
@@ -343,9 +343,9 @@ const BannerMain = () => {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <BannerList 
-                            bannerData={bannerData} 
-                            isLoading={isLoading} 
+                        <BannerList
+                            bannerData={bannerData}
+                            isLoading={isLoading}
                             onEdit={handleUpdateModalOpen}
                             onView={handleViewBanner}
                             onDelete={handleDeleteModalOpen}
@@ -354,37 +354,37 @@ const BannerMain = () => {
                 </Card>
             </TabsContent>
 
-            <AddCityModal 
-                open={open} 
-                setOpen={setOpen} 
-                onSubmit={handleAdd} 
+            <AddCityModal
+                open={open}
+                setOpen={setOpen}
+                onSubmit={handleAdd}
                 selectedFile={selectedFile}
-                setSelectedFile={setSelectedFile} 
+                setSelectedFile={setSelectedFile}
             />
 
             {updateopen && selectedBanner && (
-                <UpdateModal 
-                    open={updateopen} 
+                <UpdateModal
+                    open={updateopen}
                     setOpen={setUpdateOpen}
                     testimonialId={selectedBanner._id}
                     selectedFile={selectedFile}
                     setSelectedFile={setSelectedFile}
-                   refetch={refetch}
+                    refetch={refetch}
                 />
             )}
 
             {detailModalopen && selectedBanner && (
-                <DetailModal 
+                <DetailModal
                     open={detailModalopen}
                     setOpen={setDetailModalOpen}
                     banner={selectedBanner}
                 />
             )}
 
-            <DeleteModal 
-                open={deleteModal} 
+            <DeleteModal
+                open={deleteModal}
                 setOpen={setDeleteModal}
-                handleDelete={handleDelete}
+                onDelete={handleDelete}
             />
         </>
     )

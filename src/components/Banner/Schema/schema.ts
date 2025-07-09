@@ -26,9 +26,8 @@ export const Schema = z.object({
   order: z.coerce.number().min(0, "Order must be 0 or greater"),
   type: z.enum(["hero", "promotional", "informational", "featured"]),
   targetAudience: z.enum(["all", "new_user", "existing_user", "premium_users"]),
-  displayLocation: z.array(z.enum(["home", "search", "booking", "profile"])).min(1, "Select at least one location"),
-  // startDate: z.string().datetime(),
-  // endDate: z.string().datetime(),
+  displayLocation: z.array(z.enum(["home", "search", "booking", "profile"]))
+    .min(1, "Select at least one location"),
 });
 
 export type SchemaFormData = z.infer<typeof Schema>;

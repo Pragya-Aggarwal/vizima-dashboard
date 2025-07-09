@@ -7,28 +7,28 @@ import { X, Upload, ImageIcon, Trash2 } from "lucide-react"
 // Define Banner type locally to avoid conflicts
 // Define a more specific type for the banner data
 type BannerType = {
-  _id: string;
-  title: string;
-  description: string;
-  image: string;
-  isActive: boolean;
-  order: number;
-  type: string;
-  targetAudience: string;
-  displayLocation: string[];
-  startDate?: string | Date;
-  endDate?: string | Date;
-  link: string;
-  createdAt?: string;
-  updatedAt?: string;
-  [key: string]: unknown; // Use unknown instead of any for better type safety
+    _id: string;
+    title: string;
+    description: string;
+    image: string;
+    isActive: boolean;
+    order: number;
+    type: string;
+    targetAudience: string;
+    displayLocation: string[];
+    startDate?: string | Date;
+    endDate?: string | Date;
+    link: string;
+    createdAt?: string;
+    updatedAt?: string;
+    [key: string]: unknown; // Use unknown instead of any for better type safety
 };
 
 // Helper function to safely access banner properties
 function getBannerProperty<T>(banner: BannerType | null, key: string, defaultValue: T): T {
-  if (!banner) return defaultValue;
-  const value = banner[key as keyof BannerType];
-  return value as T ?? defaultValue;
+    if (!banner) return defaultValue;
+    const value = banner[key as keyof BannerType];
+    return value as T ?? defaultValue;
 }
 import { toast } from "sonner"
 
@@ -61,17 +61,17 @@ interface UpdateModalProps {
     setSelectedFile: React.Dispatch<React.SetStateAction<File | null>>;
 }
 
-const UpdateModal = ({ 
-    open, 
-    setOpen, 
+const UpdateModal = ({
+    open,
+    setOpen,
     testimonialId,
     selectedFile,
     setSelectedFile,
-    refetch 
+    refetch
 }: UpdateModalProps) => {
     const [isLoading, setIsLoading] = useState(false)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
-    
+
     const {
         register,
         control,
@@ -96,7 +96,7 @@ const UpdateModal = ({
             endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
     });
-    
+
     // Watch form values
     const formValues = watch();
 
@@ -137,23 +137,23 @@ const UpdateModal = ({
     useEffect(() => {
         const fetchBanner = async () => {
             if (!testimonialId || !open) return;
-            
+
             try {
                 setIsLoading(true);
                 const response = await getBannerById(testimonialId);
-                
+
                 if (response && response.data) {
                     const bannerData = response.data;
-                    
+
                     // Convert string dates to Date objects
-                    const startDate = bannerData.startDate 
+                    const startDate = bannerData.startDate
                         ? new Date(bannerData.startDate)
                         : new Date();
-                        
-                    const endDate = bannerData.endDate 
+
+                    const endDate = bannerData.endDate
                         ? new Date(bannerData.endDate)
                         : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-                    
+
                     // Format dates for datetime-local input (YYYY-MM-DDTHH:MM)
                     const formatForInput = (date: Date) => {
                         const pad = (num: number) => num.toString().padStart(2, '0');
@@ -164,7 +164,7 @@ const UpdateModal = ({
                         const minutes = pad(date.getMinutes());
                         return `${year}-${month}-${day}T${hours}:${minutes}`;
                     };
-                    
+
                     // Reset form with fetched data
                     reset({
                         title: bannerData.title || "",
@@ -175,8 +175,8 @@ const UpdateModal = ({
                         order: bannerData.order || 0,
                         type: bannerData.type || "hero",
                         targetAudience: bannerData.targetAudience || "all",
-                        displayLocation: Array.isArray(bannerData.displayLocation) 
-                            ? bannerData.displayLocation 
+                        displayLocation: Array.isArray(bannerData.displayLocation)
+                            ? bannerData.displayLocation
                             : [],
                         startDate: formatForInput(startDate),
                         endDate: formatForInput(endDate),
@@ -218,9 +218,10 @@ const UpdateModal = ({
     };
 
     const onFormSubmit: SubmitHandler<SchemaFormData> = async (formData) => {
+        console.log(formData,"formData");
         try {
             setIsLoading(true);
-            
+
             // If there's a new image, upload it first
             let imageUrl = formData.image;
             if (selectedFile) {
@@ -232,12 +233,12 @@ const UpdateModal = ({
                     return;
                 }
             }
-            
+
             // Ensure displayLocation is an array and has at least one value
             const displayLocations = Array.isArray(formData.displayLocation) && formData.displayLocation.length > 0
                 ? formData.displayLocation
                 : ["home"]; // Default value if empty
-            
+
             // Prepare the data to submit according to API requirements
             const dataToSubmit = {
                 title: formData.title,
@@ -259,10 +260,10 @@ const UpdateModal = ({
 
             // Call the update API
             await updateBannerById(testimonialId, dataToSubmit);
-            
+
             // Show success message
             toast.success("Banner updated successfully");
-            
+
             // Reset form and close modal
             reset();
             setOpen(false);
@@ -278,7 +279,7 @@ const UpdateModal = ({
             setIsLoading(false);
         }
     };
-    
+
     if (isLoading) {
         return (
             <Dialog open={open} onOpenChange={setOpen}>
@@ -333,11 +334,11 @@ const UpdateModal = ({
 
                             <div className="space-y-2">
                                 <Label htmlFor="order">Order</Label>
-                                <Input 
-                                    id="order" 
-                                    type="number" 
-                                    {...register("order", { valueAsNumber: true })} 
-                                    placeholder="Enter Order" 
+                                <Input
+                                    id="order"
+                                    type="number"
+                                    {...register("order", { valueAsNumber: true })}
+                                    placeholder="Enter Order"
                                 />
                                 {errors.order && <p className="text-sm text-red-500">{errors.order.message}</p>}
                             </div>
@@ -372,7 +373,7 @@ const UpdateModal = ({
                                         name="startDate"
                                         control={control}
                                         render={({ field }) => (
-                                            <Input 
+                                            <Input
                                                 id="startDate"
                                                 type="datetime-local"
                                                 {...field}
@@ -391,7 +392,7 @@ const UpdateModal = ({
                                         name="endDate"
                                         control={control}
                                         render={({ field }) => (
-                                            <Input 
+                                            <Input
                                                 id="endDate"
                                                 type="datetime-local"
                                                 {...field}
