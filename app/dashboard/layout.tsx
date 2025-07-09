@@ -97,6 +97,13 @@ const sidebarItems = [
     // count: 5,
     description: "AI Lead Management",
   },
+  {
+    icon: MessageSquare,
+    label: "Customer lead",
+    href: "/dashboard/customer-lead",
+    // count: 3,
+    description: "Customer Details",
+  },
   // {
   //   icon: MessageSquare,
   //   label: "Support Chat",
@@ -341,11 +348,11 @@ export default function DashboardLayout({
                           </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => router.push("/dashboard/support")} className="cursor-pointer">
+                        {/* <DropdownMenuItem onClick={() => router.push("/dashboard/support")} className="cursor-pointer">
                           <HelpCircle className="mr-2 h-4 w-4" />
                           Support
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuSeparator /> */}
                         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                           <LogOut className="mr-2 h-4 w-4" />
                           Log out
