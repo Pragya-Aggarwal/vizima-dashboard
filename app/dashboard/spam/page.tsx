@@ -356,7 +356,7 @@ export default function SpamDetectionPage() {
                 </CardTitle>
                 <div className="flex space-x-2">
                   <Input placeholder="Search leads..." className="w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -369,7 +369,7 @@ export default function SpamDetectionPage() {
                       <SelectItem value="under_review">Under Review</SelectItem>
                       <SelectItem value="false_positive">False Positive</SelectItem>
                     </SelectContent>
-                  </Select>
+                  </Select> */}
                   <ShadDialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
                     <ShadDialogTrigger asChild>
                       <Button variant="outline" size="sm">
@@ -383,7 +383,7 @@ export default function SpamDetectionPage() {
                         <ShadDialogDescription>Apply filters to narrow down spam reports.</ShadDialogDescription>
                       </ShadDialogHeader>
                       <div className="space-y-4">
-                        <div>
+                        {/* <div>
                           <label className="block text-sm font-medium mb-1">Status</label>
                           <Select value={filters.status || "all"} onValueChange={v => setFilters(f => ({ ...f, status: v }))}>
                             <SelectTrigger><SelectValue placeholder="Any status" /></SelectTrigger>
@@ -397,7 +397,7 @@ export default function SpamDetectionPage() {
                               <SelectItem value="false_positive">False Positive</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
+                        </div> */}
                         <div>
                           <label className="block text-sm font-medium mb-1">Severity</label>
                           <Select value={filters.severity || "all"} onValueChange={v => setFilters(f => ({ ...f, severity: v }))}>
@@ -479,7 +479,7 @@ export default function SpamDetectionPage() {
                     <TableHead>Type</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Severity</TableHead>
-                    <TableHead>Status</TableHead>
+                    {/* <TableHead>Status</TableHead> */}
                     <TableHead>Reason</TableHead>
                     <TableHead>Reported At</TableHead>
                     <TableHead>Actions</TableHead>
@@ -498,7 +498,7 @@ export default function SpamDetectionPage() {
                         <TableCell>{report.contentType ?? '-'}</TableCell>
                         <TableCell>{report.category ?? '-'}</TableCell>
                         <TableCell>{report.severity ?? '-'}</TableCell>
-                        <TableCell>{report.status ?? '-'}</TableCell>
+                        {/* <TableCell>{report.status ?? '-'}</TableCell> */}
                         <TableCell>{report.userReportDetails?.reason ?? report.detectionResult?.reasons?.join(', ') ?? '-'}</TableCell>
                         <TableCell>{report.reportedAt ? new Date(report.reportedAt).toLocaleString() : '-'}</TableCell>
                         <TableCell>

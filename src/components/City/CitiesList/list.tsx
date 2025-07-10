@@ -22,7 +22,7 @@ const CityList = ({ data: cities, isLoading, onEdit, onDelete, onView }: CityLis
                     <TableRow>
                         <TableHead>City Name</TableHead>
                         <TableHead>Order</TableHead>
-                        <TableHead>Visible</TableHead>
+                        <TableHead>created At</TableHead>
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -64,9 +64,7 @@ const CityList = ({ data: cities, isLoading, onEdit, onDelete, onView }: CityLis
                                     <p className="text-sm">{city.order}</p>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={city.isVisible ? "default" : "outline"}>
-                                        {city.isVisible ? "Visible" : "Hidden"}
-                                    </Badge>
+                                   {city.createdAt}
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">

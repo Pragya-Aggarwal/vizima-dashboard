@@ -443,7 +443,7 @@ export default function BookingsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-5">
+      {/* <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">
@@ -479,7 +479,7 @@ export default function BookingsPage() {
             <p className="text-xs text-muted-foreground">Total Revenue</p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Remove Tabs, TabsList, TabsTrigger, TabsContent, and all tab-related state and logic */}
       {/* Instead, render the booking list and controls directly */}
@@ -499,20 +499,7 @@ export default function BookingsPage() {
                   }
                 }}
               />
-              <Select
-                value={filters.status}
-                onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
@@ -551,43 +538,7 @@ export default function BookingsPage() {
                       />
                     </div>
 
-                    {/* Status */}
-                    <div>
-                      <Label>Status</Label>
-                      <Select
-                        value={filters.status}
-                        onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Statuses</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
 
-                    {/* Payment Status */}
-                    <div>
-                      <Label>Payment Status</Label>
-                      <Select
-                        value={filters.paymentStatus}
-                        onValueChange={(value) => setFilters(prev => ({ ...prev, paymentStatus: value as any }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Payment status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Payments</SelectItem>
-                          <SelectItem value="paid">Paid</SelectItem>
-                          <SelectItem value="unpaid">Unpaid</SelectItem>
-                          <SelectItem value="refunded">Refunded</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
 
                     {/* Booking Type */}
                     <div>

@@ -525,7 +525,6 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                 <TableHead>Type</TableHead>
                                 <TableHead>Occupancy</TableHead>
                                 <TableHead>Revenue</TableHead>
-                                <TableHead>Status</TableHead>
                                 <TableHead>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -597,22 +596,6 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                             <p className="text-xs text-muted-foreground">this month</p>
                                         </TableCell>
 
-                                        <TableCell>
-                                            <div className="flex items-center space-x-2">
-                                                <Badge variant={property?.status === "verified" ? "default" : "secondary"}>
-                                                    {property?.status === "verified" ? (
-                                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                                    ) : (
-                                                        <Clock className="h-3 w-3 mr-1" />
-                                                    )}
-                                                    {property?.status || "unverified"}
-                                                </Badge>
-                                            </div>
-                                            <div className="flex items-center mt-1">
-                                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-                                                <span className="text-xs">{property?.rating?.average || 0}</span>
-                                            </div>
-                                        </TableCell>
 
                                         <TableCell>
                                             <div className="flex space-x-1">

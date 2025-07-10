@@ -672,7 +672,7 @@ export default function AppointmentsPage() {
         <div className="space-y-6 mt-5 mx-5">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold">Appointment Slot Manager</h2>
+                    <h2 className="text-2xl font-bold">Appointment Manager</h2>
                     <p className="text-muted-foreground">Manage property visit appointments and time slots</p>
                 </div>
                 <div className="flex space-x-2">
@@ -713,12 +713,12 @@ export default function AppointmentsPage() {
                         <p className="text-xs text-muted-foreground">Confirmed</p>
                     </CardContent>
                 </Card>
-                <Card>
+                {/* <Card>
                     <CardContent className="p-4">
                         <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
                         <p className="text-xs text-muted-foreground">Pending</p>
                     </CardContent>
-                </Card>
+                </Card> */}
                 <Card>
                     <CardContent className="p-4">
                         <div className="text-2xl font-bold text-blue-600">{stats.completed}</div>
@@ -736,7 +736,7 @@ export default function AppointmentsPage() {
             <Tabs value={selectedTab} onValueChange={setSelectedTab}>
                 <TabsList>
                     <TabsTrigger value="appointments">Appointments ({appointments.length})</TabsTrigger>
-                    <TabsTrigger value="slots">Time Slots ({cityTimeSlots.length})</TabsTrigger>
+                    {/* <TabsTrigger value="slots">Time Slots ({cityTimeSlots.length})</TabsTrigger> */}
                     <TabsTrigger value="visit">Visit Bookings ({visitBookingData.length})</TabsTrigger>
                 </TabsList>
 
@@ -938,7 +938,7 @@ export default function AppointmentsPage() {
                                 <CardTitle>Visit Booking</CardTitle>
                                 <div className="flex space-x-2">
                                     <Input placeholder="Search bookings..." className="w-64" value={searchVisitBooking} onChange={(e) => setSearchVisitBooking(e.target.value)} />
-                                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                    {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
                                         <SelectTrigger className="w-32">
                                             <SelectValue placeholder="Status" />
                                         </SelectTrigger>
@@ -949,7 +949,7 @@ export default function AppointmentsPage() {
                                             <SelectItem value="completed">Completed</SelectItem>
                                             <SelectItem value="cancelled">Cancelled</SelectItem>
                                         </SelectContent>
-                                    </Select>
+                                    </Select> */}
                                 </div>
                             </div>
                         </CardHeader>

@@ -622,12 +622,12 @@ export default function UsersPage() {
             <p className="text-xs text-muted-foreground">Blocked</p>
           </CardContent>
         </Card>
-        <Card>
+        {/* <Card>
           <CardContent className="p-4">
-            {/* <div className="text-2xl font-bold text-purple-600">₹{stats.totalRevenue.toLocaleString()}</div> */}
+           <div className="text-2xl font-bold text-purple-600">₹{stats.totalRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Total Revenue</p>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <Card>
@@ -644,12 +644,12 @@ export default function UsersPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
 
-              </Select>
+              </Select> */}
               <Select value={tagFilter} onValueChange={setTagFilter}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Tag" />

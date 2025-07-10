@@ -25,18 +25,18 @@ import { Schema, SchemaFormData } from "../Schema/schema"
 import { useState } from "react"
 import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
 import { useRef } from "react"
-import { addBanner } from "@/src/services/Banner"
+import { addBanner, getBanner } from "@/src/services/Banner";
 import { toast } from "sonner"
 
 type AddCityModalProps = {
     open: boolean
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
-    onSubmit: (data: SchemaFormData, onSuccess: () => void) => void;
     selectedFile: File | null;
     setSelectedFile: React.Dispatch<React.SetStateAction<File | null>>;
+    refetch: () => void;
 }
 
-const AddCityModal = ({ open, setOpen, onSubmit, selectedFile, setSelectedFile }: AddCityModalProps) => {
+const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }: AddCityModalProps) => {
     const {
         register, control, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset, trigger
     } = useForm<SchemaFormData>({
@@ -76,61 +76,58 @@ const AddCityModal = ({ open, setOpen, onSubmit, selectedFile, setSelectedFile }
 
 
     const onFormSubmit = async (formData: SchemaFormData) => {
-    try {
-      
-      // 1. Upload image to Cloudinary if a file is selected
-      let imageUrl = formData.image; // Default to the existing image URL if any
-      
-      if (selectedFile) {
         try {
-          imageUrl = await uploadToCloudinary(selectedFile);
-        } catch (error) {
-          console.error("Error uploading image:", error);
-          toast.error("Failed to upload image");
-          return;
+
+            // 1. Upload image to Cloudinary if a file is selected
+            let imageUrl = formData.image; // Default to the existing image URL if any
+
+            if (selectedFile) {
+                try {
+                    imageUrl = await uploadToCloudinary(selectedFile);
+                } catch (error) {
+                    console.error("Error uploading image:", error);
+                    toast.error("Failed to upload image");
+                    return;
+                }
+            }
+
+            // 2. Prepare the banner data for the API
+            const bannerData = {
+                title: formData.title,
+                description: formData.description,
+                image: imageUrl,
+                link: formData.link,
+                isActive: formData.isActive,
+                order: Number(formData.order) || 0,
+                type: formData.type,
+                targetAudience: formData.targetAudience,
+                displayLocation: formData.displayLocation || [],
+                startDate: formData.startDate,
+                endDate: formData.endDate
+            };
+
+            // 3. Call the API to create the banner
+            const response = await addBanner(bannerData);
+
+            // 4. Fetch the latest banners
+
+
+
+
+            // 6. Show success message
+            toast.success("Banner created successfully");
+            // 7. Reset form and close modal
+            reset();
+            setSelectedFile(null);
+            setOpen(false);
+            refetch();
+        } catch (error: any) {
+            console.error("Error creating banner:", error);
+            toast.error(error?.response?.data?.message);
+        } finally {
+
         }
-      }
-      
-      // 2. Prepare the banner data for the API
-      const bannerData = {
-        title: formData.title,
-        description: formData.description,
-        image: imageUrl,
-        link: formData.link,
-        isActive: formData.isActive,
-        order: Number(formData.order) || 0,
-        type: formData.type,
-        targetAudience: formData.targetAudience,
-        displayLocation: formData.displayLocation || [],
-        startDate: formData.startDate,
-        endDate: formData.endDate
-      };
-      
-      // 3. Call the API to create the banner
-      const response = await addBanner(bannerData);
-      
-      // 4. Show success message
-      toast.success("Banner created successfully");
-      
-      // 5. Reset form and close modal
-      reset();
-      setSelectedFile(null);
-      setOpen(false);
-      
-      // 6. Call the parent's onSuccess callback if provided
-      if (onSubmit) {
-        onSubmit(bannerData, () => {
-          // Additional success handling if needed
-        });
-      }
-      
-    } catch (error: any) {
-      console.error("Error creating banner:", error);
-      toast.error(error?.response?.data?.message || "Failed to create banner");
-    } finally {
-      
-    }
-  };
+    };
 
 
     return (
@@ -207,8 +204,8 @@ const AddCityModal = ({ open, setOpen, onSubmit, selectedFile, setSelectedFile }
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">All</SelectItem>
-                                                <SelectItem value="new_user">New Users</SelectItem>
-                                                <SelectItem value="existing_user">Existing Users</SelectItem>
+                                                <SelectItem value="new_users">New Users</SelectItem>
+                                                <SelectItem value="existing_users">Existing Users</SelectItem>
                                                 <SelectItem value="premium_users">Premium Users</SelectItem>
                                             </SelectContent>
                                         </Select>

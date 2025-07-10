@@ -64,7 +64,7 @@ const VisitBookingTable = ({
                         <TableHead>Visit Date</TableHead>
                         <TableHead>Time Slot</TableHead>
                         <TableHead>Mode</TableHead>
-                        <TableHead>Status</TableHead>
+                        {/* <TableHead>Status</TableHead> */}
                         <TableHead>Description</TableHead>
                         <TableHead>Action</TableHead>
                     </TableRow>
@@ -91,7 +91,7 @@ const VisitBookingTable = ({
                                 <TableCell>{new Date(booking?.date).toLocaleDateString()}</TableCell>
                                 <TableCell>{booking?.timeSlot}</TableCell>
                                 <TableCell className="capitalize">{booking?.mode}</TableCell>
-                                <TableCell>
+                                {/* <TableCell>
                                     <Badge
                                         variant={
                                             booking.status === "confirmed"
@@ -103,7 +103,7 @@ const VisitBookingTable = ({
                                     >
                                         {booking?.status}
                                     </Badge>
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell className="max-w-xs truncate">{booking?.description}</TableCell>
                                 <TableCell>
                                     <Button

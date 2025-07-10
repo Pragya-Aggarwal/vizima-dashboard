@@ -85,7 +85,7 @@ const TestimonialList: FC<TestimonialListProps> = ({ testimonial, isLoading, han
                         <TableHead>City</TableHead>
                         <TableHead>Rating</TableHead>
                         <TableHead>Order</TableHead>
-                        <TableHead>Status</TableHead>
+                        {/* <TableHead>Status</TableHead> */}
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -124,11 +124,11 @@ const TestimonialList: FC<TestimonialListProps> = ({ testimonial, isLoading, han
                                 <TableCell>
                                     <p className="text-sm truncate max-w-48">{testimonial?.order}</p>
                                 </TableCell>
-                                <TableCell>
+                                {/* <TableCell>
                                     <Badge variant={testimonial.status === "approved" ? "default" : "secondary"}>
                                         {testimonial.status}
                                     </Badge>
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell>
                                     <div className="flex space-x-1">
                                         <Button variant="ghost" size="sm" onClick={(() => handleDetailModal(testimonial?._id))}>

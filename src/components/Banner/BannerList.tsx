@@ -55,7 +55,7 @@ export function BannerList({ bannerData, isLoading, onEdit, onView, onDelete }: 
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead>Status</TableHead>
+            {/* <TableHead>Status</TableHead> */}
             <TableHead>Start Date</TableHead>
             <TableHead>End Date</TableHead>
             <TableHead>Actions</TableHead>
@@ -77,11 +77,11 @@ export function BannerList({ bannerData, isLoading, onEdit, onView, onDelete }: 
                 </div>
               </TableCell>
               <TableCell>{banner.type}</TableCell>
-              <TableCell>
+              {/* <TableCell>
                 <span className={`px-2 py-1 rounded-full text-xs ${banner.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                   {banner.isActive ? 'Active' : 'Inactive'}
                 </span>
-              </TableCell>
+              </TableCell> */}
               <TableCell>{new Date(banner.startDate).toLocaleDateString()}</TableCell>
               <TableCell>{new Date(banner.endDate).toLocaleDateString()}</TableCell>
               <TableCell>

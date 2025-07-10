@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Save, Bell, Lock, Globe, CreditCard, Mail, Phone, Shield, Database, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { updateSettings, getSettings } from "@/src/services/settings";
+import axios from "@/src/lib/axiosInstance";
 
 export default function SettingsPage() {
   const [selectedTab, setSelectedTab] = useState("general")
@@ -21,11 +23,12 @@ export default function SettingsPage() {
 
   // Form states
   const [generalSettings, setGeneralSettings] = useState({
-    siteName: "Vizima",
-    siteDescription: "PG/Hostel Booking Platform",
-    contactEmail: "support@vizima.com",
-    contactPhone: "+91 9876543210",
-    address: "123 Main Street, Mumbai, India",
+    siteName: "",
+    siteDescription: "",
+    contactEmail: "",
+    contactPhone: "",
+    address: "",
+    id: ""
   })
 
   const [notificationSettings, setNotificationSettings] = useState({
@@ -58,12 +61,28 @@ export default function SettingsPage() {
   })
 
   // Handle form submissions
-  const handleGeneralSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    toast({
-      title: "Settings Updated",
-      description: "General settings have been saved successfully.",
-    })
+  const handleGeneralSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      siteName: generalSettings.siteName,
+      siteDescription: generalSettings.siteDescription,
+      contactEmail: generalSettings.contactEmail,
+      contactPhone: generalSettings.contactPhone,
+      address: generalSettings.address,
+    }
+    try {
+      await updateSettings(generalSettings.id, payload);
+      toast({
+        title: "Settings Updated",
+        description: "General settings have been saved successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update settings.",
+        variant: "destructive",
+      });
+    }
   }
 
   const handleNotificationSubmit = (e: React.FormEvent) => {
@@ -104,6 +123,32 @@ export default function SettingsPage() {
       description: "Manual backup has been initiated. This may take a few minutes.",
     })
   }
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await getSettings();
+        // Adjust the following according to your API response structure
+
+        setGeneralSettings({
+          siteName: res?.data?.[0]?.siteName || "",
+          siteDescription: res?.data?.[0]?.siteDescription || "",
+          contactEmail: res?.data?.[0]?.contactEmail || "",
+          contactPhone: res?.data?.[0]?.contactPhone || "",
+          address: res?.data?.[0]?.address || "",
+          id: res?.data?.[0]?._id,
+        });
+        // Repeat for other settings sections if needed
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch settings.",
+          variant: "destructive",
+        });
+      }
+    }
+    fetchSettings();
+  }, []);
 
   return (
     <div className="space-y-6 mt-5 mx-5">

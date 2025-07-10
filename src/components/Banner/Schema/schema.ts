@@ -25,7 +25,7 @@ export const Schema = z.object({
   isActive: z.boolean(),
   order: z.coerce.number().min(0, "Order must be 0 or greater"),
   type: z.enum(["hero", "promotional", "informational", "featured"]),
-  targetAudience: z.enum(["all", "new_user", "existing_user", "premium_users"]),
+  targetAudience: z.enum(["all", "new_users", "existing_users", "premium_users"]),
   displayLocation: z.array(z.enum(["home", "search", "booking", "profile"]))
     .min(1, "Select at least one location"),
 });

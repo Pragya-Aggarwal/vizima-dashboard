@@ -278,7 +278,7 @@ export default function DashboardLayout({
 
                     <ThemeToggle />
 
-                    <DropdownMenu>
+                    {/* <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative h-9 w-9">
                           <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -330,7 +330,7 @@ export default function DashboardLayout({
                           </>
                         )}
                       </DropdownMenuContent>
-                    </DropdownMenu>
+                    </DropdownMenu> */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">

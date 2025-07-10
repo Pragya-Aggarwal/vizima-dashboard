@@ -118,8 +118,6 @@ const BookingTable = ({
                         <TableHead>Check-In</TableHead>
                         <TableHead>Check-Out</TableHead>
                         <TableHead>Total</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Payment</TableHead>
                         <TableHead>Action</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -160,30 +158,7 @@ const BookingTable = ({
                                         ? booking.totalAmount.toLocaleString()
                                         : "0"}
                                 </TableCell>
-                                <TableCell>
-                                    <Badge
-                                        variant={
-                                            booking.status === "approved"
-                                                ? "default"
-                                                : booking.status === "pending"
-                                                    ? "secondary"
-                                                    : "destructive"
-                                        }
-                                    >
-                                        {booking.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge
-                                        variant={
-                                            booking.paymentStatus === "paid"
-                                                ? "default"
-                                                : "secondary"
-                                        }
-                                    >
-                                        {booking.paymentStatus}
-                                    </Badge>
-                                </TableCell>
+
                                 <TableCell>
                                     <div className="flex items-center gap-1">
                                         <Button
@@ -208,7 +183,7 @@ const BookingTable = ({
                                         >
                                             <Edit className="h-4 w-4" />
                                         </Button> */}
-                                        <Button
+                                        {/* <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={() =>
@@ -226,7 +201,7 @@ const BookingTable = ({
                                             ) : (
                                                 <Trash2 className="h-4 w-4" />
                                             )}
-                                        </Button>
+                                        </Button> */}
                                     </div>
                                 </TableCell>
                             </TableRow>

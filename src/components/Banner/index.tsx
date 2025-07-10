@@ -40,7 +40,7 @@ interface Banner {
 }
 
 // Services
-import { getBanners, addBanner, deleteBanner, updateBannerById } from "@/src/services/Banner"
+import { getBanners, addBanner, deleteBanner, updateBannerById, getBanner } from "@/src/services/Banner"
 
 
 
@@ -143,52 +143,7 @@ const BannerMain = () => {
     // };
 
 
-    const handleAdd = async (data: SchemaFormData) => {
-        try {
-            if (!selectedFile) {
-                toast.error("Please select an image for the banner");
-                return;
-            }
 
-            const formData = new FormData();
-            // Add all required fields to formData
-            formData.append('title', data.title);
-            formData.append('description', data.description);
-            formData.append('link', data.link);
-            formData.append('isActive', String(data.isActive));
-            formData.append('order', String(data.order));
-            formData.append('type', data.type);
-            formData.append('targetAudience', data.targetAudience);
-
-            // Handle array fields
-            if (Array.isArray(data.displayLocation)) {
-                data.displayLocation.forEach((location: string) => {
-                    formData.append('displayLocation', location);
-                });
-            }
-
-            // Handle dates
-            if (data.startDate) {
-                formData.append('startDate', new Date(data.startDate).toISOString());
-            }
-            if (data.endDate) {
-                formData.append('endDate', new Date(data.endDate).toISOString());
-            }
-
-            // Add the image file
-            formData.append('image', selectedFile);
-
-            await addBanner(formData);
-
-            toast.success("Banner added successfully!");
-            setOpen(false);
-            setSelectedFile(null);
-            refetch(); // Refresh the banner list
-        } catch (error: any) {
-            console.error("Error adding banner:", error);
-            toast.error(error?.response?.data?.message || "Failed to add banner");
-        }
-    };
 
 
 
@@ -373,9 +328,9 @@ const BannerMain = () => {
             <AddCityModal
                 open={open}
                 setOpen={setOpen}
-                onSubmit={handleAdd}
                 selectedFile={selectedFile}
                 setSelectedFile={setSelectedFile}
+                refetch={refetch}
             />
 
             {updateopen && selectedBanner && (
