@@ -61,7 +61,6 @@ const CityMain = () => {
 
     const handleUpdateModalOpen = (id: string) => {
         setUpdateOpen(true);
-        console.log(id, "id")
         setCityId(id);
     };
 
@@ -75,7 +74,6 @@ const CityMain = () => {
         data: CityFormData,
         onSuccess: () => void
     ) => {
-        console.log(id, "id")
         try {
             if (!id) {
                 toast.error("City ID is missing");

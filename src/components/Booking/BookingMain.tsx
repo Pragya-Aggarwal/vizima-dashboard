@@ -118,153 +118,137 @@ const BookingMain = () => {
     ]
 
     return (
-
-        <>
-            <TabsContent value={selectedTab} className="space-y-4">
-                <Card>
-                    <CardHeader>
-                        <div className="flex justify-between items-center">
-                            <CardTitle>Booking List</CardTitle>
-                            <div className="flex space-x-2">
-                                <div className="relative">
-                                    <Input placeholder="Search bookings..." className="w-64" />
-                                </div>
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                    <SelectTrigger className="w-32">
-                                        <SelectValue placeholder="Status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Status</SelectItem>
-                                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Button variant="outline" size="sm">
-                                    <Filter className="h-4 w-4 mr-2" />
-                                    More Filters
-                                </Button>
-                            </div>
+        <Card>
+            <CardHeader>
+                <div className="flex justify-between items-center">
+                    <CardTitle>Booking List</CardTitle>
+                    <div className="flex space-x-2">
+                        <div className="relative">
+                            <Input placeholder="Search bookings..." className="w-64" />
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Booking ID</TableHead>
-                                    <TableHead>User</TableHead>
-                                    <TableHead>Property</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Dates</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredBookings.map((booking) => (
-                                    <TableRow key={booking.id}>
-                                        <TableCell>
-                                            <div className="font-medium">{booking.id}</div>
-                                            <div className="text-xs text-muted-foreground">{booking.date}</div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center space-x-3">
-                                                <Avatar className="h-8 w-8">
-                                                    <AvatarFallback>
-                                                        {booking.user.name
-                                                            .split(" ")
-                                                            .map((n) => n[0])
-                                                            .join("")}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-medium">{booking.user.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{booking.user.email}</p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <p className="font-medium">{booking.property}</p>
-                                                <p className="text-xs text-muted-foreground">{booking.room}</p>
-                                                <Badge variant="outline" className="text-xs mt-1">
-                                                    {booking.source}
-                                                </Badge>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline">{booking.type}</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="text-sm">
-                                                <div className="flex items-center">
-                                                    <CalendarIcon className="h-3 w-3 mr-1" />
-                                                    {booking.checkIn}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">to {booking.checkOut}</div>
-                                                <div className="text-xs text-muted-foreground">({booking.duration})</div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="font-medium">
-                                                {booking.amount > 0 ? `₹${booking?.amount}` : "Free"}
-                                            </div>
-                                            <Badge
-                                                variant={
-                                                    booking.paymentStatus === "paid"
-                                                        ? "default"
-                                                        : booking.paymentStatus === "refunded"
-                                                            ? "destructive"
-                                                            : "secondary"
-                                                }
-                                                className="text-xs"
-                                            >
-                                                {booking.paymentStatus}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant={
-                                                    booking.status === "confirmed"
-                                                        ? "default"
-                                                        : booking.status === "pending"
-                                                            ? "secondary"
-                                                            : "destructive"
-                                                }
-                                            >
-                                                {booking.status === "confirmed" && <CheckCircle className="h-3 w-3 mr-1" />}
-                                                {booking.status === "pending" && <Clock className="h-3 w-3 mr-1" />}
-                                                {booking.status === "cancelled" && <XCircle className="h-3 w-3 mr-1" />}
-                                                {booking.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex space-x-1">
-                                                {/* <BookingDetailsDialog booking={booking} /> */}
-                                                <Button variant="ghost" size="sm">
-                                                    <Edit className="h-4 w-4" />
+                        <Button variant="outline" size="sm">
+                            <Filter className="h-4 w-4 mr-2" />
+                            More Filters
+                        </Button>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Booking ID</TableHead>
+                            <TableHead>User</TableHead>
+                            <TableHead>Property</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Dates</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {bookings.map((booking) => (
+                            <TableRow key={booking.id}>
+                                <TableCell>
+                                    <div className="font-medium">{booking.id}</div>
+                                    <div className="text-xs text-muted-foreground">{booking.date}</div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center space-x-3">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarFallback>
+                                                {booking.user.name
+                                                    .split(" ")
+                                                    .map((n: string) => n[0])
+                                                    .join("")}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="font-medium">{booking.user.name}</p>
+                                            <p className="text-xs text-muted-foreground">{booking.user.email}</p>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div>
+                                        <p className="font-medium">{booking.property}</p>
+                                        <p className="text-xs text-muted-foreground">{booking.room}</p>
+                                        <Badge variant="outline" className="text-xs mt-1">
+                                            {booking.source}
+                                        </Badge>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant="outline">{booking.type}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="text-sm">
+                                        <div className="flex items-center">
+                                            <CalendarIcon className="h-3 w-3 mr-1" />
+                                            {booking.checkIn}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">to {booking.checkOut}</div>
+                                        <div className="text-xs text-muted-foreground">({booking.duration})</div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="font-medium">
+                                        {booking.amount > 0 ? `₹${booking?.amount}` : "Free"}
+                                    </div>
+                                    <Badge
+                                        variant={
+                                            booking.paymentStatus === "paid"
+                                                ? "default"
+                                                : booking.paymentStatus === "refunded"
+                                                    ? "destructive"
+                                                    : "secondary"
+                                        }
+                                        className="text-xs"
+                                    >
+                                        {booking.paymentStatus}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge
+                                        variant={
+                                            booking.status === "confirmed"
+                                                ? "default"
+                                                : booking.status === "pending"
+                                                    ? "secondary"
+                                                    : "destructive"
+                                        }
+                                    >
+                                        {booking.status === "confirmed" && <CheckCircle className="h-3 w-3 mr-1" />}
+                                        {booking.status === "pending" && <Clock className="h-3 w-3 mr-1" />}
+                                        {booking.status === "cancelled" && <XCircle className="h-3 w-3 mr-1" />}
+                                        {booking.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex space-x-1">
+                                        {/* <BookingDetailsDialog booking={booking} /> */}
+                                        <Button variant="ghost" size="sm">
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        {booking.status === "pending" && (
+                                            <>
+                                                <Button variant="ghost" size="sm" className="text-green-600">
+                                                    <CheckCircle className="h-4 w-4" />
                                                 </Button>
-                                                {booking.status === "pending" && (
-                                                    <>
-                                                        <Button variant="ghost" size="sm" className="text-green-600">
-                                                            <CheckCircle className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="sm" className="text-red-600">
-                                                            <XCircle className="h-4 w-4" />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-        </>
+                                                <Button variant="ghost" size="sm" className="text-red-600">
+                                                    <XCircle className="h-4 w-4" />
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
     )
 
 

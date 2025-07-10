@@ -9,7 +9,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Eye, Loader2, Trash2, Edit } from "lucide-react";
 import LoadingIndicator from "@/src/common/LoadingIndicator/loading";
-import Pagination from "@/src/common/pagination/pagination";
 import BookingDetailsDialog from "./DetailModal";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -72,7 +71,8 @@ const BookingTable = ({
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
-    const handleViewDetails = (id: string) => {router.push(`/dashboard/bookings/${id}`);
+    const handleViewDetails = (id: string) => {
+        router.push(`/dashboard/bookings/${id}`);
     };
 
     const handleDeleteClick = (id: string) => {
@@ -235,12 +235,19 @@ const BookingTable = ({
                 </TableBody>
             </Table>
 
-            {loading == false && totalRecord != 0 && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={(page) => setCurrentPage(page)}
-                />
+            {!loading && totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between px-2">
+                    <div className="text-sm text-muted-foreground">
+                        Showing page {currentPage} of {totalPages}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>First</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>Previous</Button>
+                        <div className="px-2 text-sm">{currentPage} / {totalPages}</div>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}>Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>Last</Button>
+                    </div>
+                </div>
             )}
 
             {selectedId && (

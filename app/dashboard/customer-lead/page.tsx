@@ -125,7 +125,6 @@ export default function CustomerLeadPage() {
   };
 
   const handleDeleteClick = (id: string) => {
-    console.log('Delete clicked for ID:', id); // Debug log
     setLeadToDelete(id);
     setDeleteModalOpen(true);
   };
@@ -136,7 +135,6 @@ export default function CustomerLeadPage() {
       return;
     }
 
-    console.log('Deleting lead with ID:', leadToDelete); // Debug log
 
     try {
       const response = await fetch(`https://api.vizima.in/api/contact/message/${leadToDelete}`, {

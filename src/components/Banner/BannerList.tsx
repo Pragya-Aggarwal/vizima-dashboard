@@ -40,7 +40,6 @@ export function BannerList({ bannerData, isLoading, onEdit, onView, onDelete }: 
       </div>
     );
   }
-  console.log(bannerData, "bannerData")
   if (!bannerData || bannerData.length === 0) {
     return (
       <div className="text-center py-10">

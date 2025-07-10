@@ -35,15 +35,15 @@ type UpdateCityModalProps = {
 const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) => {
     const [isUploading, setIsUploading] = useState(false)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
-console.log(cityId,"cityId")
+
     const {
-        register, 
-        control, 
-        handleSubmit, 
-        formState: { errors, isSubmitting }, 
-        setValue, 
-        watch, 
-        reset, 
+        register,
+        control,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        setValue,
+        watch,
+        reset,
         trigger
     } = useForm<CityFormData>({
         defaultValues: {
@@ -91,7 +91,7 @@ console.log(cityId,"cityId")
                 order: Number(place.order) || 0
             })) || []
         };
-        
+
         onSubmit(formData, () => {
             setOpen(false);
             reset();

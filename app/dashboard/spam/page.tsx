@@ -172,7 +172,7 @@ function LeadDetailsDialog({ lead, type }: { lead: any; type: "spam" | "valid" }
 }
 
 function PaginationBar({ pagination, setPagination }: { pagination: Pagination; setPagination: React.Dispatch<React.SetStateAction<Pagination>> }) {
-  console.log(pagination, "pagination")
+
   if (pagination.totalPages <= 1) return null;
   return (
     <div className="mt-4 flex items-center justify-between px-2">

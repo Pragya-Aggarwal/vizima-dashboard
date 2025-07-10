@@ -26,7 +26,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -215,17 +214,16 @@ export default function BookingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [totalRecord, setTotalRecord] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [paginatedBookings, setPaginatedBookings] = useState<Booking[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 20;
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10;
   useAuthRedirect();
 
   // Fetch bookings data from API
   const fetchBookings = useCallback(async () => {
     try {
       const response = await getBookings({
-        page: 1,
-        limit: 10, // Adjust limit as needed or implement pagination
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
         ...(filters.status !== "all" && { status: filters.status }),
         ...(filters.paymentStatus !== "all" && { paymentStatus: filters.paymentStatus }),
         ...(filters.bookingType !== "all" && { type: filters.bookingType }),
@@ -234,31 +232,14 @@ export default function BookingsPage() {
         ...(filters.search && { search: filters.search }),
       });
       setBookings(response.data || []);
+      setTotalRecord(response.pagination.totalBookings);
+      setTotalPages(response.pagination.totalPages);
+      // Do NOT setCurrentPage(response.pagination.currentPage) here, or you'll get a loop!
     } catch (error) {
       console.error('Error fetching bookings:', error);
       setBookings([]);
     }
-  }, [filters]);
-
-  // Initial data fetch
-  useEffect(() => {
-    const loadInitialData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getBookings({
-          page: currentPage,
-          limit: ITEMS_PER_PAGE,
-        });
-        setBookings(response.data || []);
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadInitialData();
-  }, []);
+  }, [filters, currentPage]);
 
   // Apply filters and fetch data when they change
   useEffect(() => {
@@ -272,26 +253,18 @@ export default function BookingsPage() {
   // Define Booking type at the top of the file
   type Booking = {
     _id: string;
-    id: string;
-    user: {
-      name: string;
-      email: string;
-      phone: string;
-    };
-    property: string;
-    room: string;
-    type: string;
-    status: string;
-    amount: number;
-    date: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    guests: number;
+    sharing: string;
     checkIn: string;
     checkOut: string;
-    source: string;
+    totalAmount: number;
+    status: string;
     paymentStatus: string;
-    duration: string;
-    guests: number;
     createdAt: string;
-    updatedAt: string;
+    // ...add any other fields you use in the table
   };
 
   // Apply tab filter to the fetched data
@@ -329,14 +302,12 @@ export default function BookingsPage() {
   // Pagination effect
   useEffect(() => {
     const total = filteredBookings.length;
-    setTotalRecord(total);
-    setTotalPages(Math.ceil(total / ITEMS_PER_PAGE));
 
     const paginated = filteredBookings.slice(
       (currentPage - 1) * ITEMS_PER_PAGE,
       currentPage * ITEMS_PER_PAGE
     );
-    setPaginatedBookings(paginated);
+    // setPaginatedBookings(paginated); // This line is removed
   }, [filteredBookings, currentPage]);
 
   // visitbookin
@@ -510,222 +481,200 @@ export default function BookingsPage() {
         </Card>
       </div>
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList>
-          <TabsTrigger value="all">All Bookings ({filteredBookings.length})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Booking List</CardTitle>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Search bookings..."
-                    className="w-64"
-                    value={filters.search}
-                    onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleApplyFilters();
-                      }
-                    }}
-                  />
-                  <Select
-                    value={filters.status}
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}
+      {/* Remove Tabs, TabsList, TabsTrigger, TabsContent, and all tab-related state and logic */}
+      {/* Instead, render the booking list and controls directly */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Booking List</CardTitle>
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Search bookings..."
+                className="w-64"
+                value={filters.search}
+                onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    // handleApplyFilters(); // This function is removed
+                  }
+                }}
+              />
+              <Select
+                value={filters.status}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={Object.values(filters).some(filter =>
+                    (typeof filter === 'object' ?
+                      Object.values(filter).some(Boolean) :
+                      filter !== 'all' && filter !== ''
+                    )
+                    ) ? "bg-primary/10 border-primary" : ""}
                   >
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="confirmed">Confirmed</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={Object.values(filters).some(filter =>
-                        (typeof filter === 'object' ?
-                          Object.values(filter).some(Boolean) :
-                          filter !== 'all' && filter !== ''
-                        )
-                        ) ? "bg-primary/10 border-primary" : ""}
+                    <Filter className="h-4 w-4 mr-2" />
+                    {Object.values(filters).some(filter =>
+                    (typeof filter === 'object' ?
+                      Object.values(filter).some(Boolean) :
+                      filter !== 'all' && filter !== ''
+                    )
+                    ) ? "Filters Applied" : "Filter"}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="w-[95vw] max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl p-4 sm:p-6 overflow-y-auto max-h-[90vh]">
+                  <DialogHeader>
+                    <DialogTitle className="text-lg sm:text-xl">Filter Bookings</DialogTitle>
+                    <DialogDescription className="text-sm">Apply filters to narrow down bookings.</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4">
+                    {/* Search */}
+                    <div>
+                      <Label>Search</Label>
+                      <Input
+                        placeholder="Search bookings..."
+                        value={filters.search}
+                        onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                      />
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                        value={filters.status}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}
                       >
-                        <Filter className="h-4 w-4 mr-2" />
-                        {Object.values(filters).some(filter =>
-                        (typeof filter === 'object' ?
-                          Object.values(filter).some(Boolean) :
-                          filter !== 'all' && filter !== ''
-                        )
-                        ) ? "Filters Applied" : "Filter"}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="w-[95vw] max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl p-4 sm:p-6 overflow-y-auto max-h-[90vh]">
-                      <DialogHeader>
-                        <DialogTitle className="text-lg sm:text-xl">Filter Bookings</DialogTitle>
-                        <DialogDescription className="text-sm">Apply filters to narrow down bookings.</DialogDescription>
-                      </DialogHeader>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="confirmed">Confirmed</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                      <div className="space-y-4">
-                        {/* Search */}
-                        <div>
-                          <Label>Search</Label>
-                          <Input
-                            placeholder="Search bookings..."
-                            value={filters.search}
-                            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                          />
-                        </div>
+                    {/* Payment Status */}
+                    <div>
+                      <Label>Payment Status</Label>
+                      <Select
+                        value={filters.paymentStatus}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, paymentStatus: value as any }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Payment status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Payments</SelectItem>
+                          <SelectItem value="paid">Paid</SelectItem>
+                          <SelectItem value="unpaid">Unpaid</SelectItem>
+                          <SelectItem value="refunded">Refunded</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                        {/* Status */}
-                        <div>
-                          <Label>Status</Label>
-                          <Select
-                            value={filters.status}
-                            onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as any }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Statuses</SelectItem>
-                              <SelectItem value="confirmed">Confirmed</SelectItem>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                    {/* Booking Type */}
+                    <div>
+                      <Label>Booking Type</Label>
+                      <Select
+                        value={filters.bookingType}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, bookingType: value as any }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Booking type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Types</SelectItem>
+                          <SelectItem value="room">Room Booking</SelectItem>
+                          <SelectItem value="visit">Visit Booking</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                        {/* Payment Status */}
-                        <div>
-                          <Label>Payment Status</Label>
-                          <Select
-                            value={filters.paymentStatus}
-                            onValueChange={(value) => setFilters(prev => ({ ...prev, paymentStatus: value as any }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Payment status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Payments</SelectItem>
-                              <SelectItem value="paid">Paid</SelectItem>
-                              <SelectItem value="unpaid">Unpaid</SelectItem>
-                              <SelectItem value="refunded">Refunded</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Booking Type */}
-                        <div>
-                          <Label>Booking Type</Label>
-                          <Select
-                            value={filters.bookingType}
-                            onValueChange={(value) => setFilters(prev => ({ ...prev, bookingType: value as any }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Booking type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Types</SelectItem>
-                              <SelectItem value="room">Room Booking</SelectItem>
-                              <SelectItem value="visit">Visit Booking</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Date Range */}
-                        <div>
-                          <Label>Date Range</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="w-full justify-start text-left font-normal"
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {filters.dateRange?.from ? (
-                                  filters.dateRange.to ? (
-                                    <>
-                                      {format(filters.dateRange.from, "MMM dd, yyyy")} -{" "}
-                                      {format(filters.dateRange.to, "MMM dd, yyyy")}
-                                    </>
-                                  ) : (
-                                    format(filters.dateRange.from, "MMM dd, yyyy")
-                                  )
-                                ) : (
-                                  <span>Pick a date range</span>
-                                )}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                initialFocus
-                                mode="range"
-                                defaultMonth={filters.dateRange?.from}
-                                selected={filters.dateRange}
-                                onSelect={(range) => setFilters(prev => ({ ...prev, dateRange: range || { from: undefined, to: undefined } }))}
-                                numberOfMonths={2}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-
-                        {/* Buttons */}
-                        <div className="flex justify-end gap-2 pt-4">
+                    {/* Date Range */}
+                    <div>
+                      <Label>Date Range</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            onClick={handleClearFilters}
-                            className="mr-2"
+                            className="w-full justify-start text-left font-normal"
                           >
-                            Clear All
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {filters.dateRange?.from ? (
+                              filters.dateRange.to ? (
+                                <>
+                                  {format(filters.dateRange.from, "MMM dd, yyyy")} -{" "}
+                                  {format(filters.dateRange.to, "MMM dd, yyyy")}
+                                </>
+                              ) : (
+                                format(filters.dateRange.from, "MMM dd, yyyy")
+                              )
+                            ) : (
+                              <span>Pick a date range</span>
+                            )}
                           </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            initialFocus
+                            mode="range"
+                            defaultMonth={filters.dateRange?.from}
+                            selected={filters.dateRange}
+                            onSelect={(range) => setFilters(prev => ({ ...prev, dateRange: range || { from: undefined, to: undefined } }))}
+                            numberOfMonths={2}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
 
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <BookingTable
-                data={paginatedBookings.map((booking: any) => ({
-                  _id: booking._id,
-                  fullName: booking?.fullName || 'N/A',
-                  email: booking?.email || 'N/A',
-                  phoneNumber: booking?.phoneNumber || 'N/A',
-                  guests: 1,
-                  property: booking?.property || 'N/A',
-                  gender: booking?.gender || 'N/A',
-                  checkIn: booking?.checkIn,
-                  checkOut: booking?.checkOut,
-                  sharing: booking?.sharing || 'N/A',
-                  totalAmount: booking?.totalAmount || 0,
-                  paymentStatus: booking?.paymentStatus || 'pending',
-                  status: booking?.status || 'pending',
-                  createdAt: booking?.createdAt || new Date().toISOString(),
-                }))}
-                loading={isLoading}
-                totalBookings={totalRecord}
-                totalPages={totalPages}
-                totalRecord={totalRecord}
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    {/* Buttons */}
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={handleClearFilters}
+                        className="mr-2"
+                      >
+                        Clear All
+                      </Button>
+
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <BookingTable
+            data={bookings}
+            loading={isLoading}
+            totalBookings={totalRecord}
+            totalPages={totalPages}
+            totalRecord={totalRecord}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </CardContent>
+      </Card>
 
 
-
-      </Tabs>
     </div>
   )
 }

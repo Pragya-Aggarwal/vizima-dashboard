@@ -112,102 +112,102 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Configure your application settings and preferences</p>
       </div>
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+      {/* <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="grid grid-cols-2 w-full">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             <span>General</span>
-          </TabsTrigger>
-          {/* <TabsTrigger value="notifications" className="flex items-center gap-2">
+          </TabsTrigger> */}
+      {/* <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             <span>Notifications</span>
           </TabsTrigger> */}
-          {/* <TabsTrigger value="security" className="flex items-center gap-2">
+      {/* <TabsTrigger value="security" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
             <span>Security</span>
           </TabsTrigger> */}
-          <TabsTrigger value="payment" className="flex items-center gap-2">
+      {/* <TabsTrigger value="payment" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
             <span>Payment</span>
-          </TabsTrigger>
-          {/* <TabsTrigger value="backup" className="flex items-center gap-2">
+          </TabsTrigger> */}
+      {/* <TabsTrigger value="backup" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
             <span>Backup</span>
           </TabsTrigger> */}
-        </TabsList>
+      {/* </TabsList> */}
 
-        <TabsContent value="general" className="space-y-4">
-          <Card className="card-hover">
-            <form onSubmit={handleGeneralSubmit}>
-              <CardHeader>
-                <CardTitle>General Settings</CardTitle>
-                <CardDescription>Manage your site information and contact details</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="siteName">Site Name</Label>
-                    <Input
-                      id="siteName"
-                      value={generalSettings.siteName}
-                      onChange={(e) => setGeneralSettings({ ...generalSettings, siteName: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="siteDescription">Site Description</Label>
-                    <Input
-                      id="siteDescription"
-                      value={generalSettings.siteDescription}
-                      onChange={(e) => setGeneralSettings({ ...generalSettings, siteDescription: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="contactEmail">Contact Email</Label>
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <Input
-                        id="contactEmail"
-                        type="email"
-                        value={generalSettings.contactEmail}
-                        onChange={(e) => setGeneralSettings({ ...generalSettings, contactEmail: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="contactPhone">Contact Phone</Label>
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <Input
-                        id="contactPhone"
-                        value={generalSettings.contactPhone}
-                        onChange={(e) => setGeneralSettings({ ...generalSettings, contactPhone: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Textarea
-                    id="address"
-                    rows={3}
-                    value={generalSettings.address}
-                    onChange={(e) => setGeneralSettings({ ...generalSettings, address: e.target.value })}
+      {/* <TabsContent value="general" className="space-y-4"> */}
+      <Card className="card-hover">
+        <form onSubmit={handleGeneralSubmit}>
+          <CardHeader>
+            <CardTitle>General Settings</CardTitle>
+            <CardDescription>Manage your site information and contact details</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="siteName">Site Name</Label>
+                <Input
+                  id="siteName"
+                  value={generalSettings.siteName}
+                  onChange={(e) => setGeneralSettings({ ...generalSettings, siteName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="siteDescription">Site Description</Label>
+                <Input
+                  id="siteDescription"
+                  value={generalSettings.siteDescription}
+                  onChange={(e) => setGeneralSettings({ ...generalSettings, siteDescription: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="contactEmail">Contact Email</Label>
+                <div className="flex items-center">
+                  <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <Input
+                    id="contactEmail"
+                    type="email"
+                    value={generalSettings.contactEmail}
+                    onChange={(e) => setGeneralSettings({ ...generalSettings, contactEmail: e.target.value })}
                   />
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button type="submit" className="btn-hover-effect">
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
-        </TabsContent>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contactPhone">Contact Phone</Label>
+                <div className="flex items-center">
+                  <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <Input
+                    id="contactPhone"
+                    value={generalSettings.contactPhone}
+                    onChange={(e) => setGeneralSettings({ ...generalSettings, contactPhone: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              <Textarea
+                id="address"
+                rows={3}
+                value={generalSettings.address}
+                onChange={(e) => setGeneralSettings({ ...generalSettings, address: e.target.value })}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button type="submit" className="btn-hover-effect">
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+      {/* </TabsContent> */}
 
-        <TabsContent value="notifications" className="space-y-4">
+      {/* <TabsContent value="notifications" className="space-y-4">
           <Card className="card-hover">
             <form onSubmit={handleNotificationSubmit}>
               <CardHeader>
@@ -307,9 +307,9 @@ export default function SettingsPage() {
               </CardFooter>
             </form>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
-        <TabsContent value="security" className="space-y-4">
+      {/* <TabsContent value="security" className="space-y-4">
           <Card className="card-hover">
             <form onSubmit={handleSecuritySubmit}>
               <CardHeader>
@@ -510,7 +510,7 @@ export default function SettingsPage() {
             </form>
           </Card>
         </TabsContent>
-      </Tabs>
+      // </Tabs> */}
     </div>
   )
 }

@@ -218,7 +218,7 @@ const UpdateModal = ({
     };
 
     const onFormSubmit: SubmitHandler<SchemaFormData> = async (formData) => {
-        console.log(formData,"formData");
+
         try {
             setIsLoading(true);
 

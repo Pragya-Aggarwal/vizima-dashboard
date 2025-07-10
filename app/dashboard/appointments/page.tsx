@@ -520,7 +520,6 @@ export default function AppointmentsPage() {
     const totalVisitRecord = dataVisitBooking?.total || 0;
     const currentPageVisits = dataVisitBooking?.page || 1;
     const totalPagesVisit = Math.ceil(totalVisitRecord / ITEMS_PER_PAGE) || 1;
-    console.log(totalPagesVisit, visitBookingData, "totalPagesVisit")
 
     // Fetch appointments from API
     useEffect(() => {

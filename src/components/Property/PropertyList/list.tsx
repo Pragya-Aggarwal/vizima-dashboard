@@ -284,426 +284,426 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
     return (
         <div className=" mt-5 mx-5">
 
-            <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+            {/* <Tabs value={selectedTab} onValueChange={setSelectedTab}>
                 <TabsList>
                     <TabsTrigger value="vizima">
                         Total Property
-                    </TabsTrigger>
-                    {/* <TabsTrigger value="rentok">RentOk Sync by ({rentokProperties.length})</TabsTrigger> */}
-                </TabsList>
+                    </TabsTrigger> */}
+            {/* <TabsTrigger value="rentok">RentOk Sync by ({rentokProperties.length})</TabsTrigger> */}
+            {/* </TabsList>
 
-                <TabsContent value="vizima" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex justify-between items-center">
-                                <CardTitle>Vizima Properties</CardTitle>
-                                <div className="flex space-x-2">
-                                    <div className="relative">
-                                        <Input
-                                            placeholder="Search properties..."
-                                            className="w-64"
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            type="search"
-                                        />
+                <TabsContent value="vizima" className="space-y-4"> */}
+            <Card>
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <CardTitle>Vizima Properties</CardTitle>
+                        <div className="flex space-x-2">
+                            <div className="relative">
+                                <Input
+                                    placeholder="Search properties..."
+                                    className="w-64"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    type="search"
+                                />
+                            </div>
+                            {/* dialog box */}
+
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                        <Filter className="h-4 w-4 mr-2" />
+                                        Filter
+                                    </Button>
+                                </DialogTrigger>
+
+                                <DialogContent className="w-[95vw] max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl p-4 sm:p-6 overflow-y-auto max-h-[90vh]">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-lg sm:text-xl">Filter Properties</DialogTitle>
+                                        <DialogDescription className="text-sm">Apply filters to narrow down properties.</DialogDescription>
+                                    </DialogHeader>
+
+                                    {/* City & State */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label>Search By City</Label>
+                                            <Input
+                                                placeholder="Search cities.."
+                                                className="w-full text-sm rounded-md"
+                                                value={city}
+                                                onChange={(e) => setCity(e.target.value)}
+                                                type="search"
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label>Search By State</Label>
+                                            <Input
+                                                placeholder="Search state.."
+                                                className="w-full text-sm rounded-md"
+                                                value={state}
+                                                onChange={(e) => setState(e.target.value)}
+                                                type="search"
+                                            />
+                                        </div>
                                     </div>
-                                    {/* dialog box */}
 
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button variant="outline" size="sm">
-                                                <Filter className="h-4 w-4 mr-2" />
-                                                Filter
-                                            </Button>
-                                        </DialogTrigger>
-
-                                        <DialogContent className="w-[95vw] max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl p-4 sm:p-6 overflow-y-auto max-h-[90vh]">
-                                            <DialogHeader>
-                                                <DialogTitle className="text-lg sm:text-xl">Filter Properties</DialogTitle>
-                                                <DialogDescription className="text-sm">Apply filters to narrow down properties.</DialogDescription>
-                                            </DialogHeader>
-
-                                            {/* City & State */}
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <div>
-                                                    <Label>Search By City</Label>
-                                                    <Input
-                                                        placeholder="Search cities.."
-                                                        className="w-full text-sm rounded-md"
-                                                        value={city}
-                                                        onChange={(e) => setCity(e.target.value)}
-                                                        type="search"
+                                    {/* Amenities (Checkbox) */}
+                                    <div className="mt-4">
+                                        <Label>Select Amenities</Label>
+                                        <div className="flex gap-3 flex-wrap mt-2">
+                                            {[
+                                                "wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen",
+                                                "balcony", "garden", "security", "evevator", "pets", "furnished", "tv",
+                                                "dishwasher", "microwave", "refrigerator"
+                                            ].map((amenity) => (
+                                                <label key={amenity} className="flex items-center gap-2 text-sm">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={amenity}
+                                                        checked={selectedAmenities.includes(amenity)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setSelectedAmenities([...selectedAmenities, amenity]);
+                                                            } else {
+                                                                setSelectedAmenities(selectedAmenities.filter((a) => a !== amenity));
+                                                            }
+                                                        }}
                                                     />
-                                                </div>
+                                                    {amenity}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Property Type & Sharing Type */}
+                                    <div className="grid gap-4 py-4">
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="type">Property Type:</Label>
+                                            <Select value={type} onValueChange={(value) => setType(value)}>
+                                                <SelectTrigger className="w-full sm:w-[180px] text-sm rounded-md">
+                                                    <SelectValue placeholder="Select Type" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All</SelectItem>
+                                                    <SelectItem value="apartment">Apartment</SelectItem>
+                                                    <SelectItem value="pg">PG</SelectItem>
+                                                    <SelectItem value="hostel">Hostel</SelectItem>
+                                                    <SelectItem value="villa">Villa</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <Label>Sharing Type</Label>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {["single", "double", "triple"].map((typeOption) => (
+                                                    <Badge
+                                                        key={typeOption}
+                                                        variant={sharingType === typeOption ? "default" : "outline"}
+                                                        onClick={() => setsharingType(typeOption)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {typeOption.charAt(0).toUpperCase() + typeOption.slice(1)}
+                                                    </Badge>
+                                                ))}
+                                                <Badge
+                                                    variant={sharingType === "all" ? "default" : "outline"}
+                                                    onClick={() => setsharingType("all")}
+                                                    className="cursor-pointer"
+                                                >
+                                                    All
+                                                </Badge>
+                                            </div>
+                                        </div>
+
+                                        {/* Bedrooms & Bathrooms */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <Label>Bedrooms</Label>
+                                                <Input
+                                                    type="number"
+                                                    placeholder="e.g. 2"
+                                                    value={bedrooms}
+                                                    onChange={(e) => setBedrooms(Number(e.target.value))}
+                                                    min={0}
+                                                    className="text-sm rounded-md"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label>Bathrooms</Label>
+                                                <Input
+                                                    type="number"
+                                                    placeholder="e.g. 1"
+                                                    value={bathrooms}
+                                                    onChange={(e) => setBathrooms(Number(e.target.value))}
+                                                    min={0}
+                                                    className="text-sm rounded-md"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Availability & Featured */}
+                                        <div className="flex items-center justify-between">
+                                            <Label>Available</Label>
+                                            <Switch
+                                                checked={isAvailable}
+                                                onCheckedChange={(checked) => {
+                                                    setIsAvailable(checked);
+                                                    setIsAvailableTouched(true);
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Label>Featured</Label>
+                                            <Switch
+                                                checked={isFeatured}
+                                                onCheckedChange={(checked) => {
+                                                    setIsFeatured(checked);
+                                                    setIsFeaturedTouched(true);
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Sort By & Order */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label>Sort By</Label>
+                                            <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
+                                                <SelectTrigger className="w-full text-sm rounded-md">
+                                                    <SelectValue placeholder="Select Field" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="createdAt">Created At</SelectItem>
+                                                    <SelectItem value="price">Price</SelectItem>
+                                                    <SelectItem value="views">Views</SelectItem>
+                                                    <SelectItem value="title">Title</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div>
+                                            <Label>Sort Order</Label>
+                                            <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as "asc" | "desc")}>
+                                                <SelectTrigger className="w-full text-sm rounded-md">
+                                                    <SelectValue placeholder="Select Order" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="asc">Ascending</SelectItem>
+                                                    <SelectItem value="desc">Descending</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+
+                                    {/* Clear Button */}
+                                    <div className="flex justify-end mt-4">
+                                        <Button variant="outline" onClick={handleClearFilters} size="sm">
+                                            Clear
+                                        </Button>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+
+
+
+
+                            {/* end dialog box */}
+
+                            <Button variant="outline" size="sm">
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Refresh
+                            </Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Property</TableHead>
+                                <TableHead>Location</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Occupancy</TableHead>
+                                <TableHead>Revenue</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        {/* with loading indicator */}
+                        <TableBody>
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-6">
+                                        <LoadingIndicator />
+                                    </TableCell>
+                                </TableRow>
+                            ) : properties?.length > 0 ? (
+                                properties.map((property, index) => (
+                                    <TableRow key={property._id || index}>
+
+                                        <TableCell>
+                                            <div className="flex items-center space-x-3">
+                                                <Avatar className="h-12 w-12">
+                                                    <AvatarImage src={property?.images?.[0] || "/placeholder.svg"} />
+                                                    <AvatarFallback>{property?.title?.substring(0, 2)}</AvatarFallback>
+                                                </Avatar>
                                                 <div>
-                                                    <Label>Search By State</Label>
-                                                    <Input
-                                                        placeholder="Search state.."
-                                                        className="w-full text-sm rounded-md"
-                                                        value={state}
-                                                        onChange={(e) => setState(e.target.value)}
-                                                        type="search"
-                                                    />
+                                                    <p className="font-medium">{property?.title}</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {property?.bedrooms || 0} rooms • ₹{property?.price?.toLocaleString()}/month
+                                                    </p>
+                                                    <div className="flex items-center space-x-2 mt-1">
+                                                        {property?.isFeatured && (
+                                                            <Badge variant="secondary" className="text-xs">
+                                                                <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
+                                                                Featured
+                                                            </Badge>
+                                                        )}
+                                                        <Badge variant="outline" className="text-xs">
+                                                            {property?.images?.length || 0} images
+                                                        </Badge>
+                                                    </div>
                                                 </div>
                                             </div>
+                                        </TableCell>
 
-                                            {/* Amenities (Checkbox) */}
-                                            <div className="mt-4">
-                                                <Label>Select Amenities</Label>
-                                                <div className="flex gap-3 flex-wrap mt-2">
-                                                    {[
-                                                        "wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen",
-                                                        "balcony", "garden", "security", "evevator", "pets", "furnished", "tv",
-                                                        "dishwasher", "microwave", "refrigerator"
-                                                    ].map((amenity) => (
-                                                        <label key={amenity} className="flex items-center gap-2 text-sm">
-                                                            <input
-                                                                type="checkbox"
-                                                                value={amenity}
-                                                                checked={selectedAmenities.includes(amenity)}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) {
-                                                                        setSelectedAmenities([...selectedAmenities, amenity]);
-                                                                    } else {
-                                                                        setSelectedAmenities(selectedAmenities.filter((a) => a !== amenity));
+                                        <TableCell>
+                                            <div>
+                                                <div className="flex items-center">
+                                                    <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
+                                                    {property?.location?.city}
+                                                </div>
+                                                <p className="text-sm text-muted-foreground">{property?.location?.address}</p>
+                                            </div>
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <Badge variant="outline">{property?.type}</Badge>
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <div className="flex items-center space-x-2">
+                                                <Progress value={property?.occupancy || 0} className="w-16 h-2" />
+                                                <span className="text-sm font-medium">{property?.occupancy || 0}%</span>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {Math.round(((property?.occupancy || 0) / 100) * (property?.bedrooms || 0))}/{property?.bedrooms || 0} occupied
+                                            </p>
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <div className="font-medium">₹{property?.revenue?.toLocaleString() || "0"}</div>
+                                            <p className="text-xs text-muted-foreground">this month</p>
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <div className="flex items-center space-x-2">
+                                                <Badge variant={property?.status === "verified" ? "default" : "secondary"}>
+                                                    {property?.status === "verified" ? (
+                                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                                    ) : (
+                                                        <Clock className="h-3 w-3 mr-1" />
+                                                    )}
+                                                    {property?.status || "unverified"}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex items-center mt-1">
+                                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                                                <span className="text-xs">{property?.rating?.average || 0}</span>
+                                            </div>
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <div className="flex space-x-1">
+
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={(() => handleView(property._id))}
+                                                    aria-label="View Property"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+
+                                                <Button variant="ghost" size="sm" onClick={(() => handleUpdatePropertModalOpen(property._id))}
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <button
+                                                            aria-label="Delete"
+                                                            className="text-primary hover:text-red-800"
+                                                        >
+                                                            <Trash size={18} />
+                                                        </button>
+                                                    </AlertDialogTrigger>
+
+                                                    <AlertDialogContent className="max-w-md">
+                                                        <AlertDialogHeader className="flex flex-col items-center text-center space-y-4">
+                                                            <div className="p-4 border-2 border-dashed border-primary rounded-full">
+                                                                <Trash size={40} className="text-primary" />
+                                                            </div>
+
+                                                            <AlertDialogTitle className="text-xl font-semibold text-primary">
+                                                                Are you absolutely sure?
+                                                            </AlertDialogTitle>
+                                                            <AlertDialogDescription className="text-gray-600">
+                                                                This action cannot be undone. This will permanently delete the item
+                                                                from the system.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+
+                                                        <AlertDialogFooter className="flex justify-center gap-4 mt-4">
+                                                            <AlertDialogCancel className="px-4 py-2 rounded border">
+                                                                Cancel
+                                                            </AlertDialogCancel>
+
+                                                            <AlertDialogAction
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await deletePropertybyId(property._id);
+                                                                        toast.success("Property deleted successfully");
+
+                                                                        // Invalidate and refetch properties query
+                                                                        await queryClient.invalidateQueries({ queryKey: ['properties'] });
+
+                                                                    } catch (err) {
+                                                                        toast.error("Failed to delete property");
+                                                                        console.error(err);
                                                                     }
                                                                 }}
-                                                            />
-                                                            {amenity}
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Property Type & Sharing Type */}
-                                            <div className="grid gap-4 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Label htmlFor="type">Property Type:</Label>
-                                                    <Select value={type} onValueChange={(value) => setType(value)}>
-                                                        <SelectTrigger className="w-full sm:w-[180px] text-sm rounded-md">
-                                                            <SelectValue placeholder="Select Type" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="all">All</SelectItem>
-                                                            <SelectItem value="apartment">Apartment</SelectItem>
-                                                            <SelectItem value="pg">PG</SelectItem>
-                                                            <SelectItem value="hostel">Hostel</SelectItem>
-                                                            <SelectItem value="villa">Villa</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-
-                                                <div>
-                                                    <Label>Sharing Type</Label>
-                                                    <div className="flex flex-wrap gap-2 mt-2">
-                                                        {["single", "double", "triple"].map((typeOption) => (
-                                                            <Badge
-                                                                key={typeOption}
-                                                                variant={sharingType === typeOption ? "default" : "outline"}
-                                                                onClick={() => setsharingType(typeOption)}
-                                                                className="cursor-pointer"
+                                                                className="bg-primary text-white hover:bg-primary px-4 py-2 rounded"
                                                             >
-                                                                {typeOption.charAt(0).toUpperCase() + typeOption.slice(1)}
-                                                            </Badge>
-                                                        ))}
-                                                        <Badge
-                                                            variant={sharingType === "all" ? "default" : "outline"}
-                                                            onClick={() => setsharingType("all")}
-                                                            className="cursor-pointer"
-                                                        >
-                                                            All
-                                                        </Badge>
-                                                    </div>
-                                                </div>
+                                                                Confirm Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
 
-                                                {/* Bedrooms & Bathrooms */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <Label>Bedrooms</Label>
-                                                        <Input
-                                                            type="number"
-                                                            placeholder="e.g. 2"
-                                                            value={bedrooms}
-                                                            onChange={(e) => setBedrooms(Number(e.target.value))}
-                                                            min={0}
-                                                            className="text-sm rounded-md"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label>Bathrooms</Label>
-                                                        <Input
-                                                            type="number"
-                                                            placeholder="e.g. 1"
-                                                            value={bathrooms}
-                                                            onChange={(e) => setBathrooms(Number(e.target.value))}
-                                                            min={0}
-                                                            className="text-sm rounded-md"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Availability & Featured */}
-                                                <div className="flex items-center justify-between">
-                                                    <Label>Available</Label>
-                                                    <Switch
-                                                        checked={isAvailable}
-                                                        onCheckedChange={(checked) => {
-                                                            setIsAvailable(checked);
-                                                            setIsAvailableTouched(true);
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <Label>Featured</Label>
-                                                    <Switch
-                                                        checked={isFeatured}
-                                                        onCheckedChange={(checked) => {
-                                                            setIsFeatured(checked);
-                                                            setIsFeaturedTouched(true);
-                                                        }}
-                                                    />
-                                                </div>
                                             </div>
-
-                                            {/* Sort By & Order */}
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <div>
-                                                    <Label>Sort By</Label>
-                                                    <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
-                                                        <SelectTrigger className="w-full text-sm rounded-md">
-                                                            <SelectValue placeholder="Select Field" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="createdAt">Created At</SelectItem>
-                                                            <SelectItem value="price">Price</SelectItem>
-                                                            <SelectItem value="views">Views</SelectItem>
-                                                            <SelectItem value="title">Title</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div>
-                                                    <Label>Sort Order</Label>
-                                                    <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as "asc" | "desc")}>
-                                                        <SelectTrigger className="w-full text-sm rounded-md">
-                                                            <SelectValue placeholder="Select Order" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="asc">Ascending</SelectItem>
-                                                            <SelectItem value="desc">Descending</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                            </div>
-
-                                            {/* Clear Button */}
-                                            <div className="flex justify-end mt-4">
-                                                <Button variant="outline" onClick={handleClearFilters} size="sm">
-                                                    Clear
-                                                </Button>
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
-
-
-
-
-                                    {/* end dialog box */}
-
-                                    <Button variant="outline" size="sm">
-                                        <RefreshCw className="h-4 w-4 mr-2" />
-                                        Refresh
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Property</TableHead>
-                                        <TableHead>Location</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead>Occupancy</TableHead>
-                                        <TableHead>Revenue</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Actions</TableHead>
+                                        </TableCell>
                                     </TableRow>
-                                </TableHeader>
-
-                                {/* with loading indicator */}
-                                <TableBody>
-                                    {isLoading ? (
-                                        <TableRow>
-                                            <TableCell colSpan={7} className="text-center py-6">
-                                                <LoadingIndicator />
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : properties?.length > 0 ? (
-                                        properties.map((property, index) => (
-                                            <TableRow key={property._id || index}>
-
-                                                <TableCell>
-                                                    <div className="flex items-center space-x-3">
-                                                        <Avatar className="h-12 w-12">
-                                                            <AvatarImage src={property?.images?.[0] || "/placeholder.svg"} />
-                                                            <AvatarFallback>{property?.title?.substring(0, 2)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <p className="font-medium">{property?.title}</p>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {property?.bedrooms || 0} rooms • ₹{property?.price?.toLocaleString()}/month
-                                                            </p>
-                                                            <div className="flex items-center space-x-2 mt-1">
-                                                                {property?.isFeatured && (
-                                                                    <Badge variant="secondary" className="text-xs">
-                                                                        <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
-                                                                        Featured
-                                                                    </Badge>
-                                                                )}
-                                                                <Badge variant="outline" className="text-xs">
-                                                                    {property?.images?.length || 0} images
-                                                                </Badge>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <div>
-                                                        <div className="flex items-center">
-                                                            <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
-                                                            {property?.location?.city}
-                                                        </div>
-                                                        <p className="text-sm text-muted-foreground">{property?.location?.address}</p>
-                                                    </div>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <Badge variant="outline">{property?.type}</Badge>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <div className="flex items-center space-x-2">
-                                                        <Progress value={property?.occupancy || 0} className="w-16 h-2" />
-                                                        <span className="text-sm font-medium">{property?.occupancy || 0}%</span>
-                                                    </div>
-                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                        {Math.round(((property?.occupancy || 0) / 100) * (property?.bedrooms || 0))}/{property?.bedrooms || 0} occupied
-                                                    </p>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <div className="font-medium">₹{property?.revenue?.toLocaleString() || "0"}</div>
-                                                    <p className="text-xs text-muted-foreground">this month</p>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <div className="flex items-center space-x-2">
-                                                        <Badge variant={property?.status === "verified" ? "default" : "secondary"}>
-                                                            {property?.status === "verified" ? (
-                                                                <CheckCircle className="h-3 w-3 mr-1" />
-                                                            ) : (
-                                                                <Clock className="h-3 w-3 mr-1" />
-                                                            )}
-                                                            {property?.status || "unverified"}
-                                                        </Badge>
-                                                    </div>
-                                                    <div className="flex items-center mt-1">
-                                                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-                                                        <span className="text-xs">{property?.rating?.average || 0}</span>
-                                                    </div>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <div className="flex space-x-1">
-
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={(() => handleView(property._id))}
-                                                            aria-label="View Property"
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                        </Button>
-
-                                                        <Button variant="ghost" size="sm" onClick={(() => handleUpdatePropertModalOpen(property._id))}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <button
-                                                                    aria-label="Delete"
-                                                                    className="text-primary hover:text-red-800"
-                                                                >
-                                                                    <Trash size={18} />
-                                                                </button>
-                                                            </AlertDialogTrigger>
-
-                                                            <AlertDialogContent className="max-w-md">
-                                                                <AlertDialogHeader className="flex flex-col items-center text-center space-y-4">
-                                                                    <div className="p-4 border-2 border-dashed border-primary rounded-full">
-                                                                        <Trash size={40} className="text-primary" />
-                                                                    </div>
-
-                                                                    <AlertDialogTitle className="text-xl font-semibold text-primary">
-                                                                        Are you absolutely sure?
-                                                                    </AlertDialogTitle>
-                                                                    <AlertDialogDescription className="text-gray-600">
-                                                                        This action cannot be undone. This will permanently delete the item
-                                                                        from the system.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-
-                                                                <AlertDialogFooter className="flex justify-center gap-4 mt-4">
-                                                                    <AlertDialogCancel className="px-4 py-2 rounded border">
-                                                                        Cancel
-                                                                    </AlertDialogCancel>
-
-                                                                    <AlertDialogAction
-                                                                        onClick={async () => {
-                                                                            try {
-                                                                                await deletePropertybyId(property._id);
-                                                                                toast.success("Property deleted successfully");
-
-                                                                                // Invalidate and refetch properties query
-                                                                                await queryClient.invalidateQueries({ queryKey: ['properties'] });
-
-                                                                            } catch (err) {
-                                                                                toast.error("Failed to delete property");
-                                                                                console.error(err);
-                                                                            }
-                                                                        }}
-                                                                        className="bg-primary text-white hover:bg-primary px-4 py-2 rounded"
-                                                                    >
-                                                                        Confirm Delete
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                                                No property found.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                                        No property found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
 
 
 
 
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                    </Table>
+                </CardContent>
+            </Card>
+            {/* </TabsContent> */}
 
-                {/* <TabsContent value="rentok" className="space-y-4">
+            {/* <TabsContent value="rentok" className="space-y-4">
                     <Card>
                         <CardHeader>
                             <div className="flex justify-between items-center">
@@ -820,7 +820,7 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                         </CardContent>
                     </Card>
                 </TabsContent> */}
-            </Tabs >
+            {/* </Tabs > */}
 
             <UpdatePropertyModal open={open} setOpen={setOpen} onSubmit={handleUpdateProperty} propertyId={propertyId} setPropertyId={setPropertyId} />
 
