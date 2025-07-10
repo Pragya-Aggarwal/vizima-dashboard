@@ -174,9 +174,10 @@ type PropertyListProps = {
     currentPage: number;
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
     totalPages: number;
+    refetch: () => void;
 };
 
-const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, type, setType, sharingType, setsharingType, isLoading, bathrooms, setBathrooms, bedrooms, setBedrooms, isAvailable, setIsAvailable, isFeatured, setIsFeatured, isAvailableTouched, setIsAvailableTouched, isFeaturedTouched, setIsFeaturedTouched, sortOrder, setSortOrder, sortBy, setSortBy, city, setCity, state, setState, selectedAmenities, setSelectedAmenities, currentPage, setCurrentPage, totalPages }) => {
+const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, type, setType, sharingType, setsharingType, isLoading, bathrooms, setBathrooms, bedrooms, setBedrooms, isAvailable, setIsAvailable, isFeatured, setIsFeatured, isAvailableTouched, setIsAvailableTouched, isFeaturedTouched, setIsFeaturedTouched, sortOrder, setSortOrder, sortBy, refetch, setSortBy, city, setCity, state, setState, selectedAmenities, setSelectedAmenities, currentPage, setCurrentPage, totalPages }) => {
 
     const queryClient = useQueryClient();
     const [selectedTab, setSelectedTab] = useState("vizima")
@@ -279,7 +280,9 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
         setOpen(true);
         setPropertyId(id);
     };
-
+    const handleRefresh = () => {
+        refetch();
+    };
 
     return (
         <div className=" mt-5 mx-5">
@@ -443,16 +446,7 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                         </div>
 
                                         {/* Availability & Featured */}
-                                        <div className="flex items-center justify-between">
-                                            <Label>Available</Label>
-                                            <Switch
-                                                checked={isAvailable}
-                                                onCheckedChange={(checked) => {
-                                                    setIsAvailable(checked);
-                                                    setIsAvailableTouched(true);
-                                                }}
-                                            />
-                                        </div>
+                                        
                                         <div className="flex items-center justify-between">
                                             <Label>Featured</Label>
                                             <Switch
@@ -509,7 +503,7 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
 
                             {/* end dialog box */}
 
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={handleRefresh}>
                                 <RefreshCw className="h-4 w-4 mr-2" />
                                 Refresh
                             </Button>

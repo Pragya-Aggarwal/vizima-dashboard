@@ -48,7 +48,7 @@ export default function PropertiesPage() {
   const [bathrooms, setBathrooms] = useState(0);
   const [isAvailable, setIsAvailable] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
-  const [isAvailableTouched, setIsAvailableTouched] = useState(false);
+  const [isAvailableTouched, setIsAvailableTouched] = useState(true);
   const [isFeaturedTouched, setIsFeaturedTouched] = useState(false);
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -66,7 +66,7 @@ export default function PropertiesPage() {
     };
   }
 
-  const { data, isLoading, error } = useQuery<PropertyResponse, Error>({
+  const { data, isLoading, error, refetch } = useQuery<PropertyResponse, Error>({
     queryKey: ['properties', currentPage, search, type, sharingType, bedrooms, bathrooms, isAvailable, isFeatured, city, state, selectedAmenities, sortBy, sortOrder],
     queryFn: async (): Promise<PropertyResponse> => {
       const payload = {
@@ -77,13 +77,13 @@ export default function PropertiesPage() {
         ...(sharingType !== 'all' && { sharingType }),
         ...(bedrooms > 0 && { bedrooms }),
         ...(bathrooms > 0 && { bathrooms }),
-        ...(isAvailableTouched && { isAvailable }),
         ...(isFeaturedTouched && { isFeatured }),
         ...(city && { city }),
         ...(state && { state }),
         ...(selectedAmenities.length > 0 && { amenities: selectedAmenities.join(',') }),
         sortBy,
         sortOrder,
+        isAvailable: isAvailableTouched? isAvailableTouched: true,
       };
       const response = await getPropertiesfullInquiries(payload);
 
@@ -202,6 +202,7 @@ export default function PropertiesPage() {
       />
 
       <PropertyList
+      refetch={() => refetch()}
         properties={properties}
         search={search}
         setSearch={setSearch}
