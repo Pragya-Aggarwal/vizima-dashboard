@@ -38,7 +38,7 @@ type Props = {
 const BookingDetailsDialog = ({ open, setOpen, id }: Props) => {
 
     const [loading, setLoading] = useState(false);
-    const [booking, setBooking] = useState<any>(null);useEffect(() => {
+    const [booking, setBooking] = useState<any>(null); useEffect(() => {
         const fetchBooking = async () => {
             if (open && id) {
                 setLoading(true);
@@ -149,19 +149,19 @@ const BookingDetailsDialog = ({ open, setOpen, id }: Props) => {
                         {/* Actions */}
                         <div className="flex justify-between">
                             <div className="space-x-2">
-                                <Button variant="outline">
+                                {/* <Button variant="outline">
                                     <CalendarIcon className="h-4 w-4 mr-2" />
                                     Reschedule
-                                </Button>
+                                </Button> */}
                             </div>
                             <div className="space-x-2">
                                 <Button variant="outline" onClick={() => setOpen(false)}>
                                     Close
                                 </Button>
-                                <Button>
+                                {/* <Button>
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit Booking
-                                </Button>
+                                </Button> */}
                             </div>
                         </div>
                     </div>

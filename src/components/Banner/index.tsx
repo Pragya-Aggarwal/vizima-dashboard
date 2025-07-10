@@ -103,8 +103,10 @@ const BannerMain = () => {
     });
 
     // Process the data
-    const bannerData = data || { data: [], page: 1, total: 0 };
-    const totalPages = data?.page || 1;
+    const banners = data?.data || [];
+    const pagination = data?.pagination || { page: 1, limit: 2, total: 0, pages: 1 };
+    const currentPageState = pagination.page;
+    const totalPages = pagination.pages;
     const totalRecord = data?.total || 0;
 
     // Show loading state
@@ -193,7 +195,7 @@ const BannerMain = () => {
     // selectedBanner state is already declared at the top level
 
     const handleUpdateModalOpen = (id: string) => {
-        const banner = bannerData?.data?.find((b: any) => b._id === id);
+        const banner = banners?.find((b: any) => b._id === id);
         if (banner) {
             // Ensure all required fields are present and properly typed
             const typedBanner: Banner = {
@@ -221,7 +223,7 @@ const BannerMain = () => {
     }
 
     const handleViewBanner = (id: string) => {
-        const banner = bannerData?.data?.find((b: any) => b._id === id);
+        const banner = banners?.find((b: any) => b._id === id);
         if (banner) {
             // Ensure all required fields are present and properly typed
             const typedBanner: Banner = {
@@ -344,12 +346,26 @@ const BannerMain = () => {
                     </CardHeader>
                     <CardContent>
                         <BannerList
-                            bannerData={bannerData}
+                            bannerData={banners}
                             isLoading={isLoading}
                             onEdit={handleUpdateModalOpen}
                             onView={handleViewBanner}
                             onDelete={handleDeleteModalOpen}
                         />
+                        {totalPages > 1 && (
+                            <div className="mt-4 flex items-center justify-between px-2">
+                                <div className="text-sm text-muted-foreground">
+                                    Showing page {currentPageState} of {totalPages}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPageState === 1}>First</Button>
+                                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPageState === 1}>Previous</Button>
+                                    <div className="px-2 text-sm">{currentPageState} / {totalPages}</div>
+                                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPageState === totalPages}>Next</Button>
+                                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPageState === totalPages}>Last</Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </TabsContent>

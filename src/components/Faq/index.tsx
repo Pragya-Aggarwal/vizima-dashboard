@@ -13,7 +13,6 @@ import { DeleteModal } from "@/src/common/DeleteModal/deleteModal"
 import { SchemaFormData } from "./Schema/schema"
 
 // city data
-import Pagination from "@/src/common/pagination/pagination"
 import { useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 
@@ -33,7 +32,7 @@ import UpdateModal from "./Update/update"
 
 const FaqMain = () => {
 
-    const [currentPage, setCurrentPage] = useState(1)
+    const [pageState, setPageState] = useState(1);
     const [open, setOpen] = useState(false)
     const [updateopen, setUpdateOpen] = useState(false)
     const [detailModalopen, setDetailModalOpen] = useState(false)
@@ -45,17 +44,19 @@ const FaqMain = () => {
 
 
     const fetchFaq = () => {
-        return getFaqs({ page: currentPage, limit: ITEMS_PER_PAGE });
+        return getFaqs({ page: pageState, limit: ITEMS_PER_PAGE });
     };
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['faqs', currentPage],
+        queryKey: ['faqs', pageState],
         queryFn: fetchFaq,
     });
 
     const faqList = data?.data || [];
-    const totalPages = data?.pagination?.totalPages;
-    const totalRecord = data?.pagination?.totalItems
+    const totalPages = data?.pagination?.totalPages || 1;
+    const totalRecord = data?.pagination?.totalItems || 0;
+    const currentPage = data?.pagination?.currentPage || 1;
+
 
     const handleAdd = async (
         data: SchemaFormData,
@@ -73,12 +74,12 @@ const FaqMain = () => {
     };
 
 
-    const handleUpdateModalOpen = (id) => {
+    const handleUpdateModalOpen = (id: string) => {
         setUpdateOpen(true)
         setTestimonialId(id)
     }
 
-    const handleDeleteModalOpen = (id) => {
+    const handleDeleteModalOpen = (id: string) => {
         setDeleteModal(true)
         setTestimonialId(id)
     }
@@ -106,13 +107,14 @@ const FaqMain = () => {
 
 
 
-    const handleDetailModal = async (id) => {
+    const handleDetailModal = async (id: string) => {
         setDetailModalOpen(true)
         setTestimonialId(id)
     }
 
 
     const handleDelete = async () => {
+        if (!testimonialId) return;
         try {
             const res = await deleteFaqbyId(testimonialId);
             toast.success("Faq deleted successfully");
@@ -147,13 +149,50 @@ const FaqMain = () => {
 
 
 
-                        {isLoading == false && totalRecord != 0 &&
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={(page) => setCurrentPage(page)}
-                            />
-                        }
+                        {!isLoading && totalRecord !== 0 && totalPages > 1 && (
+                            <div className="mt-4 flex items-center justify-between px-2">
+                                <div className="text-sm text-muted-foreground">
+                                    Showing page {currentPage} of {totalPages}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setPageState(1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        First
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setPageState(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Previous
+                                    </Button>
+                                    <div className="px-2 text-sm">
+                                        {currentPage} / {totalPages}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setPageState(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Next
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setPageState(totalPages)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Last
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -161,12 +200,12 @@ const FaqMain = () => {
 
             <AddFaqModal open={open} setOpen={setOpen} onSubmit={handleAdd} />
 
-            <UpdateModal open={updateopen} setOpen={setUpdateOpen} onSubmit={handleUpdate} testimonialId={testimonialId} />
+            <UpdateModal open={updateopen} setOpen={setUpdateOpen} onSubmit={handleUpdate} testimonialId={testimonialId ?? null} />
 
 
-            <DetailModal open={detailModalopen} setOpen={setDetailModalOpen} testimonialId={testimonialId} />
+            <DetailModal open={detailModalopen} setOpen={setDetailModalOpen} testimonialId={testimonialId ?? null} />
 
-            <DeleteModal open={deleteModal} setOpen={setDeleteModal} testimonialId={testimonialId} handleDelete={handleDelete} />
+            <DeleteModal open={deleteModal} setOpen={setDeleteModal} onDelete={handleDelete} />
 
         </>
 

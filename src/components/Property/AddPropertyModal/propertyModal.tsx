@@ -34,7 +34,15 @@ type AddPropertyModalProps = {
 
 const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) => {
   const {
-    register, control, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset, trigger
+    register, 
+    control, 
+    handleSubmit, 
+    formState: { errors, isSubmitting }, 
+    setValue, 
+    watch, 
+    reset, 
+    trigger,
+    formState: { isSubmitSuccessful }
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
 
@@ -72,16 +80,37 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const onFormSubmit = (data: PropertyFormData) => {onSubmit(data, () => {
-      // reset();
-      reset({
-        isAvailable: false,
-        isFeatured: false,
-        // ...otherDefaultValues,
-      });
+  const onFormSubmit = async (data: PropertyFormData) => {
+    try {
+      await onSubmit(data, () => {
+        reset({
+          name: "",
+          type: "",
+          city: "",
+          area: "",
+          microSiteLink: "",
+          rooms: 0,
+          price: 0,
+          deposit: 0,
+          description: "",
+          featured: false,
+          amenities: [],
+          bulkAccommodationType: [],
+          sharingType: [],
+          rules: [],
+          nearbyPlaces: [], 
 
-      setOpen(false);
-    });
+
+
+          images: [],
+          isAvailable: false,  
+          isFeatured: false,
+        });
+        setOpen(false);
+      });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
   };
 
 
@@ -215,6 +244,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
                       <SelectItem value="transgender">Transgender</SelectItem>
+                      <SelectItem value="unisex">Unisex</SelectItem>
 
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
@@ -542,7 +572,8 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                         if (!file) return;
                         try {
                           const url = await uploadToCloudinary(file);
-                          field.onChange([...(field.value || []), url]);} catch (err) {
+                          field.onChange([...(field.value || []), url]);
+                        } catch (err) {
                           console.error("Upload failed:", err);
                         }
                       }}

@@ -8,7 +8,6 @@ import { PropertyFormData } from "@/src/components/Property/Schema/property-sche
 import { getPropertiesfullInquiries, addProperty } from "@/src/services/propertyService"
 import Header from "@/src/components/Property/header/header"
 import PropertyList from "@/src/components/Property/PropertyList/list"
-import Pagination from "@/src/components/Property/pagination/pagination"
 
 const ITEMS_PER_PAGE = 10;
 
@@ -87,7 +86,15 @@ export default function PropertiesPage() {
         sortOrder,
       };
       const response = await getPropertiesfullInquiries(payload);
-      return response as unknown as PropertyResponse;
+
+      // Map the API response to your expected structure
+      return {
+        data: {
+          properties: response.data.properties,
+          total: response.pagination.total,
+          totalPages: response.pagination.pages,
+        }
+      };
     },
   });
 
@@ -201,7 +208,7 @@ export default function PropertiesPage() {
         type={type}
         setType={setType}
         sharingType={sharingType}
-        setSharingType={setSharingType}
+        setsharingType={setSharingType}
         isLoading={isLoading}
         bathrooms={bathrooms}
         setBathrooms={setBathrooms}
@@ -225,18 +232,11 @@ export default function PropertiesPage() {
         setIsAvailableTouched={setIsAvailableTouched}
         isFeaturedTouched={isFeaturedTouched}
         setIsFeaturedTouched={setIsFeaturedTouched}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
       />
 
-      {!isLoading && totalPages > 1 && (
-        <div className="mt-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
     </div>
-
   )
 }

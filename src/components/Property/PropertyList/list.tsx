@@ -58,7 +58,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { FC } from "react";
+import { FC, useCallback } from "react";
 import { boolean } from "zod"
 import LoadingIndicator from "@/src/common/LoadingIndicator/loading"
 import UpdatePropertyModal from "../UpdatePropertyModal/UpdatePropertyModal"
@@ -171,14 +171,34 @@ type PropertyListProps = {
     setState: React.Dispatch<React.SetStateAction<string>>;
     selectedAmenities: string[];
     setSelectedAmenities: React.Dispatch<React.SetStateAction<string[]>>;
+    currentPage: number;
+    setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+    totalPages: number;
 };
 
-const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, type, setType, sharingType, setsharingType, isLoading, bathrooms, setBathrooms, bedrooms, setBedrooms, isAvailable, setIsAvailable, isFeatured, setIsFeatured, isAvailableTouched, setIsAvailableTouched, isFeaturedTouched, setIsFeaturedTouched, sortOrder, setSortOrder, sortBy, setSortBy, city, setCity, state, setState, selectedAmenities, setSelectedAmenities }) => {
+const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, type, setType, sharingType, setsharingType, isLoading, bathrooms, setBathrooms, bedrooms, setBedrooms, isAvailable, setIsAvailable, isFeatured, setIsFeatured, isAvailableTouched, setIsAvailableTouched, isFeaturedTouched, setIsFeaturedTouched, sortOrder, setSortOrder, sortBy, setSortBy, city, setCity, state, setState, selectedAmenities, setSelectedAmenities, currentPage, setCurrentPage, totalPages }) => {
 
     const queryClient = useQueryClient();
     const [selectedTab, setSelectedTab] = useState("vizima")
     const [open, setOpen] = useState(false)
     const [propertyId, setPropertyId] = useState<string | null | undefined>();
+
+    // Pagination handlers
+    const goToFirstPage = useCallback((): void => {
+        setCurrentPage(1);
+    }, [setCurrentPage]);
+
+    const goToLastPage = useCallback((): void => {
+        setCurrentPage(totalPages);
+    }, [setCurrentPage, totalPages]);
+
+    const goToNextPage = useCallback((): void => {
+        setCurrentPage((prev: number) => Math.min(totalPages, prev + 1));
+    }, [setCurrentPage, totalPages]);
+
+    const goToPrevPage = useCallback((): void => {
+        setCurrentPage((prev: number) => Math.max(1, prev - 1));
+    }, [setCurrentPage]);
 
 
 
@@ -269,7 +289,7 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                     <TabsTrigger value="vizima">
                         Total Property
                     </TabsTrigger>
-                    <TabsTrigger value="rentok">RentOk Sync by ({rentokProperties.length})</TabsTrigger>
+                    {/* <TabsTrigger value="rentok">RentOk Sync by ({rentokProperties.length})</TabsTrigger> */}
                 </TabsList>
 
                 <TabsContent value="vizima" className="space-y-4">
@@ -683,7 +703,7 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="rentok" className="space-y-4">
+                {/* <TabsContent value="rentok" className="space-y-4">
                     <Card>
                         <CardHeader>
                             <div className="flex justify-between items-center">
@@ -799,16 +819,58 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                             </div>
                         </CardContent>
                     </Card>
-                </TabsContent>
+                </TabsContent> */}
             </Tabs >
 
             <UpdatePropertyModal open={open} setOpen={setOpen} onSubmit={handleUpdateProperty} propertyId={propertyId} setPropertyId={setPropertyId} />
 
+            {/* Pagination */}
+            {!isLoading && totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between px-2">
+                    <div className="text-sm text-muted-foreground">
+                        Showing page {currentPage} of {totalPages}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={goToFirstPage}
+                            disabled={currentPage === 1}
+                        >
+                            First
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={goToPrevPage}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        <div className="px-2 text-sm">
+                            {currentPage} / {totalPages}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={goToNextPage}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={goToLastPage}
+                            disabled={currentPage === totalPages}
+                        >
+                            Last
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     )
-
-
 }
-
 
 export default PropertyList

@@ -27,7 +27,6 @@ import { Switch } from "@/components/ui/switch"
 
 // here
 import { getTestimonial } from "@/src/services/testmonialServices"
-import Pagination from "@/src/common/pagination/pagination"
 import { useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 import TestimonialList from "./TestimonialList/testimonialList"
@@ -70,9 +69,9 @@ const TestimonialMain = () => {
         queryKey: ['properties', currentPage],
         queryFn: fetchTestimonial,
     });
-    
+
     const testimonial = data?.data || [];
-    const totalPages = data?.page;
+    const totalPages = Math.ceil((data?.total || 0) / ITEMS_PER_PAGE) || 1;
     const totalRecord = data?.total;
 
     const handleAddTestimonial = async (
@@ -91,13 +90,15 @@ const TestimonialMain = () => {
     };
 
 
-    const handleUpdateModalOpen = (id) => {
+    const handleUpdateModalOpen = (id: string) => {
         setUpdateOpen(true)
-        setTestimonialId(id)}
+        setTestimonialId(id)
+    }
 
-    const handleDeleteModalOpen = (id) => {
+    const handleDeleteModalOpen = (id: string) => {
         setDeleteModal(true)
-        setTestimonialId(id)}
+        setTestimonialId(id)
+    }
 
 
     const handleUpdateTestimonial = async (
@@ -122,7 +123,7 @@ const TestimonialMain = () => {
 
 
 
-    const handleDetailModal = async (id) => {
+    const handleDetailModal = async (id: string) => {
 
         setDetailModalOpen(true)
         setTestimonialId(id)
@@ -130,6 +131,7 @@ const TestimonialMain = () => {
 
 
     const handleDelete = async () => {
+        if (!testimonialId) return;
         try {
             const res = await deleteTestimonialbyId(testimonialId);
 
@@ -161,25 +163,62 @@ const TestimonialMain = () => {
 
                         <TestimonialList testimonial={testimonial} isLoading={isLoading} handleUpdateModalOpen={handleUpdateModalOpen} handleDetailModal={handleDetailModal} handleDeleteModalOpen={handleDeleteModalOpen} />
 
-                        {isLoading == false && totalRecord != 0 &&
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={(page) => setCurrentPage(page)}
-                            />
-                        }
+                        {!isLoading && totalRecord !== 0 && totalPages > 1 && (
+                            <div className="mt-4 flex items-center justify-between px-2">
+                                <div className="text-sm text-muted-foreground">
+                                    Showing page {currentPage} of {totalPages}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        First
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Previous
+                                    </Button>
+                                    <div className="px-2 text-sm">
+                                        {currentPage} / {totalPages}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Next
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(totalPages)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Last
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </TabsContent>
 
             <AddTestimonialModal open={open} setOpen={setOpen} onSubmit={handleAddTestimonial} />
 
-            <UpdateTestimonialModal open={updateopen} setOpen={setUpdateOpen} onSubmit={handleUpdateTestimonial} testimonialId={testimonialId} />
+            <UpdateTestimonialModal open={updateopen} setOpen={setUpdateOpen} onSubmit={handleUpdateTestimonial} testimonialId={testimonialId ?? null} />
 
 
-            <TestimonialDetailModal open={detailModalopen} setOpen={setDetailModalOpen} testimonialId={testimonialId} />
+            <TestimonialDetailModal open={detailModalopen} setOpen={setDetailModalOpen} testimonialId={testimonialId ?? null} />
 
-            <DeleteModal open={deleteModal} setOpen={setDeleteModal} testimonialId={testimonialId} handleDelete={handleDelete} />
+            <DeleteModal open={deleteModal} setOpen={setDeleteModal} onDelete={handleDelete} />
 
         </>
 

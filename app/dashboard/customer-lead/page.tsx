@@ -36,6 +36,9 @@ interface ApiResponse {
     limit: number;
     totalPages: number;
   };
+  total?: number;
+  page?: number;
+  limit?: number;
 }
 
 export default function CustomerLeadPage() {
@@ -59,7 +62,7 @@ export default function CustomerLeadPage() {
   const fetchLeads = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const url = new URL('https://api.vizima.in/api/contact/messages');
       url.searchParams.append('page', pagination.page.toString());
@@ -85,16 +88,21 @@ export default function CustomerLeadPage() {
       }
 
       const data: ApiResponse = await response.json();
-      
+
       if (data.success && data.data) {
         setLeads(data.data);
-        if (data.pagination) {
-          setPagination(prev => ({
-            ...prev,
-            total: data.pagination?.total || 0,
-            totalPages: data.pagination?.totalPages || 1,
-          }));
-        }
+        // Calculate totalPages if pagination is missing
+        const total = data.total || (data.pagination?.total) || 0;
+        const limit = data.limit || (data.pagination?.limit) || 10;
+        const page = data.page || (data.pagination?.page) || 1;
+        const totalPages = Math.max(1, Math.ceil(total / limit));
+        setPagination(prev => ({
+          ...prev,
+          total,
+          limit,
+          page,
+          totalPages,
+        }));
       } else {
         throw new Error(data.message || 'Failed to fetch leads');
       }
@@ -127,9 +135,9 @@ export default function CustomerLeadPage() {
       console.error('No lead ID to delete');
       return;
     }
-    
+
     console.log('Deleting lead with ID:', leadToDelete); // Debug log
-    
+
     try {
       const response = await fetch(`https://api.vizima.in/api/contact/message/${leadToDelete}`, {
         method: 'DELETE',
@@ -140,7 +148,7 @@ export default function CustomerLeadPage() {
           // 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_TOKEN}`
         },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
@@ -151,16 +159,16 @@ export default function CustomerLeadPage() {
       // Optimistically update the UI
       setLeads(leads.filter(lead => lead._id !== leadToDelete));
       setDeleteModalOpen(false);
-      
+
       toast({
         title: 'Success',
         description: 'Lead deleted successfully',
-        
+
       });
     } catch (error) {
       console.error('Error deleting lead:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete lead';
-      
+
       toast({
         title: 'Error',
         description: errorMessage,
@@ -190,8 +198,8 @@ export default function CustomerLeadPage() {
           <h3 className="text-lg font-medium">Failed to load leads</h3>
           <p className="text-sm text-muted-foreground">{error}</p>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={fetchLeads}
           disabled={loading}
         >
@@ -211,15 +219,15 @@ export default function CustomerLeadPage() {
   return (
     <div className="container mx-auto p-6">
       {selectedLead && (
-        <LeadDetails 
-          lead={selectedLead} 
-          onClose={() => setSelectedLead(null)} 
+        <LeadDetails
+          lead={selectedLead}
+          onClose={() => setSelectedLead(null)}
         />
       )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Customer Leads</h1>
       </div>
-      
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -270,7 +278,52 @@ export default function CustomerLeadPage() {
           </TableBody>
         </Table>
       </div>
-      <DeleteModal 
+      {/* Pagination Bar */}
+      {pagination.totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between px-2">
+          <div className="text-sm text-muted-foreground">
+            Showing page {pagination.page} of {pagination.totalPages}
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: 1 }))}
+              disabled={pagination.page === 1}
+            >
+              First
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+              disabled={pagination.page === 1}
+            >
+              Previous
+            </Button>
+            <div className="px-2 text-sm">
+              {pagination.page} / {pagination.totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.totalPages, prev.page + 1) }))}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              Next
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPagination(prev => ({ ...prev, page: prev.totalPages }))}
+              disabled={pagination.page === pagination.totalPages}
+            >
+              Last
+            </Button>
+          </div>
+        </div>
+      )}
+      <DeleteModal
         open={deleteModalOpen}
         setOpen={setDeleteModalOpen}
         onDelete={handleDelete}

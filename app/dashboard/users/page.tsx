@@ -479,8 +479,8 @@ export default function UsersPage() {
 
 
   const userData = data?.data || [];
-  const totalPages = data?.pagination?.totalPages;
-  const totalRecord = data?.pagination?.totalUsers;
+  const totalPages = data?.pagination?.totalPages || 1;
+  const totalRecord = data?.pagination?.totalUsers || 0;
 
 
 
@@ -648,11 +648,7 @@ export default function UsersPage() {
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="verified">Verified</SelectItem>
-                  <SelectItem value="unverified">Unverified</SelectItem>
-                </SelectContent>
+
               </Select>
               <Select value={tagFilter} onValueChange={setTagFilter}>
                 <SelectTrigger className="w-32">
@@ -673,7 +669,7 @@ export default function UsersPage() {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead>Status</TableHead>
+
                 <TableHead>User & Admin</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -728,21 +724,7 @@ export default function UsersPage() {
 
 
 
-                    <TableCell>
-                      <Badge variant={user?.isVerified ? "default" : "secondary"}>
-                        {user?.isVerified ? (
-                          <>
-                            <ShieldCheck className="h-3 w-3 mr-1" />
-                            Verified
-                          </>
-                        ) : (
-                          <>
-                            <ShieldX className="h-3 w-3 mr-1" />
-                            Not Verified
-                          </>
-                        )}
-                      </Badge>
-                    </TableCell>
+
 
 
                     <TableCell>
@@ -770,25 +752,62 @@ export default function UsersPage() {
               )}
             </TableBody>
           </Table>
-          {isLoading == false && totalRecord != 0 &&
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={(page) => setCurrentPage(page)}
-            />
-          }
+          {!isLoading && totalRecord !== 0 && totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between px-2">
+              <div className="text-sm text-muted-foreground">
+                Showing page {currentPage} of {totalPages}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  First
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <div className="px-2 text-sm">
+                  {currentPage} / {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  Last
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
 
 
-      <UpdateModal open={updateopen} setOpen={setUpdateOpen} onSubmit={handleUpdate} testimonialId={testimonialId} />
+      <UpdateModal open={updateopen} setOpen={setUpdateOpen} onSubmit={handleUpdate} testimonialId={testimonialId ?? null} />
 
-      <DetailModal open={detailModalopen} setOpen={setDetailModalOpen} testimonialId={testimonialId} />
+      <DetailModal open={detailModalopen} setOpen={setDetailModalOpen} testimonialId={testimonialId ?? null} />
 
 
 
-      <DeleteModal open={deleteModal} setOpen={setDeleteModal} testimonialId={testimonialId} handleDelete={handleDelete} />
+      <DeleteModal open={deleteModal} setOpen={setDeleteModal} onDelete={handleDelete} />
 
 
 

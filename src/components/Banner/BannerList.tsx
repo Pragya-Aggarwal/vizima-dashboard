@@ -40,8 +40,8 @@ export function BannerList({ bannerData, isLoading, onEdit, onView, onDelete }: 
       </div>
     );
   }
-
-  if (!bannerData?.data || bannerData.data.length === 0) {
+  console.log(bannerData, "bannerData")
+  if (!bannerData || bannerData.length === 0) {
     return (
       <div className="text-center py-10">
         <p>No banners found</p>
@@ -63,7 +63,7 @@ export function BannerList({ bannerData, isLoading, onEdit, onView, onDelete }: 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {bannerData.data.map((banner) => (
+          {bannerData.map((banner) => (
             <TableRow key={banner._id}>
               <TableCell className="font-medium">
                 <div className="flex items-center gap-3">

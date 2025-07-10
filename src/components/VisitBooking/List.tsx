@@ -1,55 +1,3 @@
-// import {
-//     Table,
-//     TableBody,
-//     TableCell,
-//     TableHead,
-//     TableHeader,
-//     TableRow,
-// } from "@/components/ui/table";
-// import { Badge } from "@/components/ui/badge";
-// import { Loader2 } from "lucide-react";
-// import LoadingIndicator from "@/src/common/LoadingIndicator/loading";
-// import Pagination from "@/src/common/pagination/pagination";
-// import BookingDetailsDialog from "./DetailModal";
-// import { useState } from "react";
-// import { Button } from "@/components/ui/button";
-
-// type Booking = {
-//     _id: string;
-//     fullName: string;
-//     email: string;
-//     phoneNumber: string;
-//     guests: number;
-//     checkIn: string;
-//     checkOut: string;
-//     sharing: string;
-//     totalAmount: number;
-//     paymentStatus: string;
-//     status: string;
-//     createdAt: string;
-// };
-
-// type Props = {
-//     data: Booking[];
-//     loading: boolean;
-//     totalBookings: number;
-//     totalRecord: number;
-//     currentPage: number;
-//     totalPages: number;
-//     setCurrentPage: (page: number) => void;
-
-// };
-
-// const VisitBookingTable = ({ data, loading, totalBookings, totalRecord, currentPage, totalPages, setCurrentPage }: Props) => {
-
-//     const [open, setOpen] = useState(false);
-//     const [selectedId, setSelectedId] = useState<string | null>(null);
-
-//     const handleOpenModal = (id: string) => {
-//         setSelectedId(id);
-//         setOpen(true);
-//     };
-
 "use client"
 import {
     Table,
@@ -62,7 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Eye, Loader2 } from "lucide-react";
 import LoadingIndicator from "@/src/common/LoadingIndicator/loading";
-import Pagination from "@/src/common/pagination/pagination";
 import BookingDetailsDialog from "./DetailModal";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -102,7 +49,7 @@ const VisitBookingTable = ({
     setCurrentPage,
 }: Props) => {
     const [open, setOpen] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(null);const handleOpenModal = (id: string) => {
+    const [selectedId, setSelectedId] = useState<string | null>(null); const handleOpenModal = (id: string) => {
         setSelectedId(id);
         setOpen(true);
     };
@@ -159,23 +106,22 @@ const VisitBookingTable = ({
                                 </TableCell>
                                 <TableCell className="max-w-xs truncate">{booking?.description}</TableCell>
                                 <TableCell>
-                                    <Button size="sm" onClick={() => handleOpenModal(booking?._id)}>
-                                        View
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleOpenModal(booking?._id)}
+                                        title="View booking details"
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        <Eye className="h-4 w-4" />
                                     </Button>
+
                                 </TableCell>
                             </TableRow>
                         ))
                     )}
                 </TableBody>
             </Table>
-
-            {loading === false && totalRecord > 0 && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
-            )}
 
             {selectedId && (
                 <BookingDetailsDialog open={open} setOpen={setOpen} id={selectedId} />

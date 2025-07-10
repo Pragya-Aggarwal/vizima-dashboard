@@ -162,7 +162,7 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
                                 name="status"
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={field.value}>
-                                        <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="approved">Approved</SelectItem>
                                             <SelectItem value="reject">Reject</SelectItem>

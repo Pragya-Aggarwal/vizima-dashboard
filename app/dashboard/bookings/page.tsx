@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { getBookings } from "@/src/services/BookingServices"
-import { getVisitBookings } from "@/src/services/BookingServices"
 import { useQuery } from "@tanstack/react-query"
 
 
@@ -40,7 +39,6 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import BookingTable from "@/src/components/Booking/List"
-import VisitBookingTable from "@/src/components/VisitBooking/List"
 import { useAuthRedirect } from "@/hooks/use-Redirect"
 import { format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
@@ -175,10 +173,10 @@ function BookingDetailsDialog({ booking }: { booking: (typeof bookings)[0] }) {
 
           <div className="flex justify-between">
             <div className="space-x-2">
-              <Button variant="outline">
+              {/* <Button variant="outline">
                 <CalendarIcon className="h-4 w-4 mr-2" />
                 Reschedule
-              </Button>
+              </Button> */}
               <Button variant="outline">
                 <CreditCard className="h-4 w-4 mr-2" />
                 Refund
@@ -344,34 +342,34 @@ export default function BookingsPage() {
   // visitbookin
 
   // ----------- Visit Booking API -----------
-  const fetchVisitBooking = useCallback(() => {
-    const payload: any = {
-      page: currentPage,
-      limit: ITEMS_PER_PAGE,
-      ...(search && { search }),
-      ...(statusFilter !== "all" && { status: statusFilter }),
-    };
-    return getVisitBookings(payload);
-  }, [currentPage, search, statusFilter]);
+  // const fetchVisitBooking = useCallback(() => {
+  //   const payload: any = {
+  //     page: currentPage,
+  //     limit: ITEMS_PER_PAGE,
+  //     ...(search && { search }),
+  //     ...(statusFilter !== "all" && { status: statusFilter }),
+  //   };
+  //   return getVisitBookings(payload);
+  // }, [currentPage, search, statusFilter]);
 
-  const handleApplyFilters = () => {
-    // Reset to first page when filters change
-    setCurrentPage(1);
-    fetchBookings();
-  }
-  const {
-    data: dataVisitBooking,
-    isLoading: isLoadingVisit,
-    isError: isErrorVisit,
-    refetch: refetchVisit,
-  } = useQuery({
-    queryKey: [currentPage, search, statusFilter],
-    queryFn: fetchVisitBooking,
-  });
+  // const handleApplyFilters = () => {
+  //   // Reset to first page when filters change
+  //   setCurrentPage(1);
+  //   fetchBookings();
+  // }
+  // const {
+  //   data: dataVisitBooking,
+  //   isLoading: isLoadingVisit,
+  //   isError: isErrorVisit,
+  //   refetch: refetchVisit,
+  // } = useQuery({
+  //   queryKey: [currentPage, search, statusFilter],
+  //   queryFn: fetchVisitBooking,
+  // });
 
-  const visitBookingData = dataVisitBooking?.data || [];
-  const totalPagesVisit = dataVisitBooking?.page || 1;
-  const totalVisitRecord = dataVisitBooking?.total || 0;
+  // const visitBookingData = dataVisitBooking?.data || [];
+  // const totalPagesVisit = dataVisitBooking?.page || 1;
+  // const totalVisitRecord = dataVisitBooking?.total || 0;
 
 
   const handleClearFilters = () => {
@@ -515,7 +513,6 @@ export default function BookingsPage() {
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
           <TabsTrigger value="all">All Bookings ({filteredBookings.length})</TabsTrigger>
-          <TabsTrigger value="visit">Visit Bookings ({visitBookingData.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
@@ -722,49 +719,6 @@ export default function BookingsPage() {
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
               />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="visit" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Visit Booking</CardTitle>
-                <div className="flex space-x-2">
-                  {/* <div className="relative">
-                    <Input placeholder="Search bookings..." className="w-64" />
-                  </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="confirmed">Confirmed</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    More Filters
-                  </Button> */}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-
-              <VisitBookingTable
-                data={visitBookingData}                     // ✅ Use the correct visit data
-                loading={isLoadingVisit}                   // ✅ Correct loading state
-                totalBookings={visitBookingData.length}    // ✅ Displayed in footer or summary
-                totalPages={totalPagesVisit}               // ✅ Pagination
-                totalRecord={totalVisitRecord}             // ✅ For "Showing X of Y" text
-                currentPage={currentPage}                  // ✅ Current page tracking
-                setCurrentPage={setCurrentPage}            // ✅ Page change handler
-              />
-
             </CardContent>
           </Card>
         </TabsContent>

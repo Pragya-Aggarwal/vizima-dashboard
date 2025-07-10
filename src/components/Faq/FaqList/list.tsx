@@ -57,7 +57,6 @@ const FaqList: FC<CityListProps> = ({ faqList, isLoading, handleUpdateModalOpen,
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Order Id</TableHead>
                         <TableHead>Question</TableHead>
                         <TableHead>Order Number</TableHead>
                         <TableHead>CreatedAt</TableHead>
@@ -76,12 +75,7 @@ const FaqList: FC<CityListProps> = ({ faqList, isLoading, handleUpdateModalOpen,
                         faqList?.map((elem, index) => (
                             <TableRow key={elem._id || index}>
 
-                                <TableCell>
-                                    <div>
-                                        <p className="font-medium">{elem?._id}</p>
-                                        <p className="text-sm text-muted-foreground">{formatReadableDate(elem?.createdAt)}</p>
-                                    </div>
-                                </TableCell>
+                                
                                 <TableCell>
                                     <p className="text-sm truncate max-w-48">{elem?.question}</p>
                                 </TableCell>

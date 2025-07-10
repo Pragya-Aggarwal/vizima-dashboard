@@ -10,8 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { useQuery } from "@tanstack/react-query"
 import { getCities, deleteCitybyId, updateCityById, addcity } from "@/src/services/cityServices"
-import { CityFormData } from "@/types/city"
-import Pagination from "@/src/common/pagination/pagination"
+import { CityFormData } from "@/src/types/city"
 import CityList from "./CitiesList/list"
 import AddCityModal from "./AddNewCity/AddNewCity"
 import UpdateModal from "./UpdateCity/updateCity"
@@ -62,7 +61,7 @@ const CityMain = () => {
 
     const handleUpdateModalOpen = (id: string) => {
         setUpdateOpen(true);
-        console.log(id,"id")
+        console.log(id, "id")
         setCityId(id);
     };
 
@@ -76,7 +75,7 @@ const CityMain = () => {
         data: CityFormData,
         onSuccess: () => void
     ) => {
-        console.log(id,"id")
+        console.log(id, "id")
         try {
             if (!id) {
                 toast.error("City ID is missing");
@@ -130,23 +129,58 @@ const CityMain = () => {
                     </CardHeader>
                     <CardContent>
 
-                        <CityList 
-                            data={citiesData} 
+                        <CityList
+                            data={citiesData}
                             onEdit={handleUpdateModalOpen}
                             onDelete={handleDeleteModalOpen}
                             onView={handleDetailModal}
                             isLoading={isLoading}
                         />
 
-                        {isLoading == false && totalRecord != 0 &&
-                            totalPages > 1 && (
-                                <Pagination
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    onPageChange={(page: number) => setCurrentPage(page)}
-                                />
-                            )
-                        }
+                        {!isLoading && totalRecord !== 0 && totalPages > 1 && (
+                            <div className="mt-4 flex items-center justify-between px-2">
+                                <div className="text-sm text-muted-foreground">
+                                    Showing page {currentPage} of {totalPages}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        First
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Previous
+                                    </Button>
+                                    <div className="px-2 text-sm">
+                                        {currentPage} / {totalPages}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Next
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(totalPages)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Last
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -160,10 +194,10 @@ const CityMain = () => {
                 cityId={cityId}
             />
 
-            <DetailModal 
-                open={detailModalOpen} 
-                setOpen={setDetailModalOpen} 
-                cityId={cityId} 
+            <DetailModal
+                open={detailModalOpen}
+                setOpen={setDetailModalOpen}
+                cityId={cityId}
             />
 
             <DeleteModal

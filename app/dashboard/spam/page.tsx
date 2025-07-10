@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   Bot,
   Shield,
@@ -35,8 +35,25 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { getSpamReports } from "@/src/services/SpamService"
+import { getSpamReports, SpamReport, PaginatedSpamReports } from "@/src/services/SpamService"
+// Locally extend SpamReport for extra fields used in this file
+interface ExtendedSpamReport extends SpamReport {
+  contentType?: string;
+  category?: string;
+  severity?: string;
+  userReportDetails?: { reason?: string };
+  detectionResult?: { reasons?: string[] };
+  reportType?: string;
+  reportedAt?: string;
+}
 import { Dialog as ShadDialog, DialogTrigger as ShadDialogTrigger, DialogContent as ShadDialogContent, DialogHeader as ShadDialogHeader, DialogTitle as ShadDialogTitle, DialogDescription as ShadDialogDescription } from "@/components/ui/dialog"
+
+interface Pagination {
+  page: number;
+  limit: number;
+  totalDocs: number;
+  totalPages: number;
+}
 
 const aiSettings = {
   emailDomainCheck: true,
@@ -61,7 +78,7 @@ function LeadDetailsDialog({ lead, type }: { lead: any; type: "spam" | "valid" }
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Lead Details - {lead._id}</DialogTitle>
+          <DialogTitle>Lead Details</DialogTitle>
           <DialogDescription>AI spam detection analysis and lead information</DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
@@ -74,7 +91,7 @@ function LeadDetailsDialog({ lead, type }: { lead: any; type: "spam" | "valid" }
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback>
-                      {lead.name
+                      {(lead.name ?? "NA")
                         .split(" ")
                         .map((n: string) => n[0])
                         .join("")}
@@ -88,19 +105,12 @@ function LeadDetailsDialog({ lead, type }: { lead: any; type: "spam" | "valid" }
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{lead.email}</span>
+                    <span className="text-sm">{lead?.reportedUser?.email}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{lead.phone}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{lead.city}</span>
-                  </div>
+
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{lead.detectedAt}</span>
+                    <span className="text-sm">{lead.createdAt}</span>
                   </div>
                 </div>
               </CardContent>
@@ -136,55 +146,55 @@ function LeadDetailsDialog({ lead, type }: { lead: any; type: "spam" | "valid" }
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {lead.reasons.map((reason: string, index: number) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    {type === "spam" ? (
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                    ) : (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    )}
-                    <span className="text-sm">{reason}</span>
-                  </div>
-                ))}
+                {Array.isArray(lead.reasons) && lead.reasons.length > 0 ? (
+                  lead.reasons.map((reason: string, index: number) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      {type === "spam" ? (
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      )}
+                      <span className="text-sm">{reason}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-muted-foreground text-sm">No reasons available</span>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          <div className="flex justify-between">
-            <div className="space-x-2">
-              {type === "spam" ? (
-                <Button variant="default">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Mark as Valid
-                </Button>
-              ) : (
-                <Button variant="destructive">
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Mark as Spam
-                </Button>
-              )}
-            </div>
-            <div className="space-x-2">
-              <Button variant="outline" onClick={() => setOpen(false)}>
-                Close
-              </Button>
-              <Button variant="destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Lead
-              </Button>
-            </div>
-          </div>
+
         </div>
       </DialogContent>
     </Dialog>
   )
 }
 
+function PaginationBar({ pagination, setPagination }: { pagination: Pagination; setPagination: React.Dispatch<React.SetStateAction<Pagination>> }) {
+  console.log(pagination, "pagination")
+  if (pagination.totalPages <= 1) return null;
+  return (
+    <div className="mt-4 flex items-center justify-between px-2">
+      <div className="text-sm text-muted-foreground">
+        Showing page {pagination.page} of {pagination.totalPages}
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button variant="outline" size="sm" onClick={() => setPagination((p) => ({ ...p, page: 1 }))} disabled={pagination.page === 1}>First</Button>
+        <Button variant="outline" size="sm" onClick={() => setPagination((p) => ({ ...p, page: Math.max(1, p.page - 1) }))} disabled={pagination.page === 1}>Previous</Button>
+        <div className="px-2 text-sm">{pagination.page} / {pagination.totalPages}</div>
+        <Button variant="outline" size="sm" onClick={() => setPagination((p) => ({ ...p, page: Math.min(p.totalPages, p.page + 1) }))} disabled={pagination.page === pagination.totalPages}>Next</Button>
+        <Button variant="outline" size="sm" onClick={() => setPagination((p) => ({ ...p, page: p.totalPages }))} disabled={pagination.page === pagination.totalPages}>Last</Button>
+      </div>
+    </div>
+  );
+}
+
 export default function SpamDetectionPage() {
   const [selectedTab, setSelectedTab] = useState("spam")
   const [statusFilter, setStatusFilter] = useState("all")
   const [search, setSearch] = useState('')
-  const [spamReports, setSpamReports] = useState<any[]>([])
+  const [spamReports, setSpamReports] = useState<ExtendedSpamReport[]>([])
   const [totalDocs, setTotalDocs] = useState(0)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -198,38 +208,57 @@ export default function SpamDetectionPage() {
     reportType: '',
     sortBy: 'reportedAt',
     sortOrder: 'desc',
-    limit: 20,
+    limit: 10,
   })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const params = {
-          page,
-          limit: filters.limit,
-          ...(filters.status && filters.status !== 'all' && { status: filters.status }),
-          ...(filters.severity && filters.severity !== 'all' && { severity: filters.severity }),
-          ...(filters.contentType && filters.contentType !== 'all' && { contentType: filters.contentType }),
-          ...(filters.reportType && filters.reportType !== 'all' && { reportType: filters.reportType }),
-          ...(filters.sortBy && { sortBy: filters.sortBy }),
-          ...(filters.sortOrder && { sortOrder: filters.sortOrder }),
-          ...(search && { search }),
-        }
-        const res = await getSpamReports(params)
-        setSpamReports(res.data.docs)
-        setTotalDocs(res.data.totalDocs)
-        setPage(res.data.page)
-        setTotalPages(res.data.totalPages)
-      } catch (err: any) {
-        setError(err?.message || 'Failed to fetch spam reports')
-      } finally {
-        setLoading(false)
-      }
+  const [spamPagination, setSpamPagination] = useState<Pagination>({ page: 1, limit: 10, totalDocs: 0, totalPages: 1 });
+  const [validPagination, setValidPagination] = useState<Pagination>({ page: 1, limit: 10, totalDocs: 0, totalPages: 1 });
+  const filteredSpamReports = useMemo(() => {
+    if (!search.trim()) return spamReports;
+    return Array.isArray(spamReports)
+      ? spamReports.filter(report =>
+        report.userReportDetails?.reason?.toLowerCase().includes(search.toLowerCase()) ||
+        report.detectionResult?.reasons?.join(' ').toLowerCase().includes(search.toLowerCase()) ||
+        report.reportType?.toLowerCase().includes(search.toLowerCase()) ||
+        report.category?.toLowerCase().includes(search.toLowerCase())
+      )
+      : [];
+  }, [spamReports, search]);
+  const [loadingSpam, setLoadingSpam] = useState(false);
+
+  const fetchSpamLeads = async (page = spamPagination.page, limit = spamPagination.limit) => {
+    setLoadingSpam(true);
+    const params = {
+      page,
+      limit,
+      ...(filters.status && filters.status !== 'all' && { status: filters.status }),
+      ...(filters.severity && filters.severity !== 'all' && { severity: filters.severity }),
+      ...(filters.contentType && filters.contentType !== 'all' && { contentType: filters.contentType }),
+      ...(filters.reportType && filters.reportType !== 'all' && { reportType: filters.reportType }),
+      ...(filters.sortBy && { sortBy: filters.sortBy }),
+      ...(filters.sortOrder && { sortOrder: filters.sortOrder }),
+      ...(search && { search }),
     }
-    fetchData()
-  }, [filters, search, page])
+    const res: PaginatedSpamReports = await getSpamReports(params)
+    setSpamReports(Array.isArray(res.data.docs) ? (res.data.docs as ExtendedSpamReport[]) : [])
+    setTotalDocs(res.totalDocs);
+    setSpamPagination(prev => ({
+      ...prev,
+      limit: res.data.limit,
+      totalDocs: res.data.totalDocs,
+      totalPages: res.data.totalPages,
+    }));
+    setLoadingSpam(false);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setSpamPagination(prev => ({ ...prev, page: newPage }));
+    fetchSpamLeads(newPage, spamPagination.limit);
+  };
+
+  useEffect(() => {
+    fetchSpamLeads(spamPagination.page, spamPagination.limit);
+  }, [spamPagination.page, spamPagination.limit]);
 
   const stats = {
     totalSpam: totalDocs,
@@ -238,13 +267,6 @@ export default function SpamDetectionPage() {
     accuracy: 0,
     autoDeleted: 0,
   }
-
-  const filteredSpamReports = spamReports.filter((report) =>
-    report.userReportDetails?.reason?.toLowerCase().includes(search.toLowerCase()) ||
-    report.detectionResult?.reasons?.join(' ').toLowerCase().includes(search.toLowerCase()) ||
-    report.reportType?.toLowerCase().includes(search.toLowerCase()) ||
-    report.category?.toLowerCase().includes(search.toLowerCase())
-  );
 
   const handleApplyFilters = () => {
     setFilterDialogOpen(false)
@@ -454,39 +476,42 @@ export default function SpamDetectionPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Severity</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Confidence</TableHead>
                     <TableHead>Reason</TableHead>
                     <TableHead>Reported At</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSpamReports.map((report) => (
-                    <TableRow key={report._id}>
-                      <TableCell>{report._id}</TableCell>
-                      <TableCell>{report.contentType}</TableCell>
-                      <TableCell>{report.category}</TableCell>
-                      <TableCell>{report.severity}</TableCell>
-                      <TableCell>{report.status}</TableCell>
-                      <TableCell>{report.detectionResult?.confidence ?? '-'}</TableCell>
-                      <TableCell>{report.userReportDetails?.reason || report.detectionResult?.reasons?.join(', ') || '-'}</TableCell>
-                      <TableCell>{report.reportedAt ? new Date(report.reportedAt).toLocaleString() : '-'}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-1">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
+                  {filteredSpamReports.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground">
+                        No spam reports found.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    filteredSpamReports.map((report) => (
+                      <TableRow key={report._id}>
+                        <TableCell>{report.contentType ?? '-'}</TableCell>
+                        <TableCell>{report.category ?? '-'}</TableCell>
+                        <TableCell>{report.severity ?? '-'}</TableCell>
+                        <TableCell>{report.status ?? '-'}</TableCell>
+                        <TableCell>{report.userReportDetails?.reason ?? report.detectionResult?.reasons?.join(', ') ?? '-'}</TableCell>
+                        <TableCell>{report.reportedAt ? new Date(report.reportedAt).toLocaleString() : '-'}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-1">
+                            <LeadDetailsDialog lead={report} type="spam" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
+              <PaginationBar pagination={spamPagination} setPagination={setSpamPagination} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -524,6 +549,7 @@ export default function SpamDetectionPage() {
                   {/* Placeholder for valid leads table */}
                 </TableBody>
               </Table>
+              <PaginationBar pagination={validPagination} setPagination={setValidPagination} />
             </CardContent>
           </Card>
         </TabsContent>
