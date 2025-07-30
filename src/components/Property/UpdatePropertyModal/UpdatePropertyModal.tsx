@@ -63,6 +63,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
             images: [],
             isAvailable: false,  // ✅ very important
             isFeatured: false,
+            phone: "",
         },
     })
 
@@ -72,17 +73,89 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
     });
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-    const onFormSubmit = (data: PropertyFormData) => {onSubmit(data, () => {
-            reset();
-            // reset({
-            //     isAvailable: false,
-            //     isFeatured: false,
-            // });
-
+    const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
+    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+    const formatPhoneNumber = (phone: string): string => {
+        // Remove any non-digit characters and trim
+        const cleaned = phone.replace(/\D/g, '').trim();
+        // If number doesn't start with +, add +91
+        return cleaned.startsWith('+91') || cleaned.startsWith('91') ? cleaned : `+91${cleaned}`;
+      };
+      const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        
+        // Save files for later upload
+        setFilesToUpload(prev => [...prev, ...files]);
+        
+        // Create preview URLs
+        const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+        setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+        
+        // Reset the file input
+        if (e.target) {
+          e.target.value = '';
+        }
+      };
+      const onFormSubmit = async (data: PropertyFormData) => {
+        try {
+          // Upload all files first
+          const uploadedImageUrls = [];
+          
+          for (const file of filesToUpload) {
+            try {
+              const url = await uploadToCloudinary(file);
+              uploadedImageUrls.push(url);
+            } catch (error) {
+              console.error('Error uploading file:', error);
+              // Continue with other files even if one fails
+            }
+          }
+          
+          // Combine existing images with newly uploaded ones
+          const allImages = [...(data.images || []), ...uploadedImageUrls];
+          
+          // Format phone number and include all images
+          const formattedData = {
+            ...data,
+            phone: data.phone ? formatPhoneNumber(data.phone) : '',
+            images: allImages
+          };
+          
+          await onSubmit(formattedData as PropertyFormData, () => {
+            // Reset form and state on success
+            setFilesToUpload([]);
+            setPreviewUrls([]);
+            reset({
+              name: "",
+              type: "",
+              phone: "",
+              city: "",
+              area: "",
+              microSiteLink: "",
+              rooms: 0,
+              price: 0,
+              deposit: 0,
+              description: "",
+              featured: false,
+              amenities: [],
+              bulkAccommodationType: [],
+              sharingType: [],
+              rules: [],
+              nearbyPlaces: [], 
+    
+    
+              images: [],
+              isAvailable: false,  
+              isFeatured: false,
+            });
             setOpen(false);
-        });
-    };
+            setPropertyId(null);
+          });
+        } catch (error) {
+          console.error('Error submitting form:', error);
+        }
+      };
 
 
 
@@ -114,6 +187,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             isAvailable: propertyData.isAvailable || false,
                             isFeatured: propertyData.isFeatured || false,
                             gender: propertyData.gender || "",
+                            phone: propertyData.phone || "",
 
 
                             location: {
@@ -182,7 +256,12 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             </div>
                         </div>
 
-
+                        {/* Phone */}
+                        <div className="space-y-2">
+                            <Label htmlFor="phone">Contact Phone</Label>
+                            <Input id="phone" {...register("phone")} placeholder="Enter contact phone number" />
+                            {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+                        </div>
                         {/* gender */}
                         <div className="space-y-2">
                             <Label htmlFor="bulkAccommodation">Bulk Accommodation</Label>
@@ -566,49 +645,82 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             name="images"
                             render={({ field }) => (
                                 <div className="space-y-4">
-                                    <Label>Property Images</Label>
-
-                                    <div
-                                        className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                                        <p className="text-sm text-muted-foreground">
-                                            Drag & drop images or click to browse
-                                        </p>
-                                        <Button variant="outline" className="mt-2">
-                                            <ImageIcon className="h-4 w-4 mr-2" />
-                                            Upload Images
-                                        </Button>
+                                    <div className="space-y-4">
+                                        <div
+                                            className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                fileInputRef.current?.click();
+                                            }}
+                                        >
+                                            <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                                            <p className="text-sm text-muted-foreground">
+                                                Drag & drop images or click to browse
+                                            </p>
+                                            <div 
+                                                className="mt-2 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    fileInputRef.current?.click();
+                                                }}
+                                            >
+                                                <ImageIcon className="h-4 w-4 mr-2" />
+                                                Upload Images
+                                            </div>
+                                        </div>
                                         <input
                                             type="file"
                                             accept="image/*"
+                                            multiple
                                             className="hidden"
                                             ref={fileInputRef}
-                                            onChange={async (e) => {
-                                                const file = e.target.files?.[0];
-                                                if (!file) return;
-                                                try {
-                                                    const url = await uploadToCloudinary(file);
-                                                    field.onChange([...(field.value || []), url]);} catch (err) {
-                                                    console.error("Upload failed:", err);
-                                                }
-                                            }}
+                                            onChange={handleFileChange}
                                         />
                                     </div>
 
                                     {/* Show uploaded images preview */}
                                     <div className="grid grid-cols-4 gap-4 mt-4">
+                                        {/* Show existing images */}
                                         {(field.value || []).map((url, idx) => (
-                                            <div key={idx} className="relative">
-                                                <img src={url} alt={`uploaded-${idx}`} className="w-full h-24 object-cover rounded" />
+                                            <div key={`existing-${idx}`} className="relative">
+                                                <img src={url} alt={`existing-${idx}`} className="w-full h-24 object-cover rounded" />
                                                 <Button
                                                     size="icon"
                                                     variant="destructive"
                                                     className="absolute top-1 right-1 w-6 h-6"
-                                                    onClick={() => {
-                                                        const updated = field.value.filter((_, i) => i !== idx);
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const updated = (field.value || []).filter((_, i) => i !== idx);
                                                         field.onChange(updated);
+                                                    }}
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                        
+                                        {/* Show new image previews */}
+                                        {previewUrls.map((previewUrl, previewIdx) => (
+                                            <div key={`new-${previewIdx}`} className="relative">
+                                                <img 
+                                                    src={previewUrl} 
+                                                    alt={`preview-${previewIdx}`}
+                                                    className="w-full h-24 object-cover rounded opacity-75" 
+                                                />
+                                                <Button
+                                                    size="icon"
+                                                    variant="destructive"
+                                                    className="absolute top-1 right-1 w-6 h-6"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const newFiles = [...filesToUpload];
+                                                        const newUrls = [...previewUrls];
+                                                        newFiles.splice(previewIdx, 1);
+                                                        newUrls.splice(previewIdx, 1);
+                                                        setFilesToUpload(newFiles);
+                                                        setPreviewUrls(newUrls);
                                                     }}
                                                 >
                                                     <Trash2 className="w-3 h-3" />
