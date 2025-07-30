@@ -51,6 +51,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
     defaultValues: {
       name: "",
       type: "",
+      phone: "",
       city: "",
       area: "",
       microSiteLink: "",
@@ -80,12 +81,25 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const formatPhoneNumber = (phone: string): string => {
+    // Remove any non-digit characters and trim
+    const cleaned = phone.replace(/\D/g, '').trim();
+    // If number doesn't start with +, add +91
+    return cleaned.startsWith('+') ? cleaned : `+91${cleaned}`;
+  };
+
   const onFormSubmit = async (data: PropertyFormData) => {
     try {
-      await onSubmit(data, () => {
+      // Format phone number before submission
+      const formattedData = {
+        ...data,
+        phone: data.phone ? formatPhoneNumber(data.phone) : ''
+      };
+      await onSubmit(formattedData as PropertyFormData, () => {
         reset({
           name: "",
           type: "",
+          phone: "",
           city: "",
           area: "",
           microSiteLink: "",
@@ -163,6 +177,23 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
               </div>
             </div>
 
+            {/* Phone */}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Contact Phone</Label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <span className="text-gray-500">+91</span>
+                </div>
+                <Input 
+                  id="phone" 
+                  {...register("phone")} 
+                  placeholder="Enter contact phone number" 
+                  type="tel"
+                  className="pl-10"
+                />
+              </div>
+              {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+            </div>
 
             {/* gender */}
             <div className="space-y-2">

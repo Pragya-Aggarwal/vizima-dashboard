@@ -4,6 +4,7 @@ export const propertySchema = z.object({
     title: z.string().min(1, "Title is required"),
     description: z.string().min(1, "Description is required"),
     type: z.string().min(1, "Type is required"),
+    phone: z.string().min(10, "Phone number must be at least 10 digits").regex(/^[0-9+\-\s()]*$/, "Please enter a valid phone number"),
     gender: z.string().min(1, "Gender is required"),
     bulkAccommodation: z.boolean(),
     bulkAccommodationType: z.array(z.string()).min(0, "Select at least one"),
