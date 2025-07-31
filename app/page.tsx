@@ -1224,7 +1224,7 @@ const LoginPage = () => {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (token) {
       router.replace("/dashboard");
     } else {
@@ -1248,7 +1248,7 @@ const LoginPage = () => {
       const token = response?.token;
       const user = response?.data?.user;
       if (user && token) {
-        localStorage.setItem("accessToken", token);
+        sessionStorage.setItem("accessToken", token);
         localStorage.setItem("admin-info", JSON.stringify(user));
         toast.success("Logged in successfully");
         setTimeout(() => router.push("/dashboard"), 1000);

@@ -214,7 +214,7 @@ export default function DashboardLayout({
     try {
       const res = await AuthServices.logout()
       toast.success("LogOut successfully")
-      localStorage.removeItem("accessToken")
+      sessionStorage.removeItem("accessToken")
       localStorage.removeItem("admin-info")
       router.push("/")
     } catch (error) {

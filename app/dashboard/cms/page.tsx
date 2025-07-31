@@ -78,7 +78,7 @@ const createBlog = async (data: any) => {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`
       }
     });
 

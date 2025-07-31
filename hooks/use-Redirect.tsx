@@ -5,7 +5,7 @@ export const useAuthRedirect = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       router.push("/");
     }
