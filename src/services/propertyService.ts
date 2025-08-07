@@ -57,5 +57,13 @@ export const getPropertyStats = async () => {
     return response.data;
 };
 
+export const deleteMultipleProperties = async (ids: string[]) => {
+    let response = await api.delete(`/api/properties/delete-multiple`, {
+        data: { propertyIds: ids }
+    });
+    return response.data;
+};
+
+
 
 

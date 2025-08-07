@@ -69,7 +69,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
 
       images: [],
-      isAvailable: false,  // ✅ very important
+      isAvailable: true,  // ✅ very important
       isFeatured: false,
     },
   })
@@ -352,8 +352,8 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
             <div className="space-y-4">
               <Label>Bulk Accomodation</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {["interns", "employees", "students"].map((item) => (
+              <div className="grid grid-cols-2 gap-2">
+                {["interns", "employees", "students", "Managed Accomodation"].map((item) => (
                   <div key={item} className="flex items-center space-x-2">
                     <Controller
                       control={control}
@@ -426,7 +426,30 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
             {/* Amenities */}
             <div className="space-y-4">
-              <Label>Amenities</Label>
+              <div className="flex justify-between items-center">
+                <Label>Amenities</Label>
+                <div className="flex items-center space-x-2">
+                  <Controller
+                    control={control}
+                    name="amenities"
+                    render={({ field }) => {
+                      const allAmenities = ["wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "pets", "furnished", "tv", "dishwasher", "microwave", "refrigerator"];
+                      const allSelected = allAmenities.every(item => field.value?.includes(item));
+                      return (
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={allSelected}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked ? [...allAmenities] : []);
+                            }}
+                          />
+                          <Label className="text-sm text-muted-foreground">Select All</Label>
+                        </div>
+                      );
+                    }}
+                  />
+                </div>
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {["wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "pets", "furnished", "tv", "dishwasher", "microwave", "refrigerator",].map((item) => (
                   <div key={item} className="flex items-center space-x-2">

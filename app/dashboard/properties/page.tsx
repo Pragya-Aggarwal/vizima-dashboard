@@ -83,7 +83,6 @@ export default function PropertiesPage() {
         ...(selectedAmenities.length > 0 && { amenities: selectedAmenities.join(',') }),
         sortBy,
         sortOrder,
-        isAvailable: isAvailableTouched? isAvailableTouched: true,
       };
       const response = await getPropertiesfullInquiries(payload);
 

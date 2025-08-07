@@ -1,6 +1,7 @@
 "use client"
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useQueryClient } from '@tanstack/react-query';
+import api from "../../../lib/axios";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -8,7 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { deletePropertybyId } from "@/src/services/propertyService"
+import { deleteMultipleProperties, deletePropertybyId } from "@/src/services/propertyService"
 import {
     Dialog,
     DialogContent,
@@ -58,7 +59,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { FC, useCallback } from "react";
+import { FC } from "react";
 import { boolean } from "zod"
 import LoadingIndicator from "@/src/common/LoadingIndicator/loading"
 import UpdatePropertyModal from "../UpdatePropertyModal/UpdatePropertyModal"
@@ -183,6 +184,8 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
     const [selectedTab, setSelectedTab] = useState("vizima")
     const [open, setOpen] = useState(false)
     const [propertyId, setPropertyId] = useState<string | null | undefined>();
+    const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Pagination handlers
     const goToFirstPage = useCallback((): void => {
@@ -200,9 +203,6 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
     const goToPrevPage = useCallback((): void => {
         setCurrentPage((prev: number) => Math.max(1, prev - 1));
     }, [setCurrentPage]);
-
-
-
 
     const handleUpdateProperty = async (
         data: PropertyFormData,
@@ -282,6 +282,43 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
     };
     const handleRefresh = () => {
         refetch();
+        setSelectedProperties([]);
+    };
+
+    const handleSelectProperty = (propertyId: string) => {
+        setSelectedProperties(prev =>
+            prev.includes(propertyId)
+                ? prev.filter(id => id !== propertyId)
+                : [...prev, propertyId]
+        );
+    };
+
+    const handleSelectAllProperties = () => {
+        if (selectedProperties.length === properties.length) {
+            setSelectedProperties([]);
+        } else {
+            setSelectedProperties(properties.map(property => property._id));
+        }
+    };
+
+    const handleDeleteMultiple = async () => {
+        if (selectedProperties.length === 0) return;
+
+        try {
+            setIsDeleting(true);
+            const response = await deleteMultipleProperties(selectedProperties);
+
+            if (response.success) {
+                toast.success(`${selectedProperties.length} properties deleted successfully`);
+                setSelectedProperties([]);
+                refetch();
+            }
+        } catch (error: any) {
+            console.error('Error deleting properties:', error);
+            toast.error(error.response?.data?.message || 'Failed to delete properties');
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     return (
@@ -503,10 +540,26 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
 
                             {/* end dialog box */}
 
-                            <Button variant="outline" size="sm" onClick={handleRefresh}>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleRefresh}
+                                disabled={isDeleting}
+                            >
                                 <RefreshCw className="h-4 w-4 mr-2" />
                                 Refresh
                             </Button>
+                            {selectedProperties.length > 0 && (
+                                <Button 
+                                    variant="destructive" 
+                                    size="sm" 
+                                    onClick={handleDeleteMultiple}
+                                    disabled={isDeleting}
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete ({selectedProperties.length})
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardHeader>
@@ -514,6 +567,16 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                            checked={selectedProperties.length > 0 && selectedProperties.length === properties.length}
+                                            onChange={handleSelectAllProperties}
+                                        />
+                                    </div>
+                                </TableHead>
                                 <TableHead>Property</TableHead>
                                 <TableHead>Location</TableHead>
                                 <TableHead>Type</TableHead>
@@ -533,7 +596,18 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                 </TableRow>
                             ) : properties?.length > 0 ? (
                                 properties.map((property, index) => (
-                                    <TableRow key={property._id || index}>
+                                    <TableRow key={property._id || index} className={selectedProperties.includes(property._id) ? 'bg-gray-50' : ''}>
+
+                                        <TableCell>
+                                            <div className="flex items-center space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                    checked={selectedProperties.includes(property._id)}
+                                                    onChange={() => handleSelectProperty(property._id)}
+                                                />
+                                            </div>
+                                        </TableCell>
 
                                         <TableCell>
                                             <div className="flex items-center space-x-3">

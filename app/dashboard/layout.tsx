@@ -141,7 +141,7 @@ function Sidebar({ className }: { className?: string }) {
         <div className="px-3 py-2">
           <div className="flex items-center mb-6 px-2">
             <div className="logo-container">
-              <Image src="/images/logo.png" alt="Vizima Logo" width={120} height={40} className="dark:brightness-150" />
+              <Image src="/images/vizima-logo.png" alt="Vizima Logo" width={120} height={40} className="dark:brightness-150" />
             </div>
           </div>
           <div className="space-y-1">
