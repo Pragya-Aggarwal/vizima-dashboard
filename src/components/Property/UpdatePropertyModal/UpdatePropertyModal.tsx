@@ -647,7 +647,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                 <div className="space-y-4">
                                     <div className="space-y-4">
                                         <div
-                                            className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer"
+                                            className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center"
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
@@ -658,16 +658,19 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                             <p className="text-sm text-muted-foreground">
                                                 Drag & drop images or click to browse
                                             </p>
-                                            <div 
-                                                className="mt-2 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    fileInputRef.current?.click();
-                                                }}
-                                            >
-                                                <ImageIcon className="h-4 w-4 mr-2" />
-                                                Upload Images
+                                            <div className="mt-2">
+                                                <Button 
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        fileInputRef.current?.click();
+                                                    }}
+                                                >
+                                                    <ImageIcon className="h-4 w-4 mr-2" />
+                                                    Upload Images
+                                                </Button>
                                             </div>
                                         </div>
                                         <input
@@ -676,7 +679,16 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                             multiple
                                             className="hidden"
                                             ref={fileInputRef}
-                                            onChange={handleFileChange}
+                                            onClick={(e) => e.stopPropagation()}
+                                            onChange={async (e) => {
+                                                e.stopPropagation();
+                                                if (handleFileChange) {
+                                                    await handleFileChange(e);
+                                                    if (e.target) {
+                                                        e.target.value = '';
+                                                    }
+                                                }
+                                            }}
                                         />
                                     </div>
 

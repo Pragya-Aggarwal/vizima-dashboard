@@ -327,46 +327,47 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
                                     <Label>Customer Image</Label>
 
                                     <div
-                                        className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer"
-                                        onClick={() => fileInputRef.current?.click()}
+                                        className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            fileInputRef.current?.click();
+                                        }}
                                     >
                                         <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                                         <p className="text-sm text-muted-foreground">
                                             Drag & drop image or click to browse
                                         </p>
-                                        <Button variant="outline" className="mt-2">
-                                            <ImageIcon className="h-4 w-4 mr-2" />
-                                            Upload Image
-                                        </Button>
-                                        {/* <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            ref={fileInputRef}
-                                            onChange={async (e) => {
-                                                const file = e.target.files?.[0];
-                                                if (!file) return;
-                                                try {
-                                                    const url = await uploadToCloudinary(file);
-                                                    field.onChange(url); // ✅ only set single URL} catch (err) {
-                                                    console.error("Upload failed:", err);
-                                                }
-                                            }}
-                                        /> */}
-
+                                        <div className="mt-2">
+                                            <Button 
+                                                type="button"
+                                                variant="outline"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    fileInputRef.current?.click();
+                                                }}
+                                            >
+                                                <ImageIcon className="h-4 w-4 mr-2" />
+                                                Upload Image
+                                            </Button>
+                                        </div>
                                         <input
                                             type="file"
                                             accept="image/*"
                                             className="hidden"
                                             ref={fileInputRef}
+                                            onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => {
+                                                e.stopPropagation();
                                                 const file = e.target.files?.[0];
                                                 if (file) {
-                                                    setSelectedFile(file); // for FormData
-                                                    field.onChange(URL.createObjectURL(file)); // for preview + validation
+                                                    setSelectedFile(file);
+                                                    field.onChange(URL.createObjectURL(file));
+                                                }
+                                                if (e.target) {
+                                                    e.target.value = '';
                                                 }
                                             }}
-
                                         />
                                     </div>
 

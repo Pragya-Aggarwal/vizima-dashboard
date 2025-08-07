@@ -605,23 +605,40 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                   <Label>Property Images</Label>
 
                   <div
-                    className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer"
-                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }}
                   >
                     <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
                       Drag & drop images or click to browse
                     </p>
-                    <Button variant="outline" className="mt-2">
-                      <ImageIcon className="h-4 w-4 mr-2" />
-                      Upload Images
-                    </Button>
+                    <div className="mt-2">
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          fileInputRef.current?.click();
+                        }}
+                      >
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        Upload Images
+                      </Button>
+                    </div>
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
                       ref={fileInputRef}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
                       onChange={async (e) => {
+                        e.stopPropagation();
                         const file = e.target.files?.[0];
                         if (!file) return;
                         try {
@@ -629,6 +646,11 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                           field.onChange([...(field.value || []), url]);
                         } catch (err) {
                           console.error("Upload failed:", err);
+                        } finally {
+                          // Reset the file input to allow selecting the same file again
+                          if (e.target) {
+                            e.target.value = '';
+                          }
                         }
                       }}
                     />
