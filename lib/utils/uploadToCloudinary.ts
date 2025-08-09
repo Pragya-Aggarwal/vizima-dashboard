@@ -2,12 +2,14 @@
 export const uploadToCloudinary = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", "next_upload"); // 🔁 use your unsigned preset name
+  formData.append("upload_preset", "unsigned_preset"); // 🔁 use your unsigned preset name
 
-  const res = await fetch("https://api.cloudinary.com/v1_1/dzuvrxlsy/image/upload", {
-    method: "POST",
-    body: formData,
-  });
+  const res = await fetch("https://api.cloudinary.com/v1_1/dwztiucdp/image/upload",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
 
   const data = await res.json();
 
@@ -17,4 +19,3 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
 
   return data.secure_url;
 };
-
