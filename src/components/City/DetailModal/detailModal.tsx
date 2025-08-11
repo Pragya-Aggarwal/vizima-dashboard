@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -32,29 +33,38 @@ import { formatReadableDate } from "@/src/common/common";
 const DetailModal = ({ open, setOpen, cityId }: CityModalProps) => {
   const [loading, setLoading] = useState(false);
   const [detail, setDetail] = useState<City | null>(null);
-
+console.log(cityId, open, detail)
   useEffect(() => {
     const fetchCity = async () => {
-      if (cityId && open) {
-        setLoading(true);
-        try {
-          const res = await getCityById(cityId);
-          setDetail(res.data);
-        } catch (error) {
-          console.error("Error fetching city:", error);
-        } finally {
-          setLoading(false);
-        }
-      } else {
+      if (!cityId || !open) {
         setDetail(null);
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        console.log('Fetching city with ID:', cityId);
+        const res = await getCityById(cityId);
+        console.log('City data received:', res);
+        setDetail(res);
+      } catch (error) {
+        console.error("Error fetching city:", error);
+        toast.error("Failed to load city details");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchCity();
+    // Reset detail when modal is closed
+    if (!open) {
+      setDetail(null);
+    } else {
+      fetchCity();
+    }
   }, [cityId, open]);
 
 
-
+console.log(detail)
   return (
 
     <Dialog open={open} onOpenChange={setOpen}>
@@ -65,7 +75,10 @@ const DetailModal = ({ open, setOpen, cityId }: CityModalProps) => {
         </DialogHeader>
 
         {loading ? (
-          <div className="text-center text-sm text-muted-foreground"><LoadingIndicator/></div>
+          <div className="flex flex-col items-center justify-center p-8">
+            <LoadingIndicator />
+            <p className="mt-2 text-sm text-muted-foreground">Loading city details...</p>
+          </div>
         ) : detail ? (
           <div className="space-y-4">
             {/* Image */}

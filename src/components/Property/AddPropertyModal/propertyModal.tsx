@@ -23,7 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { propertySchema, PropertyFormData } from "../Schema/property-schema"
 import { useState } from "react"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
+import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
 import { useRef } from "react"
 
 type AddPropertyModalProps = {
@@ -665,9 +665,18 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                           size="icon"
                           variant="destructive"
                           className="absolute top-1 right-1 w-6 h-6"
-                          onClick={() => {
-                            const updated = field.value.filter((_, i) => i !== idx);
-                            field.onChange(updated);
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              const fileName = url.split('/').pop();
+                              if (fileName) {
+                                await deleteImage(fileName);
+                                const updated = field.value.filter((_, i) => i !== idx);
+                                field.onChange(updated);
+                              }
+                            } catch (error) {
+                              console.error('Failed to delete image:', error);
+                            }
                           }}
                         >
                           <Trash2 className="w-3 h-3" />

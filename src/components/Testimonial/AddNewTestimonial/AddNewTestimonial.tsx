@@ -24,7 +24,8 @@ import { X } from "lucide-react";
 // import { propertySchema, PropertyFormData } from "../../Property/Schema/property-schema"
 import { testimonialSchema, TestimonialFormData } from "../Schema/testimonial-schema"
 import { useState } from "react"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
+import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
+import { toast } from "sonner"
 import { useRef } from "react"
 
 type AddPropertyModalProps = {
@@ -128,7 +129,7 @@ const AddTestimonialModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps)
                                 name="status"
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} value={field.value}>
-                                        <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="approved">Approved</SelectItem>
                                             <SelectItem value="reject">Reject</SelectItem>
@@ -228,7 +229,20 @@ const AddTestimonialModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps)
                                                 size="icon"
                                                 variant="destructive"
                                                 className="absolute top-1 right-1 w-6 h-6"
-                                                onClick={() => field.onChange("")}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                        const fileName = field.value?.split('/').pop();
+                                                        if (fileName) {
+                                                            await deleteImage(fileName);
+                                                            field.onChange("");
+                                                            toast.success("Image deleted successfully");
+                                                        }
+                                                    } catch (error) {
+                                                        console.error("Error deleting image:", error);
+                                                        toast.error("Failed to delete image");
+                                                    }
+                                                }}
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </Button>

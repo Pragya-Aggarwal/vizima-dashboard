@@ -22,9 +22,9 @@ import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { Schema, SchemaFormData } from "../Schema/schema"
-import { useState } from "react"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
-import { useRef } from "react"
+import { useState, useRef } from "react"
+import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
+import { toast } from "sonner"
 
 type AddCityModalProps = {
     open: boolean
@@ -32,7 +32,7 @@ type AddCityModalProps = {
     onSubmit: (data: SchemaFormData, onSuccess: () => void) => void
 }
 
-const AddCityModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
+const AddCityModal = ({ open, setOpen, onSubmit: onSubmitProp }: AddCityModalProps) => {
     const {
         register, control, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset, trigger
     } = useForm<SchemaFormData>({
@@ -40,14 +40,9 @@ const AddCityModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
 
         defaultValues: {
             name: "",
-            type: "",
-            city: "",
-            area: "",
-            rooms: 0,
-            price: 0,
-            deposit: 0,
-            description: "",
-            featured: false,
+            order: 0,
+            imageUrl: "",
+            isVisible: false,
             amenities: [],
             bulkAccommodationType: [],
             sharingType: [],
@@ -69,12 +64,20 @@ const AddCityModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: SchemaFormData) => {onSubmit(data, () => {
+    const onFormSubmit = (data: SchemaFormData) => {
+        // Ensure we only pass the fields defined in the schema
+        const formData: SchemaFormData = {
+            name: data.name,
+            order: data.order,
+            imageUrl: data.imageUrl,
+            isVisible: data.isVisible
+        };
+        
+        onSubmitProp(formData, () => {
             reset();
             setOpen(false);
         });
     };
-
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -85,7 +88,7 @@ const AddCityModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    <form onSubmit={(e) => void handleSubmit(onFormSubmit)(e)} className="space-y-6">
+                    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
 
                         {/* Title & Type */}
                         <div className="grid grid-cols-2 gap-4">
@@ -197,7 +200,20 @@ const AddCityModal = ({ open, setOpen, onSubmit }: AddCityModalProps) => {
                                                 size="icon"
                                                 variant="destructive"
                                                 className="absolute top-1 right-1 w-6 h-6"
-                                                onClick={() => field.onChange("")}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                        const fileName = field.value.split('/').pop() || '';
+                                                        if (fileName) {
+                                                            await deleteImage(fileName);
+                                                            field.onChange("");
+                                                            toast.success("Image deleted successfully");
+                                                        }
+                                                    } catch (error) {
+                                                        console.error("Error deleting image:", error);
+                                                        toast.error("Failed to delete image");
+                                                    }
+                                                }}
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </Button>

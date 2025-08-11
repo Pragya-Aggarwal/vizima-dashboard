@@ -26,7 +26,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { testimonialSchema, TestimonialFormData } from "../Schema/testimonial-schema"
 import { useState } from "react"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
+import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
+import { toast } from "sonner"
 import { useRef } from "react"
 import { getTestimonialById } from "@/src/services/testmonialServices"
 
@@ -262,7 +263,19 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
                                                 size="icon"
                                                 variant="destructive"
                                                 className="absolute top-1 right-1 w-6 h-6"
-                                                onClick={() => field.onChange("")}
+                                                onClick={async (e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    try {
+                                                        const fileName = field.value.split('/').pop();
+                                                        if (fileName) {
+                                                            await deleteImage(fileName);
+                                                            field.onChange("");
+                                                        }
+                                                    } catch (error) {
+                                                        console.error("Error deleting image:", error);
+                                                    }
+                                                }}
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </Button>

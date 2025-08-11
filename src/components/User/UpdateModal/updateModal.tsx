@@ -26,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { Schema, SchemaFormData } from "../Schema/schema"
 import { useState } from "react"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
+import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
 import { useRef } from "react"
 // import { getTestimonialById } from "@/src/services/testmonialServices"
 // import { getCityById } from "@/src/services/cityServices"
@@ -294,20 +294,32 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
 
                                     {/* Show uploaded image preview */}
                                     {field.value && (
-                                        <div className="relative w-32 h-32 mt-4">
+                                        <div className="relative w-32 h-32 mt-4 group">
                                             <img
                                                 src={field.value}
-                                                alt="uploaded"
-                                                className="w-full h-full object-cover rounded"
+                                                alt="Uploaded preview"
+                                                className="w-full h-full object-cover rounded-lg"
                                             />
-                                            <Button
-                                                size="icon"
-                                                variant="destructive"
-                                                className="absolute top-1 right-1 w-6 h-6"
-                                                onClick={() => field.onChange("")}
+                                            <button
+                                                type="button"
+                                                onClick={async (e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    try {
+                                                        const fileName = field.value.split('/').pop();
+                                                        if (fileName) {
+                                                            await deleteImage(fileName);
+                                                            field.onChange('');
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Failed to delete image:', error);
+                                                    }
+                                                }}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                aria-label="Remove image"
                                             >
-                                                <Trash2 className="w-3 h-3" />
-                                            </Button>
+                                                <X className="h-4 w-4" />
+                                            </button>
                                         </div>
                                     )}
 

@@ -23,9 +23,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { Schema, SchemaFormData } from "../Schema/schema"
 import { useState } from "react"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
+import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
 import { useRef } from "react"
-import { addBanner, getBanner } from "@/src/services/Banner";
+import { addBanner, getBanners } from "@/src/services/Banner";
 import { toast } from "sonner"
 
 type AddCityModalProps = {
@@ -383,7 +383,20 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
                                                 size="icon"
                                                 variant="destructive"
                                                 className="absolute top-1 right-1 w-6 h-6"
-                                                onClick={() => field.onChange("")}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                        const fileName = field.value.split('/').pop() || '';
+                                                        if (fileName) {
+                                                            await deleteImage(fileName);
+                                                            field.onChange("");
+                                                            showSuccessToast("Image deleted successfully");
+                                                        }
+                                                    } catch (error) {
+                                                        console.error("Error deleting image:", error);
+                                                        showErrorToast("Failed to delete image");
+                                                    }
+                                                }}
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </Button>

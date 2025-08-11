@@ -56,8 +56,7 @@ export function BannerList({ bannerData, isLoading, onEdit, onView, onDelete }: 
             <TableHead>Title</TableHead>
             <TableHead>Type</TableHead>
             {/* <TableHead>Status</TableHead> */}
-            <TableHead>Start Date</TableHead>
-            <TableHead>End Date</TableHead>
+            <TableHead>Created At</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -83,7 +82,6 @@ export function BannerList({ bannerData, isLoading, onEdit, onView, onDelete }: 
                 </span>
               </TableCell> */}
               <TableCell>{new Date(banner.startDate).toLocaleDateString()}</TableCell>
-              <TableCell>{new Date(banner.endDate).toLocaleDateString()}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="icon" onClick={() => onView(banner._id)}>

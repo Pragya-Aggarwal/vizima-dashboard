@@ -91,8 +91,10 @@ const CityMain = () => {
     }, [refetch]);
 
     const handleDetailModal = (id: string) => {
-        setDetailModalOpen(true);
+        console.log(id)
+        // Set cityId first, then open the modal
         setCityId(id);
+        setDetailModalOpen(true);
     };
 
     const handleDelete = useCallback(async () => {

@@ -22,7 +22,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { getCityById } from "@/src/services/cityServices"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
+import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
+import { toast } from "sonner"
 import { CityFormData } from "@/types/city"
 
 type UpdateCityModalProps = {
@@ -217,8 +218,10 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
                                             accept="image/*"
                                             className="hidden"
                                             ref={fileInputRef}
-                                            onClick={(e) => e.stopPropagation()}
+                                            onClick={(e) => {
+                                                e.stopPropagation()}}
                                             onChange={async (e) => {
+                                                e.preventDefault();
                                                 e.stopPropagation();
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
@@ -245,10 +248,24 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
                                                 className="w-full h-full object-cover rounded"
                                             />
                                             <Button
+                                                type="button"
                                                 size="icon"
                                                 variant="destructive"
                                                 className="absolute top-1 right-1 w-6 h-6"
-                                                onClick={() => field.onChange("")}
+                                                onClick={async (e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    try {
+                                                        const fileName = field.value?.split('/').pop();
+                                                        if (fileName) {
+                                                            await deleteImage(fileName);
+                                                            field.onChange("");
+                                                        }
+                                                    } catch (error) {
+                                                        console.error("Error deleting image:", error);
+                                                    }
+                                                    return false;
+                                                }}
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </Button>

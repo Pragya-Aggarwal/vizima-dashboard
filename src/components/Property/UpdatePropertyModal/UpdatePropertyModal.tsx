@@ -23,7 +23,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { propertySchema, PropertyFormData } from "../Schema/property-schema"
 import { useState } from "react"
-import { uploadToCloudinary } from "@/lib/utils/uploadToCloudinary"
+import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
+import { toast } from "sonner"
 import { useRef } from "react"
 import { getPropertyById } from "@/src/services/propertyService"
 
@@ -79,7 +80,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
         // Remove any non-digit characters and trim
         const cleaned = phone.replace(/\D/g, '').trim();
         // If number doesn't start with +, add +91
-        return cleaned.startsWith('+91') || cleaned.startsWith('91') ? cleaned : `+91${cleaned}`;
+        return cleaned.startsWith('+91') ? cleaned : cleaned.startsWith('91') ? `+${cleaned}` : `+91${cleaned}`;
       };
       const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -418,8 +419,8 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
 
                         <div className="space-y-4">
                             <Label>Bulk Accomodation</Label>
-                            <div className="grid grid-cols-3 gap-2">
-                                {["interns", "employees", "students"].map((item) => (
+                            <div className="grid grid-cols-2 gap-2">
+                                {["interns", "employees", "students", "managed accommodation"].map((item) => (
                                     <div key={item} className="flex items-center space-x-2">
                                         <Controller
                                             control={control}
@@ -702,10 +703,20 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                                     size="icon"
                                                     variant="destructive"
                                                     className="absolute top-1 right-1 w-6 h-6"
-                                                    onClick={(e) => {
+                                                    onClick={async (e) => {
                                                         e.stopPropagation();
-                                                        const updated = (field.value || []).filter((_, i) => i !== idx);
-                                                        field.onChange(updated);
+                                                        try {
+                                                            const fileName = url.split('/').pop();
+                                                            if (fileName) {
+                                                                await deleteImage(fileName);
+                                                                const updatedImages = field.value?.filter((_, i) => i !== idx) || [];
+                                                                field.onChange(updatedImages);
+                                                                toast.success("Image deleted successfully");
+                                                            }
+                                                        } catch (error) {
+                                                            console.error("Error deleting image:", error);
+                                                            toast.error("Failed to delete image");
+                                                        }
                                                     }}
                                                 >
                                                     <Trash2 className="w-3 h-3" />
@@ -714,25 +725,24 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                         ))}
                                         
                                         {/* Show new image previews */}
-                                        {previewUrls.map((previewUrl, previewIdx) => (
-                                            <div key={`new-${previewIdx}`} className="relative">
-                                                <img 
-                                                    src={previewUrl} 
-                                                    alt={`preview-${previewIdx}`}
-                                                    className="w-full h-24 object-cover rounded opacity-75" 
-                                                />
+                                        {previewUrls.map((url, idx) => (
+                                            <div key={`preview-${idx}`} className="relative">
+                                                <img src={url} alt={`preview-${idx}`} className="w-full h-24 object-cover rounded" />
                                                 <Button
                                                     size="icon"
                                                     variant="destructive"
                                                     className="absolute top-1 right-1 w-6 h-6"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
+                                                    onClick={() => {
+                                                        // Remove from preview URLs and files to upload
+                                                        const newPreviewUrls = [...previewUrls];
+                                                        newPreviewUrls.splice(idx, 1);
+                                                        setPreviewUrls(newPreviewUrls);
+                                                        
                                                         const newFiles = [...filesToUpload];
-                                                        const newUrls = [...previewUrls];
-                                                        newFiles.splice(previewIdx, 1);
-                                                        newUrls.splice(previewIdx, 1);
+                                                        newFiles.splice(idx, 1);
                                                         setFilesToUpload(newFiles);
-                                                        setPreviewUrls(newUrls);
+                                                        
+                                                        toast.success("Image removed from upload queue");
                                                     }}
                                                 >
                                                     <Trash2 className="w-3 h-3" />
