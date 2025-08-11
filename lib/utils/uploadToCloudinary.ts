@@ -70,12 +70,13 @@ async function getFileSize(fileName: string): Promise<number> {
   return 0;
 }
 
-export const uploadToCloudinary = async (file: File): Promise<string> => {
+export const uploadToCloudinary = async (file: File, isSingleImageUpload: boolean = false): Promise<string> => {
   // Create a unique identifier for the file (name + size)
   const fileIdentifier = `${file.name}-${file.size}`;
   
-  // Check if file was already uploaded
-  if (uploadedFiles.has(fileIdentifier)) {
+  // For single image uploads, we don't need to track previous uploads
+  // as they should be replaceable
+  if (!isSingleImageUpload && uploadedFiles.has(fileIdentifier)) {
     const errorMessage = `The file "${file.name}" has already been uploaded.`;
     showErrorToast(errorMessage);
     return Promise.reject(new Error(errorMessage));

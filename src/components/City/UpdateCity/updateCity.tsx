@@ -226,7 +226,7 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
                                                 try {
-                                                    const url = await uploadToCloudinary(file);
+                                                    const url = await uploadToCloudinary(file, true); // true for single image upload
                                                     field.onChange(url);
                                                 } catch (err) {
                                                     console.error("Upload failed:", err);
