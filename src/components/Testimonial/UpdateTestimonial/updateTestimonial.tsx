@@ -40,36 +40,32 @@ type TestimonialModalProps = {
 }
 
 const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: TestimonialModalProps) => {
+    const [initialData, setInitialData] = useState<TestimonialFormData | null>(null);
+    
     const {
         register, control, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset, trigger
     } = useForm<TestimonialFormData>({
         resolver: zodResolver(testimonialSchema),
-
-
-
         defaultValues: {
             name: "",
-            type: "",
+            comment: "",
             city: "",
-            area: "",
-            rooms: 0,
-            price: 0,
-            deposit: 0,
-            description: "",
-            featured: false,
-            amenities: [],
-            bulkAccommodationType: [],
-            sharingType: [],
-            rules: [],
-            nearbyPlaces: [], // ✅ must be array of objects
-
-
-
-            images: [],
-            isAvailable: false,  // ✅ very important
-            isFeatured: false,
+            picture: "",
+            rating: 5,
+            order: 0,
+            status: "pending" as const,
         },
-    })
+    });
+    
+    const handleOpenChange = (isOpen: boolean) => {
+        if (!isOpen) {
+            // Reset to initial data when dialog is closed via outside click or cancel
+            if (initialData) {
+                reset(initialData);
+            }
+        }
+        setOpen(isOpen);
+    };
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -90,21 +86,25 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
         const fetchTestimonialData = async () => {
             if (testimonialId && open) {
                 try {
-                    const response = await getTestimonialById(testimonialId);const data = response?.data;
+                    const response = await getTestimonialById(testimonialId);
+                    const data = response?.data;
 
                     if (data) {
-                        reset({
+                        const testimonialData = {
                             name: data.name || "",
                             city: data.city || "",
                             rating: data.rating || 5,
                             comment: data.comment || "",
-                            status: data.status || "pending",
+                            picture: data.picture || "",
                             order: data.order || 0,
-                            picture: data.picture || "", // Must match schema
-                        });
+                            status: data.status || "pending"
+                        };
+                        setInitialData(testimonialData);
+                        reset(testimonialData);
+                        setPreviewUrl(data.picture || null);
                     }
-                } catch (err) {
-                    console.error("Failed to fetch testimonial:", err);
+                } catch (error) {
+                    console.error("Error fetching testimonial:", error);
                 }
             }
         };
@@ -115,7 +115,7 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
 
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Update Testimonial</DialogTitle>

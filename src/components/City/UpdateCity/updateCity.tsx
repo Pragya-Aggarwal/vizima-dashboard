@@ -82,6 +82,39 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
         }
     };
 
+    const [initialData, setInitialData] = useState<CityFormData | null>(null);
+
+    useEffect(() => {
+        if (open && cityId) {
+            const fetchCityData = async () => {
+                try {
+                    const cityData = await getCityById(cityId);
+                    setInitialData(cityData);
+                    reset({
+                        name: cityData.name,
+                        order: cityData.order,
+                        imageUrl: cityData.imageUrl,
+                        isVisible: cityData.isVisible,
+                        nearbyPlaces: cityData.nearbyPlaces || []
+                    });
+                } catch (error) {
+                    console.error("Error fetching city data:", error);
+                }
+            };
+            fetchCityData();
+        }
+    }, [open, cityId, reset]);
+
+    const handleOpenChange = (isOpen: boolean) => {
+        if (!isOpen) {
+            // Reset to initial data when dialog is closed via outside click or cancel
+            if (initialData) {
+                reset(initialData);
+            }
+        }
+        setOpen(isOpen);
+    };
+
     const onFormSubmit = (data: CityFormData) => {
         const formData = {
             ...data,
@@ -95,7 +128,7 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
 
         onSubmit(formData, () => {
             setOpen(false);
-            reset();
+            // Don't reset here as we want to keep the form data for the next open
         });
     };
 
@@ -129,7 +162,7 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
 
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Update City</DialogTitle>

@@ -79,8 +79,29 @@ const AddCityModal = ({ open, setOpen, onSubmit: onSubmitProp }: AddCityModalPro
         });
     };
 
+    const handleOpenChange = (isOpen: boolean) => {
+        if (!isOpen) {
+            // Reset form when dialog is closed via outside click or cancel
+            reset({
+                name: "",
+                order: 0,
+                imageUrl: "",
+                isVisible: false,
+                amenities: [],
+                bulkAccommodationType: [],
+                sharingType: [],
+                rules: [],
+                nearbyPlaces: [],
+                images: [],
+                isAvailable: false,
+                isFeatured: false,
+            });
+        }
+        setOpen(isOpen);
+    };
+
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Add New City</DialogTitle>

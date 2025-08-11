@@ -42,11 +42,12 @@ type SchemaModalProps = {
 }
 
 const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProps) => {
+    const [initialData, setInitialData] = useState<SchemaFormData | null>(null);
+    
     const {
         register, control, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset, trigger
     } = useForm<SchemaFormData>({
         resolver: zodResolver(Schema),
-
         defaultValues: {
             name: "",
             order: 0,
@@ -54,6 +55,23 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
             isVisible: false,
         }
     });
+    
+    const handleOpenChange = (isOpen: boolean) => {
+        if (!isOpen) {
+            // Reset to initial data when dialog is closed via outside click or cancel
+            if (initialData) {
+                reset(initialData);
+            } else {
+                reset({
+                    name: "",
+                    order: 0,
+                    imageUrl: "",
+                    isVisible: false,
+                });
+            }
+        }
+        setOpen(isOpen);
+    };
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -71,32 +89,31 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
 
 
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         if (testimonialId && open) {
-    //             try {
-    //                 const response = await getUserById(testimonialId);
+    useEffect(() => {
+        const fetchData = async () => {
+            if (testimonialId && open) {
+                try {
+                    const response = await getUserById(testimonialId);
+                    const data = response?.data;
 
-    ////                 const data = response;
+                    if (data) {
+                        const userData = {
+                            name: data.name || "",
+                            imageUrl: data.imageUrl || "",
+                            order: data.order || 0,
+                            isVisible: data.isVisible ?? false,
+                        };
+                        setInitialData(userData);
+                        reset(userData);
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch user:", err);
+                }
+            }
+        };
 
-
-    //                 if (data) {
-    //                     reset({
-    //                         name: data.name || "",
-    //                         imageUrl: data.imageUrl || "",
-    //                         order: data.order || 0,
-    //                         isVisible: data.isVisible ?? false,
-    //                     });
-    //                 }
-
-    //             } catch (err) {
-    //                 console.error("Failed to fetch testimonial:", err);
-    //             }
-    //         }
-    //     };
-
-    //     fetchData();
-    // }, [testimonialId, open, reset]);
+        fetchData();
+    }, [testimonialId, open, reset]);
 
 
 
@@ -131,7 +148,7 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
 
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Update User Information</DialogTitle>
@@ -279,7 +296,7 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
                                                 try {
-                                                    const url = await uploadToCloudinary(file);
+                                                    const url = await uploadToCloudinary(file,true);
                                                     field.onChange(url);
                                                 } catch (err) {
                                                     console.error("Upload failed:", err);

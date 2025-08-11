@@ -128,8 +128,36 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
   };
 
 
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      // Reset form when dialog is closed via outside click or cancel
+      reset({
+        name: "",
+        type: "",
+        phone: "",
+        city: "",
+        area: "",
+        microSiteLink: "",
+        rooms: 0,
+        price: 0,
+        deposit: 0,
+        description: "",
+        featured: false,
+        amenities: [],
+        bulkAccommodationType: [],
+        sharingType: [],
+        rules: [],
+        nearbyPlaces: [],
+        images: [],
+        isAvailable: true,
+        isFeatured: false,
+      });
+    }
+    setOpen(isOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />

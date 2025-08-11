@@ -91,11 +91,30 @@ const UpdateModal = ({
             order: 0,
             type: "hero",
             targetAudience: "all",
-            displayLocation: [],
+            displayLocation: ["home"], // Default to home to satisfy min 1 location
             startDate: new Date(),
             endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
     });
+
+    const handleOpenChange = (isOpen: boolean) => {
+        if (!isOpen) {
+            // Reset form when dialog is closed via outside click or cancel
+            reset({
+                title: "",
+                description: "",
+                image: "",
+                link: "",
+                isActive: false,
+                order: 0,
+                type: "hero",
+                targetAudience: "all",
+                displayLocation: ["home"], // Default to home to satisfy min 1 location
+            });
+            setSelectedFile(null);
+        }
+        setOpen(isOpen);
+    };
 
     // Watch form values
     const formValues = watch();
@@ -177,7 +196,7 @@ const UpdateModal = ({
                         targetAudience: bannerData.targetAudience || "all",
                         displayLocation: Array.isArray(bannerData.displayLocation)
                             ? bannerData.displayLocation
-                            : [],
+                            : ["home"], // Default to home if empty
                         startDate: formatForInput(startDate),
                         endDate: formatForInput(endDate),
                     });
@@ -282,7 +301,7 @@ const UpdateModal = ({
 
     if (isLoading) {
         return (
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Loading Banner</DialogTitle>
@@ -302,7 +321,7 @@ const UpdateModal = ({
 
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Update Banner</DialogTitle>
@@ -408,7 +427,25 @@ const UpdateModal = ({
                         </div>
 
                         <div className="flex justify-end space-x-2">
-                            <Button variant="outline" type="button" onClick={() => setOpen(false)}>
+                            <Button 
+                                variant="outline" 
+                                type="button" 
+                                onClick={() => {
+                                    reset({
+                                        title: "",
+                                        description: "",
+                                        image: "",
+                                        link: "",
+                                        isActive: false,
+                                        order: 0,
+                                        type: "hero",
+                                        targetAudience: "all",
+                                        displayLocation: ["home"], // Default to home to satisfy min 1 location
+                                    });
+                                    setSelectedFile(null);
+                                    setOpen(false);
+                                }}
+                            >
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={isSubmitting}>

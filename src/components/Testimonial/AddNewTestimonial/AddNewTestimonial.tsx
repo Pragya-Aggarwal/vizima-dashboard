@@ -36,33 +36,23 @@ type AddPropertyModalProps = {
 
 const AddTestimonialModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) => {
     const {
-        register, control, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset, trigger
+        register, 
+        control, 
+        handleSubmit, 
+        formState: { errors, isSubmitting }, 
+        reset, 
+        setValue, 
+        watch
     } = useForm<TestimonialFormData>({
         resolver: zodResolver(testimonialSchema),
-
-
-
         defaultValues: {
             name: "",
-            type: "",
+            comment: "",
             city: "",
-            area: "",
-            rooms: 0,
-            price: 0,
-            deposit: 0,
-            description: "",
-            featured: false,
-            amenities: [],
-            bulkAccommodationType: [],
-            sharingType: [],
-            rules: [],
-            nearbyPlaces: [], // ✅ must be array of objects
-
-
-
-            images: [],
-            isAvailable: false,  // ✅ very important
-            isFeatured: false,
+            picture: "",
+            rating: 5,
+            order: 0,
+            status: "pending" as const,
         },
     })
 
@@ -73,15 +63,40 @@ const AddTestimonialModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps)
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const onFormSubmit = (data: TestimonialFormData) => {onSubmit(data, () => {
-            reset();
+    const onFormSubmit = (data: TestimonialFormData) => {
+        onSubmit(data, () => {
+            reset({
+                name: "",
+                comment: "",
+                city: "",
+                picture: "",
+                rating: 5,
+                order: 0,
+                status: "pending" as const,
+            });
             setOpen(false);
         });
     };
 
 
+    const handleOpenChange = (isOpen: boolean) => {
+        if (!isOpen) {
+            // Reset form when dialog is closed via outside click or cancel
+            reset({
+                name: "",
+                comment: "",
+                city: "",
+                picture: "",
+                rating: 0,
+                order: 0,
+                status: "pending" as const,
+            });
+        }
+        setOpen(isOpen);
+    };
+
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Add New Testimonial</DialogTitle>

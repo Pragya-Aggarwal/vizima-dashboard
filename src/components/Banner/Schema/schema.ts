@@ -17,6 +17,12 @@
 
 import { z } from "zod";
 
+const FaqSchema = z.object({
+  question: z.string().min(1, "Question is required"),
+  answer: z.string().min(1, "Answer is required"),
+  order: z.coerce.number().min(0, "Order must be 0 or greater"),
+});
+
 export const Schema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
@@ -28,6 +34,9 @@ export const Schema = z.object({
   targetAudience: z.enum(["all", "new_users", "existing_users", "premium_users"]),
   displayLocation: z.array(z.enum(["home", "search", "booking", "profile"]))
     .min(1, "Select at least one location"),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  faqs: z.array(FaqSchema).optional().default([]),
 });
 
 export type SchemaFormData = z.infer<typeof Schema>;
