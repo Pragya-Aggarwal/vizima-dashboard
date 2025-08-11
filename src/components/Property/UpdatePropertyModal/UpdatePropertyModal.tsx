@@ -40,13 +40,11 @@ type AddPropertyModalProps = {
 }
 
 const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyId }: AddPropertyModalProps) => {
-    const [initialData, setInitialData] = useState<PropertyFormData | null>(null);
-    const [initialPreviewUrls, setInitialPreviewUrls] = useState<string[]>([]);
-    
     const {
         register, control, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset, trigger
     } = useForm<PropertyFormData>({
         resolver: zodResolver(propertySchema),
+
         defaultValues: {
             name: "",
             type: "",
@@ -62,55 +60,13 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
             bulkAccommodationType: [],
             sharingType: [],
             rules: [],
-            nearbyPlaces: [],
+            nearbyPlaces: [], // ✅ must be array of objects
             images: [],
-            isAvailable: false,
+            isAvailable: false,  // ✅ very important
             isFeatured: false,
             phone: "",
         },
-    });
-    
-    // Fetch property data when modal opens
-    useEffect(() => {
-        if (open && propertyId) {
-            const fetchPropertyData = async () => {
-                try {
-                    const propertyData = await getPropertyById(propertyId);
-                    if (propertyData) {
-                        setInitialData(propertyData);
-                        setInitialPreviewUrls(propertyData.images || []);
-                        reset({
-                            ...propertyData,
-                            // Ensure all fields are properly set
-                            images: propertyData.images || [],
-                            nearbyPlaces: propertyData.nearbyPlaces || [],
-                            amenities: propertyData.amenities || [],
-                            bulkAccommodationType: propertyData.bulkAccommodationType || [],
-                            sharingType: propertyData.sharingType || [],
-                            rules: propertyData.rules || [],
-                        });
-                    }
-                } catch (error) {
-                    console.error("Error fetching property data:", error);
-                    toast.error("Failed to load property data");
-                }
-            };
-            fetchPropertyData();
-        }
-    }, [open, propertyId, reset]);
-    
-    const handleOpenChange = (isOpen: boolean) => {
-        if (!isOpen) {
-            // Reset to initial data when dialog is closed via outside click or cancel
-            if (initialData) {
-                reset(initialData);
-                setPreviewUrls(initialPreviewUrls);
-                setFilesToUpload([]);
-            }
-            setPropertyId(null);
-        }
-        setOpen(isOpen);
-    };
+    })
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -259,7 +215,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
 
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Update Property</DialogTitle>
