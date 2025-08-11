@@ -115,4 +115,3 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
     return Promise.reject(unknownError);
   }
 };
-
