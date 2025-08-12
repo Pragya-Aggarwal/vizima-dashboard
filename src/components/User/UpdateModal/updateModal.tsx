@@ -50,9 +50,15 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
         resolver: zodResolver(Schema),
         defaultValues: {
             name: "",
-            order: 0,
-            imageUrl: "",
-            isVisible: false,
+            email: "",
+            phone: "",
+            avatar: "",
+            role: "user",
+            isVerified: false,
+            preferences: {
+                priceRange: { min: 0, max: 0 },
+                propertyType: []
+            }
         }
     });
     
@@ -64,9 +70,15 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
             } else {
                 reset({
                     name: "",
-                    order: 0,
-                    imageUrl: "",
-                    isVisible: false,
+                    email: "",
+                    phone: "",
+                    avatar: "",
+                    role: "user",
+                    isVerified: false,
+                    preferences: {
+                        priceRange: { min: 0, max: 0 },
+                        propertyType: []
+                    }
                 });
             }
         }
@@ -97,11 +109,17 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                     const data = response?.data;
 
                     if (data) {
-                        const userData = {
+                        const userData: SchemaFormData = {
                             name: data.name || "",
-                            imageUrl: data.imageUrl || "",
-                            order: data.order || 0,
-                            isVisible: data.isVisible ?? false,
+                            email: data.email || "",
+                            phone: data.phone || "",
+                            avatar: data.avatar || "",
+                            role: data.role || "user",
+                            isVerified: data.isVerified || false,
+                            preferences: data.preferences || {
+                                priceRange: { min: 0, max: 0 },
+                                propertyType: []
+                            }
                         };
                         setInitialData(userData);
                         reset(userData);
@@ -253,37 +271,37 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
 
 
 
-                        <Controller
+<Controller
                             control={control}
                             name="avatar"
                             render={({ field }) => (
                                 <div className="space-y-4">
-                                    <Label>Customer Image</Label>
+                                    <Label>Profile Picture</Label>
 
                                     <div
                                         className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center"
                                         onClick={(e) => {
-                                          e.preventDefault();
-                                          fileInputRef.current?.click();
+                                            e.preventDefault();
+                                            fileInputRef.current?.click();
                                         }}
                                     >
                                         <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                                         <p className="text-sm text-muted-foreground">
-                                            Drag & drop image or click to browse
+                                            Drag & drop an image or click to browse
                                         </p>
                                         <div className="mt-2">
-                                          <Button 
-                                            type="button" 
-                                            variant="outline"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              e.stopPropagation();
-                                              fileInputRef.current?.click();
-                                            }}
-                                          >
-                                            <ImageIcon className="h-4 w-4 mr-2" />
-                                            Upload Image
-                                          </Button>
+                                            <Button 
+                                                type="button" 
+                                                variant="outline"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    fileInputRef.current?.click();
+                                                }}
+                                            >
+                                                <ImageIcon className="h-4 w-4 mr-2" />
+                                                {field.value ? 'Change Image' : 'Upload Image'}
+                                            </Button>
                                         </div>
                                         <input
                                             type="file"
@@ -292,18 +310,30 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
                                             ref={fileInputRef}
                                             onClick={(e) => e.stopPropagation()}
                                             onChange={async (e) => {
+                                                e.preventDefault();
                                                 e.stopPropagation();
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
+                                                
                                                 try {
-                                                    const url = await uploadToCloudinary(file,true);
+                                                    // If there's an existing image, delete it first
+                                                    if (field.value) {
+                                                        try {
+                                                            await deleteImage(field.value);
+                                                        } catch (deleteError) {
+                                                            console.error('Failed to delete old image:', deleteError);
+                                                        }
+                                                    }
+                                                    
+                                                    const url = await uploadToCloudinary(file);
                                                     field.onChange(url);
                                                 } catch (err) {
                                                     console.error("Upload failed:", err);
+                                                    toast.error("Failed to upload image");
                                                 } finally {
-                                                  if (e.target) {
-                                                    e.target.value = '';
-                                                  }
+                                                    if (e.target) {
+                                                        e.target.value = '';
+                                                    }
                                                 }
                                             }}
                                         />
@@ -311,32 +341,32 @@ const UpdateModal = ({ open, setOpen, onSubmit, testimonialId }: SchemaModalProp
 
                                     {/* Show uploaded image preview */}
                                     {field.value && (
-                                        <div className="relative w-32 h-32 mt-4 group">
-                                            <img
-                                                src={field.value}
-                                                alt="Uploaded preview"
-                                                className="w-full h-full object-cover rounded-lg"
+                                        <div className="relative w-full max-w-xs">
+                                            <img 
+                                                src={field.value} 
+                                                alt="city-preview" 
+                                                className="w-full h-48 object-cover rounded-lg" 
                                             />
-                                            <button
-                                                type="button"
+                                            <Button
+                                                size="icon"
+                                                variant="destructive"
+                                                className="absolute top-2 right-2 w-8 h-8 rounded-full"
                                                 onClick={async (e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     try {
-                                                        const fileName = field.value.split('/').pop();
-                                                        if (fileName) {
-                                                            await deleteImage(fileName);
-                                                            field.onChange('');
+                                                        if (field.value) {
+                                                            await deleteImage(field.value);
+                                                            field.onChange("");
                                                         }
                                                     } catch (error) {
                                                         console.error('Failed to delete image:', error);
+                                                        toast.error("Failed to delete image");
                                                     }
                                                 }}
-                                                className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                                aria-label="Remove image"
                                             >
-                                                <X className="h-4 w-4" />
-                                            </button>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
                                         </div>
                                     )}
 

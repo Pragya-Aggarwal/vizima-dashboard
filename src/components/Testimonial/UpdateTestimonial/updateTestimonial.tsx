@@ -101,7 +101,6 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
                         };
                         setInitialData(testimonialData);
                         reset(testimonialData);
-                        setPreviewUrl(data.picture || null);
                     }
                 } catch (error) {
                     console.error("Error fetching testimonial:", error);
@@ -200,32 +199,32 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
                             name="picture"
                             render={({ field }) => (
                                 <div className="space-y-4">
-                                    <Label>Customer Image</Label>
+                                    <Label>Profile Picture</Label>
 
                                     <div
                                         className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center"
                                         onClick={(e) => {
-                                          e.preventDefault();
-                                          fileInputRef.current?.click();
+                                            e.preventDefault();
+                                            fileInputRef.current?.click();
                                         }}
                                     >
                                         <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                                         <p className="text-sm text-muted-foreground">
-                                            Drag & drop image or click to browse
+                                            Drag & drop an image or click to browse
                                         </p>
                                         <div className="mt-2">
-                                          <Button 
-                                            type="button" 
-                                            variant="outline"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              e.stopPropagation();
-                                              fileInputRef.current?.click();
-                                            }}
-                                          >
-                                            <ImageIcon className="h-4 w-4 mr-2" />
-                                            Upload Image
-                                          </Button>
+                                            <Button 
+                                                type="button" 
+                                                variant="outline"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    fileInputRef.current?.click();
+                                                }}
+                                            >
+                                                <ImageIcon className="h-4 w-4 mr-2" />
+                                                {field.value ? 'Change Image' : 'Upload Image'}
+                                            </Button>
                                         </div>
                                         <input
                                             type="file"
@@ -234,18 +233,30 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
                                             ref={fileInputRef}
                                             onClick={(e) => e.stopPropagation()}
                                             onChange={async (e) => {
+                                                e.preventDefault();
                                                 e.stopPropagation();
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
+                                                
                                                 try {
-                                                    const url = await uploadToCloudinary(file, true); // true for single image upload
+                                                    // If there's an existing image, delete it first
+                                                    if (field.value) {
+                                                        try {
+                                                            await deleteImage(field.value);
+                                                        } catch (deleteError) {
+                                                            console.error('Failed to delete old image:', deleteError);
+                                                        }
+                                                    }
+                                                    
+                                                    const url = await uploadToCloudinary(file);
                                                     field.onChange(url);
                                                 } catch (err) {
                                                     console.error("Upload failed:", err);
+                                                    toast.error("Failed to upload image");
                                                 } finally {
-                                                  if (e.target) {
-                                                    e.target.value = '';
-                                                  }
+                                                    if (e.target) {
+                                                        e.target.value = '';
+                                                    }
                                                 }
                                             }}
                                         />
@@ -253,31 +264,31 @@ const UpdateTestimonialModal = ({ open, setOpen, onSubmit, testimonialId }: Test
 
                                     {/* Show uploaded image preview */}
                                     {field.value && (
-                                        <div className="relative w-32 h-32 mt-4">
-                                            <img
-                                                src={field.value}
-                                                alt="uploaded"
-                                                className="w-full h-full object-cover rounded"
+                                        <div className="relative w-full max-w-xs">
+                                            <img 
+                                                src={field.value} 
+                                                alt="profile-preview" 
+                                                className="w-full h-48 object-cover rounded-lg" 
                                             />
                                             <Button
                                                 size="icon"
                                                 variant="destructive"
-                                                className="absolute top-1 right-1 w-6 h-6"
+                                                className="absolute top-2 right-2 w-8 h-8 rounded-full"
                                                 onClick={async (e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     try {
-                                                        const fileName = field.value.split('/').pop();
-                                                        if (fileName) {
-                                                            await deleteImage(fileName);
+                                                        if (field.value) {
+                                                            await deleteImage(field.value);
                                                             field.onChange("");
                                                         }
                                                     } catch (error) {
-                                                        console.error("Error deleting image:", error);
+                                                        console.error('Failed to delete image:', error);
+                                                        toast.error("Failed to delete image");
                                                     }
                                                 }}
                                             >
-                                                <Trash2 className="w-3 h-3" />
+                                                <Trash2 className="w-4 h-4" />
                                             </Button>
                                         </div>
                                     )}

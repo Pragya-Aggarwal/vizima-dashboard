@@ -696,9 +696,10 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
-                              const fileName = url.split('/').pop();
-                              if (fileName) {
-                                await deleteImage(fileName);
+                              // const fileName = url.split('//').pop();
+                              console.log(url);
+                              if (url) {
+                                await deleteImage(url);
                                 const updated = field.value.filter((_, i) => i !== idx);
                                 field.onChange(updated);
                               }

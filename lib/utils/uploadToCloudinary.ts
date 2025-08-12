@@ -36,11 +36,14 @@ export const deleteImage = async (fileName: string): Promise<void> => {
   const publicId = formatPublicId(fileName);
   
   try {
-    const response = await fetch(`https://api.vizima.in/api/images/${publicId}`, {
+    const response = await fetch(`https://api.vizima.in/api/images`,  {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        "imageUrl": publicId
+      } ),
     });
 
     if (!response.ok) {
@@ -74,13 +77,13 @@ export const uploadToCloudinary = async (file: File, isSingleImageUpload: boolea
   // Create a unique identifier for the file (name + size)
   const fileIdentifier = `${file.name}-${file.size}`;
   
-  // For single image uploads, we don't need to track previous uploads
-  // as they should be replaceable
-  if (!isSingleImageUpload && uploadedFiles.has(fileIdentifier)) {
-    const errorMessage = `The file "${file.name}" has already been uploaded.`;
-    showErrorToast(errorMessage);
-    return Promise.reject(new Error(errorMessage));
-  }
+  // // For single image uploads, we don't need to track previous uploads
+  // // as they should be replaceable
+  // if (!isSingleImageUpload && uploadedFiles.has(fileIdentifier)) {
+  //   const errorMessage = `The file "${file.name}" has already been uploaded.`;
+  //   showErrorToast(errorMessage);
+  //   return Promise.reject(new Error(errorMessage));
+  // }
 
   try {
     const formData = new FormData();

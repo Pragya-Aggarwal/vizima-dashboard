@@ -50,18 +50,18 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
             rooms: 0,
             price: 0,
             deposit: 0,
+            image: "",
             description: "",
             featured: false,
             amenities: [],
             bulkAccommodationType: [],
             sharingType: [],
             rules: [],
-            nearbyPlaces: [], // ✅ must be array of objects
+            nearbyPlaces: [], // must be array of objects
 
 
 
-            images: [],
-            isAvailable: false,  // ✅ very important
+            isAvailable: false,  // very important
             isFeatured: false,
         },
     })
@@ -78,24 +78,11 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
     const onFormSubmit = async (formData: SchemaFormData) => {
         try {
 
-            // 1. Upload image to Cloudinary if a file is selected
-            let imageUrl = formData.image; // Default to the existing image URL if any
-
-            if (selectedFile) {
-                try {
-                    imageUrl = await uploadToCloudinary(selectedFile);
-                } catch (error) {
-                    console.error("Error uploading image:", error);
-                    toast.error("Failed to upload image");
-                    return;
-                }
-            }
-
-            // 2. Prepare the banner data for the API
+            // Prepare the banner data for the API
             const bannerData = {
                 title: formData.title,
                 description: formData.description,
-                image: imageUrl,
+                image: formData.image,
                 link: formData.link,
                 isActive: formData.isActive,
                 order: Number(formData.order) || 0,
@@ -106,17 +93,17 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
                 endDate: formData.endDate
             };
 
-            // 3. Call the API to create the banner
+            // Call the API to create the banner
             const response = await addBanner(bannerData);
 
-            // 4. Fetch the latest banners
+            // Fetch the latest banners
 
 
 
 
-            // 6. Show success message
+            // Show success message
             toast.success("Banner created successfully");
-            // 7. Reset form and close modal
+            // Reset form and close modal
             reset();
             setSelectedFile(null);
             setOpen(false);
@@ -310,21 +297,12 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
                         </div>
 
                         {/* Image Upload */}
-                        {/* <Controller
-                            control={control}
-                            name="image"
-                            render={({ field }) => (
-                                <UploadImageField field={field} error={errors.image?.message} />
-                            )}
-                        /> */}
-
-
                         <Controller
                             control={control}
                             name="image"
                             render={({ field }) => (
                                 <div className="space-y-4">
-                                    <Label>Customer Image</Label>
+                                    <Label>Banner Image</Label>
 
                                     <div
                                         className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center"
@@ -335,11 +313,11 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
                                     >
                                         <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                                         <p className="text-sm text-muted-foreground">
-                                            Drag & drop image or click to browse
+                                            Drag & drop an image or click to browse
                                         </p>
                                         <div className="mt-2">
                                             <Button 
-                                                type="button"
+                                                type="button" 
                                                 variant="outline"
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -348,7 +326,7 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
                                                 }}
                                             >
                                                 <ImageIcon className="h-4 w-4 mr-2" />
-                                                Upload Image
+                                                {field.value ? 'Change Image' : 'Upload Image'}
                                             </Button>
                                         </div>
                                         <input
@@ -356,16 +334,34 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
                                             accept="image/*"
                                             className="hidden"
                                             ref={fileInputRef}
-                                            onClick={(e) => e.stopPropagation()}
-                                            onChange={(e) => {
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                            }}
+                                            onChange={async (e) => {
+                                                e.preventDefault();
                                                 e.stopPropagation();
                                                 const file = e.target.files?.[0];
-                                                if (file) {
-                                                    setSelectedFile(file);
-                                                    field.onChange(URL.createObjectURL(file));
-                                                }
-                                                if (e.target) {
-                                                    e.target.value = '';
+                                                if (!file) return;
+                                                
+                                                try {
+                                                    // If there's an existing image, delete it first
+                                                    if (field.value) {
+                                                        try {
+                                                            await deleteImage(field.value);
+                                                        } catch (deleteError) {
+                                                            console.error('Failed to delete old image:', deleteError);
+                                                        }
+                                                    }
+                                                    
+                                                    const url = await uploadToCloudinary(file);
+                                                    field.onChange(url);
+                                                } catch (err) {
+                                                    console.error("Upload failed:", err);
+                                                    toast.error("Failed to upload image");
+                                                } finally {
+                                                    if (e.target) {
+                                                        e.target.value = '';
+                                                    }
                                                 }
                                             }}
                                         />
@@ -373,32 +369,31 @@ const AddCityModal = ({ open, setOpen, selectedFile, setSelectedFile, refetch }:
 
                                     {/* Show uploaded image preview */}
                                     {field.value && (
-                                        <div className="relative w-32 h-32 mt-4">
-                                            <img
-                                                src={field.value}
-                                                alt="uploaded"
-                                                className="w-full h-full object-cover rounded"
+                                        <div className="relative w-full max-w-xs">
+                                            <img 
+                                                src={field.value} 
+                                                alt="banner-preview" 
+                                                className="w-full h-48 object-cover rounded-lg" 
                                             />
                                             <Button
                                                 size="icon"
                                                 variant="destructive"
-                                                className="absolute top-1 right-1 w-6 h-6"
+                                                className="absolute top-2 right-2 w-8 h-8 rounded-full"
                                                 onClick={async (e) => {
+                                                    e.preventDefault();
                                                     e.stopPropagation();
                                                     try {
-                                                        const fileName = field.value.split('/').pop() || '';
-                                                        if (fileName) {
-                                                            await deleteImage(fileName);
+                                                        if (field.value) {
+                                                            await deleteImage(field.value);
                                                             field.onChange("");
-                                                            showSuccessToast("Image deleted successfully");
                                                         }
                                                     } catch (error) {
-                                                        console.error("Error deleting image:", error);
-                                                        showErrorToast("Failed to delete image");
+                                                        console.error('Failed to delete image:', error);
+                                                        toast.error("Failed to delete image");
                                                     }
                                                 }}
                                             >
-                                                <Trash2 className="w-3 h-3" />
+                                                <Trash2 className="w-4 h-4" />
                                             </Button>
                                         </div>
                                     )}

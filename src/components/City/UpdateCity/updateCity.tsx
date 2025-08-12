@@ -60,28 +60,6 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
         name: "nearbyPlaces",
     });
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setIsUploading(true);
-        try {
-            const url = await uploadToCloudinary(file);
-            setValue("imageUrl", url);
-        } catch (error) {
-            console.error("Error uploading image:", error);
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
-    const handleRemoveImage = () => {
-        setValue("imageUrl", "");
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-    };
-
     const [initialData, setInitialData] = useState<CityFormData | null>(null);
 
     useEffect(() => {
@@ -219,54 +197,64 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
                             name="imageUrl"
                             render={({ field }) => (
                                 <div className="space-y-4">
-                                    <Label>Customer Image</Label>
+                                    <Label>City Image</Label>
 
                                     <div
                                         className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center"
                                         onClick={(e) => {
-                                          e.preventDefault();
-                                          fileInputRef.current?.click();
+                                            e.preventDefault();
+                                            fileInputRef.current?.click();
                                         }}
                                     >
                                         <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                                         <p className="text-sm text-muted-foreground">
-                                            Drag & drop image or click to browse
+                                            Drag & drop an image or click to browse
                                         </p>
                                         <div className="mt-2">
-                                          <Button 
-                                            type="button"
-                                            variant="outline"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              e.stopPropagation();
-                                              fileInputRef.current?.click();
-                                            }}
-                                          >
-                                            <ImageIcon className="h-4 w-4 mr-2" />
-                                            Upload Image
-                                          </Button>
+                                            <Button 
+                                                type="button" 
+                                                variant="outline"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    fileInputRef.current?.click();
+                                                }}
+                                            >
+                                                <ImageIcon className="h-4 w-4 mr-2" />
+                                                {field.value ? 'Change Image' : 'Upload Image'}
+                                            </Button>
                                         </div>
                                         <input
                                             type="file"
                                             accept="image/*"
                                             className="hidden"
                                             ref={fileInputRef}
-                                            onClick={(e) => {
-                                                e.stopPropagation()}}
+                                            onClick={(e) => e.stopPropagation()}
                                             onChange={async (e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
+                                                
                                                 try {
-                                                    const url = await uploadToCloudinary(file, true); // true for single image upload
+                                                    // If there's an existing image, delete it first
+                                                    if (field.value) {
+                                                        try {
+                                                            await deleteImage(field.value);
+                                                        } catch (deleteError) {
+                                                            console.error('Failed to delete old image:', deleteError);
+                                                        }
+                                                    }
+                                                    
+                                                    const url = await uploadToCloudinary(file);
                                                     field.onChange(url);
                                                 } catch (err) {
                                                     console.error("Upload failed:", err);
+                                                    toast.error("Failed to upload image");
                                                 } finally {
-                                                  if (e.target) {
-                                                    e.target.value = '';
-                                                  }
+                                                    if (e.target) {
+                                                        e.target.value = '';
+                                                    }
                                                 }
                                             }}
                                         />
@@ -274,39 +262,37 @@ const UpdateModal = ({ open, setOpen, onSubmit, cityId }: UpdateCityModalProps) 
 
                                     {/* Show uploaded image preview */}
                                     {field.value && (
-                                        <div className="relative w-32 h-32 mt-4">
-                                            <img
-                                                src={field.value}
-                                                alt="uploaded"
-                                                className="w-full h-full object-cover rounded"
+                                        <div className="relative w-full max-w-xs">
+                                            <img 
+                                                src={field.value} 
+                                                alt="city-preview" 
+                                                className="w-full h-48 object-cover rounded-lg" 
                                             />
                                             <Button
-                                                type="button"
                                                 size="icon"
                                                 variant="destructive"
-                                                className="absolute top-1 right-1 w-6 h-6"
+                                                className="absolute top-2 right-2 w-8 h-8 rounded-full"
                                                 onClick={async (e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     try {
-                                                        const fileName = field.value?.split('/').pop();
-                                                        if (fileName) {
-                                                            await deleteImage(fileName);
+                                                        if (field.value) {
+                                                            await deleteImage(field.value);
                                                             field.onChange("");
                                                         }
                                                     } catch (error) {
-                                                        console.error("Error deleting image:", error);
+                                                        console.error('Failed to delete image:', error);
+                                                        toast.error("Failed to delete image");
                                                     }
-                                                    return false;
                                                 }}
                                             >
-                                                <Trash2 className="w-3 h-3" />
+                                                <Trash2 className="w-4 h-4" />
                                             </Button>
                                         </div>
                                     )}
 
-                                    {errors.imageUrl && (
-                                        <p className="text-sm text-red-500">{errors.imageUrl.message}</p>
+                                    {errors.image && (
+                                        <p className="text-sm text-red-500">{errors.image.message}</p>
                                     )}
                                 </div>
                             )}

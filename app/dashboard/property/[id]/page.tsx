@@ -120,25 +120,7 @@ const SinglePropertyPage = () => {
                 <PropertySlider propertyDetail={propertyDetail} />
             }
 
-            <div className="relative w-full h-[400px] rounded-xl overflow-hidden">
-                {propertyDetail?.images?.length > 0 ? (
-                    <Image
-                        src={selectedImage}
-                        alt="Property Main"
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-xl transition-all duration-500"
-                    />
-                ) : (
-                    <Image
-                        src={commingSoon}
-                        alt="Dummy Property"
-                        layout="fill"
-                        objectFit="cover"
-                        className="h-14 w-14"
-                    />
-                )}
-            </div>
+                
 
 
             {/* Features with Icons */}

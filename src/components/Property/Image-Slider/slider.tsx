@@ -20,7 +20,9 @@ type PropertySliderProps = {
 
 export default function PropertySlider({ propertyDetail }: PropertySliderProps) {
 
-    const propertyImages = propertyDetail?.imagesreturn (
+    const propertyImages = propertyDetail?.images || [];
+    
+    return (
         <div className="max-w-6xl mx-auto p-4 space-y-6">
             <Swiper
                 modules={[Navigation, Autoplay]}
