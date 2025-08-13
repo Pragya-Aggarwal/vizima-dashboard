@@ -387,15 +387,16 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                       control={control}
                       name="bulkAccommodationType"
                       render={({ field }) => {
-                        const isChecked = field.value?.includes(item);
+                        const apiValue = item === "Managed Accomodation" ? "managed_accommodation" : item;
+                        const isChecked = field.value?.includes(apiValue);
                         return (
                           <>
                             <Switch
                               checked={isChecked}
                               onCheckedChange={(checked) => {
                                 const newValue = checked
-                                  ? [...(field.value || []), item]
-                                  : (field.value || []).filter((v) => v !== item);
+                                  ? [...(field.value || []), apiValue]
+                                  : (field.value || []).filter((v) => v !== apiValue);
                                 field.onChange(newValue);
                               }}
                             />

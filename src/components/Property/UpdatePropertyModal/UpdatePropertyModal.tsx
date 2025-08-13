@@ -426,15 +426,16 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                             control={control}
                                             name="bulkAccommodationType"
                                             render={({ field }) => {
-                                                const isChecked = field.value?.includes(item);
+                                                const apiValue = item === "managed accommodation" ? "managed_accommodation" : item;
+                                                const isChecked = field.value?.includes(apiValue);
                                                 return (
                                                     <>
                                                         <Switch
                                                             checked={isChecked}
                                                             onCheckedChange={(checked) => {
                                                                 const newValue = checked
-                                                                    ? [...(field.value || []), item]
-                                                                    : (field.value || []).filter((v) => v !== item);
+                                                                    ? [...(field.value || []), apiValue]
+                                                                    : (field.value || []).filter((v) => v !== apiValue);
                                                                 field.onChange(newValue);
                                                             }}
                                                         />
@@ -493,9 +494,32 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
 
                         {/* Amenities */}
                         <div className="space-y-4">
-                            <Label>Amenities</Label>
+                            <div className="flex justify-between items-center">
+                                <Label>Amenities</Label>
+                                <div className="flex items-center space-x-2">
+                                    <Controller
+                                        control={control}
+                                        name="amenities"
+                                        render={({ field }) => {
+                                            const allAmenities = ["wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "pets", "furnished", "tv", "dishwasher", "microwave", "refrigerator"];
+                                            const allSelected = allAmenities.every(item => field.value?.includes(item));
+                                            return (
+                                                <div className="flex items-center space-x-2">
+                                                    <Switch
+                                                        checked={allSelected}
+                                                        onCheckedChange={(checked) => {
+                                                            field.onChange(checked ? [...allAmenities] : []);
+                                                        }}
+                                                    />
+                                                    <Label className="text-sm text-muted-foreground">Select All</Label>
+                                                </div>
+                                            );
+                                        }}
+                                    />
+                                </div>
+                            </div>
                             <div className="grid grid-cols-3 gap-2">
-                                {["wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "pets", "furnished", "tv", "dishwasher", "microwave", "refrigerator",].map((item) => (
+                                {["wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "pets", "furnished", "tv", "dishwasher", "microwave", "refrigerator"].map((item) => (
                                     <div key={item} className="flex items-center space-x-2">
                                         <Controller
                                             control={control}
