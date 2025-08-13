@@ -240,7 +240,7 @@ const SinglePropertyPage = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                         {propertyDetail?.nearbyPlaces?.length > 0 ? (
                             propertyDetail.nearbyPlaces.map((place) => (
-                                <div key={place._id} className="p-2 border rounded shadow-sm bg-white">
+                                <div key={place._id} className="p-2 border rounded shadow-sm">
                                     <strong>{place.type}</strong>: {place.name} ({place.distance} km)
                                 </div>
                             ))
