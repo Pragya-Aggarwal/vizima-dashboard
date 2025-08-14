@@ -57,14 +57,16 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
             microSiteLink: "",
             featured: false,
             amenities: [],
+            bulkAccommodation: false,
             bulkAccommodationType: [],
             sharingType: [],
             rules: [],
-            nearbyPlaces: [], // ✅ must be array of objects
+            nearbyPlaces: [], 
             images: [],
-            isAvailable: false,  // ✅ very important
+            isAvailable: false,  
             isFeatured: false,
             phone: "",
+            gender: ""
         },
     })
 
@@ -180,7 +182,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             featured: propertyData.featured || false,
                             amenities: propertyData.amenities || [],
                             bulkAccommodationType: propertyData.bulkAccommodationType || [],
-                            bulkAccommodation: propertyData.bulkAccommodation || "",
+                            bulkAccommodation: Boolean(propertyData.bulkAccommodation),
                             sharingType: propertyData.sharingType || [],
                             rules: propertyData.rules || [],
                             nearbyPlaces: propertyData.nearbyPlaces || [],
@@ -269,20 +271,28 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             <Controller
                                 control={control}
                                 name="bulkAccommodation"
-                                render={({ field }) => (
-                                    <Select
-                                        onValueChange={(val) => field.onChange(val === "true")}
-                                        value={field.value?.toString()}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Bulk Accommodation" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="true">Allowed</SelectItem>
-                                            <SelectItem value="false">Not Allowed</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                )}
+                                defaultValue={false}
+                                render={({ field }) => {
+                                    // Ensure value is a boolean
+                                    const value = Boolean(field.value);
+                                    return (
+                                        <Select
+                                            onValueChange={(val) => {
+                                                // Convert string to boolean
+                                                field.onChange(val === 'true');
+                                            }}
+                                            value={value ? 'true' : 'false'}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Bulk Accommodation" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="true">Allowed</SelectItem>
+                                                <SelectItem value="false">Not Allowed</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    );
+                                }}
                             />
                             {errors.bulkAccommodation && (
                                 <p className="text-sm text-red-500">{errors.bulkAccommodation.message}</p>
@@ -332,24 +342,32 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                         />
 
                         <div className="space-y-2">
-                            <Label htmlFor="type">Select Gender</Label>
+                            <Label htmlFor="gender">Select Gender</Label>
                             <Controller
                                 control={control}
                                 name="gender"
-                                render={({ field }) => (
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="male">Male</SelectItem>
-                                            <SelectItem value="female">Female</SelectItem>
-                                            <SelectItem value="transgender">Transgender</SelectItem>
-
-                                            <SelectItem value="other">Other</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                )}
+                                render={({ field: { value, onChange, ...field } }) => {
+                                    console.log('Current gender value:', value);
+                                    return (
+                                        <Select 
+                                            onValueChange={onChange} 
+                                            value={value || undefined}
+                                            {...field}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select gender" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="male">Male</SelectItem>
+                                                <SelectItem value="female">Female</SelectItem>
+                                                <SelectItem value="transgender">Transgender</SelectItem>
+                                                <SelectItem value="other">Other</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    );
+                                }}
                             />
-                            {errors.type && <p className="text-sm text-red-500">{errors.type.message}</p>}
+                            {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
                         </div>
 
 
