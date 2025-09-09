@@ -392,9 +392,9 @@ const PropertyList: FC<PropertyListProps> = ({ properties, search, setSearch, ty
                                         <Label>Select Amenities</Label>
                                         <div className="flex gap-3 flex-wrap mt-2">
                                             {[
-                                                "wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen",
-                                                "balcony", "garden", "security", "evevator", "pets", "furnished", "tv",
-                                                "dishwasher", "microwave", "refrigerator"
+                                                "wifi", "parking", "gym", "Daily Cleaning", "laundry", "ac", "heating", "kitchen",
+                                                "balcony", "garden", "security", "evevator", " Power back-up", "furnished", "tv",
+                                                "Transportaion", "microwave", "refrigerator"
                                             ].map((amenity) => (
                                                 <label key={amenity} className="flex items-center gap-2 text-sm">
                                                     <input

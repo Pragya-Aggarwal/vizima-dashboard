@@ -125,7 +125,7 @@ const SinglePropertyPage = () => {
 
             {/* Features with Icons */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Card>
+                {/* <Card>
                     <CardContent className="p-4 text-center">
                         <p className="font-semibold">Bedrooms</p>
                         <p>{propertyDetail?.bedrooms}</p>
@@ -136,13 +136,13 @@ const SinglePropertyPage = () => {
                         <p className="font-semibold">Bathrooms</p>
                         <p>{propertyDetail?.bathrooms}</p>
                     </CardContent>
-                </Card>
-                <Card>
+                </Card> */}
+                {/* <Card>
                     <CardContent className="p-4 text-center">
                         <p className="font-semibold">Area (sqft)</p>
                         <p>{propertyDetail?.area}</p>
                     </CardContent>
-                </Card>
+                </Card> */}
                 <Card>
                     <CardContent className="p-4 text-center">
                         <p className="font-semibold">Property Type</p>

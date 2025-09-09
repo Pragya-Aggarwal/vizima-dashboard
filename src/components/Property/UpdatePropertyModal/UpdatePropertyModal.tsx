@@ -55,6 +55,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
             deposit: 0,
             description: "",
             microSiteLink: "",
+            youtubeLink: "",
             featured: false,
             amenities: [],
             bulkAccommodation: false,
@@ -136,6 +137,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
               city: "",
               area: "",
               microSiteLink: "",
+              youtubeLink: "",
               rooms: 0,
               price: 0,
               deposit: 0,
@@ -179,6 +181,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             deposit: propertyData.deposit || 0,
                             description: propertyData.description || "",
                             microSiteLink: propertyData.microSiteLink || "",
+                            youtubeLink: propertyData.youtubeLink || "",
                             featured: propertyData.featured || false,
                             amenities: propertyData.amenities || [],
                             bulkAccommodationType: propertyData.bulkAccommodationType || [],
@@ -313,8 +316,8 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             render={({ field }) => (
                                 <div className="space-y-4">
                                     <Label>Sharing Type</Label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {["single", "double", "triple"].map((type) => {
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {["single", "double", "triple", "quad"].map((type) => {
                                             const isChecked = field.value?.includes(type);
                                             return (
                                                 <div key={type} className="flex items-center space-x-2">
@@ -360,8 +363,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                             <SelectContent>
                                                 <SelectItem value="male">Male</SelectItem>
                                                 <SelectItem value="female">Female</SelectItem>
-                                                <SelectItem value="transgender">Transgender</SelectItem>
-                                                <SelectItem value="other">Other</SelectItem>
+                                                <SelectItem value="transgender">Co-Living</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     );
@@ -386,6 +388,11 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                             <Label htmlFor="microSiteLink">Microsite Link</Label>
                             <Input id="microSiteLink" {...register("microSiteLink")} placeholder="Enter microsite link" />
                             {errors.microSiteLink && <p className="text-sm text-red-500">{errors.microSiteLink.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="youtubeLink">Youtube Link</Label>
+                            <Input id="youtubeLink" {...register("youtubeLink")} placeholder="Enter youtube link" />
+                            {errors.youtubeLink && <p className="text-sm text-red-500">{errors.youtubeLink.message}</p>}
                         </div>
 
                         {/* Location */}
@@ -425,8 +432,8 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                         {/* Price, Bedrooms, Bathrooms, Area */}
                         <div className="grid grid-cols-4 gap-4">
                             <Input {...register("price", { valueAsNumber: true })} placeholder="Price" type="number" />
-                            <Input {...register("bedrooms", { valueAsNumber: true })} placeholder="Bedrooms" type="number" />
-                            <Input {...register("bathrooms", { valueAsNumber: true })} placeholder="Bathrooms" type="number" />
+                            {/* <Input {...register("bedrooms", { valueAsNumber: true })} placeholder="Bedrooms" type="number" />
+                            <Input {...register("bathrooms", { valueAsNumber: true })} placeholder="Bathrooms" type="number" /> */}
                             <Input {...register("area", { valueAsNumber: true })} placeholder="Area (sqft)" type="number" />
                         </div>
 
@@ -483,7 +490,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                 <div className="space-y-4">
                                     <Label>Rules</Label>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {["No smoking", "No pets", "No parties"].map((rule) => {
+                                        {["No smoking", "No  Power back-up", "No parties"].map((rule) => {
                                             const isChecked = field.value?.includes(rule);
                                             return (
                                                 <div key={rule} className="flex items-center space-x-2">
@@ -519,7 +526,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                         control={control}
                                         name="amenities"
                                         render={({ field }) => {
-                                            const allAmenities = ["wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "pets", "furnished", "tv", "dishwasher", "microwave", "refrigerator"];
+                                            const allAmenities = ["wifi", "parking", "gym", "Daily Cleaning", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", " Power back-up", "furnished", "tv", "Transportaion", "microwave", "refrigerator"];
                                             const allSelected = allAmenities.every(item => field.value?.includes(item));
                                             return (
                                                 <div className="flex items-center space-x-2">
@@ -537,7 +544,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
-                                {["wifi", "parking", "gym", "pool", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "pets", "furnished", "tv", "dishwasher", "microwave", "refrigerator"].map((item) => (
+                                {["wifi", "parking", "gym", "Daily Cleaning", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", " Power back-up", "furnished", "tv", "Transportaion", "microwave", "refrigerator"].map((item) => (
                                     <div key={item} className="flex items-center space-x-2">
                                         <Controller
                                             control={control}
