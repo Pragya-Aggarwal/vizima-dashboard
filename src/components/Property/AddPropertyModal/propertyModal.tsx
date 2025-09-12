@@ -26,6 +26,11 @@ import { useState } from "react"
 import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
 import { useRef } from "react"
 
+type SharingType = {
+  type: string;
+  price: number;
+};
+
 type AddPropertyModalProps = {
   open: boolean
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
@@ -54,10 +59,10 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
       phone: "",
       city: "",
       area: "",
+      price: 0,
       microSiteLink: "",
       youtubeLink: "",    
       rooms: 0,
-      price: 0,
       deposit: 0,
       description: "",
       featured: false,
@@ -89,14 +94,14 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
     return cleaned.startsWith('+') ? cleaned : `+91${cleaned}`;
   };
 
-  const onFormSubmit = async (data: PropertyFormData) => {
+  const onFormSubmit: SubmitHandler<PropertyFormData> = async (data) => {
     try {
       // Format phone number before submission
       const formattedData = {
         ...data,
         phone: data.phone ? formatPhoneNumber(data.phone) : ''
-      };
-      await onSubmit(formattedData as PropertyFormData, () => {
+      } as PropertyFormData;
+      await onSubmit(formattedData, () => {
         reset({
           name: "",
           type: "",
@@ -106,8 +111,6 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
           microSiteLink: "",
           youtubeLink: "",    
           rooms: 0,
-          price: 0,
-          deposit: 0,
           description: "",
           featured: false,
           amenities: [],
@@ -142,8 +145,6 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
         microSiteLink: "",
         youtubeLink: "",    
         rooms: 0,
-        price: 0,
-        deposit: 0,
         description: "",
         featured: false,
         amenities: [],
@@ -258,36 +259,81 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
             {/* bulk accomodation */}
 
             {/* sharing type */}
-
-
             <Controller
               control={control}
               name="sharingType"
               render={({ field }) => (
                 <div className="space-y-4">
-                  <Label>Sharing Type</Label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <Label>Room Types & Pricing</Label>
+                  
+                  {/* Room Type Toggles */}
+                  <div className="flex gap-4 p-3 border rounded-md bg-muted/30">
                     {["single", "double", "triple", "quad"].map((type) => {
-                      const isChecked = field.value?.includes(type);
+                      const currentSharingTypes: SharingType[] = watch('sharingType') || [];
+                      const isSelected = currentSharingTypes.some(st => st.type === type);
+                      
                       return (
                         <div key={type} className="flex items-center space-x-2">
+                          <span className="capitalize font-medium w-16">
+                            {type === 'single' ? 'Single' : type === 'double' ? 'Double' : type === 'triple' ? 'Triple' : 'Quad'}
+                          </span>
                           <Switch
-                            checked={isChecked}
+                            checked={isSelected}
                             onCheckedChange={(checked) => {
+                              const currentTypes: SharingType[] = watch('sharingType') || [];
                               const updated = checked
-                                ? [...(field.value || []), type]
-                                : (field.value || []).filter((v) => v !== type);
-                              field.onChange(updated);
+                                ? [...currentTypes, { type, price: 0 }]
+                                : currentTypes.filter(st => st.type !== type);
+                              setValue('sharingType', updated, { shouldValidate: true });
                             }}
                           />
-                          <Label className="capitalize">{type}</Label>
                         </div>
                       );
                     })}
                   </div>
+
+                  {/* Price Inputs */}
+                  <div className="grid grid-cols-4 gap-4 p-3 border rounded-md">
+                    {["single", "double", "triple", "quad"].map((type) => {
+                      const currentSharingTypes: SharingType[] = watch('sharingType') || [];
+                      const roomType = currentSharingTypes.find(st => st.type === type);
+                      
+                      return roomType ? (
+                        <div key={type} className="space-y-1">
+                          <Label className="text-sm text-muted-foreground">
+                            {type === 'single' ? 'Single' : type === 'double' ? 'Double' : type === 'triple' ? 'Triple' : 'Quad'} Price
+                          </Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={roomType.price.toString()}
+                              onChange={(e) => {
+                                const currentTypes: SharingType[] = watch('sharingType') || [];
+                                const price = e.target.value === '' ? 0 : Number(e.target.value);
+                                const updated = currentTypes.map(st => 
+                                  st.type === type ? { ...st, price: Math.max(0, price) } : st
+                                );
+                                setValue('sharingType', updated, { shouldValidate: true });
+                              }}
+                              min="0"
+                              step="100"
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div key={type} className="h-[58px] flex items-end">
+                          <p className="text-sm text-muted-foreground">-</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
                   {errors.sharingType && (
                     <p className="text-sm text-red-500">
-                      {errors.sharingType.message}
+                      {String(errors.sharingType.message || '')}
                     </p>
                   )}
                 </div>
@@ -305,7 +351,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="transgender">Co-Living</SelectItem>
+                      <SelectItem value="unisex">Co-Living</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -373,7 +419,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
             {/* Price, Bedrooms, Bathrooms, Area */}
             <div className="grid grid-cols-4 gap-4">
-              <Input {...register("price", { valueAsNumber: true })} placeholder="Price" type="number" />
+              {/* <Input {...register("price", { valueAsNumber: true })} placeholder="Price" type="number" /> */}
               {/* <Input {...register("bedrooms", { valueAsNumber: true })} placeholder="Bedrooms" type="number" />
               <Input {...register("bathrooms", { valueAsNumber: true })} placeholder="Bathrooms" type="number" /> */}
               <Input {...register("area", { valueAsNumber: true })} placeholder="Area (sqft)" type="number" />
@@ -468,7 +514,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                     control={control}
                     name="amenities"
                     render={({ field }) => {
-                      const allAmenities = ["wifi", "parking", "gym", "Daily Cleaning", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", " Power back-up", "furnished", "tv", "Transportaion", "microwave", "refrigerator"];
+                      const allAmenities = ["wifi", "parking", "gym", "daily_cleaning", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "power_backup", "furnished", "tv", "transportation", "microwave", "refrigerator"];
                       const allSelected = allAmenities.every(item => field.value?.includes(item));
                       return (
                         <div className="flex items-center space-x-2">
@@ -486,7 +532,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {["wifi", "parking", "gym", "Daily Cleaning", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", " Power back-up", "furnished", "tv", "Transportaion", "microwave", "refrigerator",].map((item) => (
+                {["wifi", "parking", "gym", "daily_cleaning", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "power_backup", "furnished", "tv", "transportation", "microwave", "refrigerator",].map((item) => (
                   <div key={item} className="flex items-center space-x-2">
                     <Controller
                       control={control}
@@ -667,6 +713,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
                       className="hidden"
                       ref={fileInputRef}
                       onClick={(e) => {
@@ -674,15 +721,17 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                       }}
                       onChange={async (e) => {
                         e.stopPropagation();
-                        const file = e.target.files?.[0];
-                        if (!file) return;
+                        const files = Array.from(e.target.files || []);
+                        if (files.length === 0) return;
+                        
                         try {
-                          const url = await uploadToCloudinary(file);
-                          field.onChange([...(field.value || []), url]);
+                          const uploadPromises = files.map(file => uploadToCloudinary(file));
+                          const urls = await Promise.all(uploadPromises);
+                          field.onChange([...(field.value || []), ...urls]);
                         } catch (err) {
                           console.error("Upload failed:", err);
                         } finally {
-                          // Reset the file input to allow selecting the same file again
+                          // Reset the file input to allow selecting the same files again
                           if (e.target) {
                             e.target.value = '';
                           }

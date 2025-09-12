@@ -8,8 +8,13 @@ export const propertySchema = z.object({
     gender: z.string().min(1, "Gender is required"),
     bulkAccommodation: z.boolean(),
     bulkAccommodationType: z.array(z.string()).min(0, "Select at least one"),
-    sharingType: z.array(z.string()).min(1, "At least one sharing type is required"),
-    price: z.coerce.number().min(1, "Price is required"),
+    sharingType: z.array(
+      z.object({
+        type: z.string(),
+        price: z.number().min(0, "Price must be a positive number")
+      })
+    ).min(1, "At least one sharing type is required"),
+ 
     location: z.object({
         address: z.string().min(1, "Address is required"),
         city: z.string().min(1, "City is required"),
@@ -24,15 +29,12 @@ export const propertySchema = z.object({
 
     // images: z.array(z.string()).optional().default([]),
     images: z.array(z.string().url()).min(1, "At least one image is required"),
-
-
-    bedrooms: z.coerce.number().min(0, "Bedrooms are required"),
-    bathrooms: z.coerce.number().min(0, "Bathrooms are required"),
     area: z.coerce.number().min(0, "Area is required"),
     isAvailable: z.boolean().default(false),
     isFeatured: z.boolean().default(false),
     rules: z.array(z.string()).optional().default([]),
     microSiteLink: z.string().optional(),
+    youtubeLink: z.string().url("Please enter a valid YouTube URL").optional().default(""),
     nearbyPlaces: z
         .array(
             z.object({
