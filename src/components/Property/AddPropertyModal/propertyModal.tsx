@@ -258,43 +258,133 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
             {/* bulk accomodation */}
 
-            {/* sharing type */}
-            <Controller
-              control={control}
-              name="sharingType"
-              render={({ field }) => (
-                <div className="space-y-4">
-                  <Label>Room Types & Pricing</Label>
-                  
-                  {/* Room Type Toggles */}
-                  <div className="flex gap-4 p-3 border rounded-md bg-muted/30">
-                    {["single", "double", "triple", "quad"].map((type) => {
-                      const currentSharingTypes: SharingType[] = watch('sharingType') || [];
-                      const isSelected = currentSharingTypes.some(st => st.type === type);
+            {/* Amenities */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label>Amenities</Label>
+                <div className="flex items-center space-x-2">
+                  <Controller
+                    control={control}
+                    name="amenities"
+                    render={({ field }) => {
+                      const amenityOptions = [
+                        { id: 'wifi', label: 'WiFi' },
+                        { id: 'parking', label: 'Parking' },
+                        { id: 'gym', label: 'Gym' },
+                        { id: 'daily_cleaning', label: 'Daily Cleaning' },
+                        { id: 'laundry', label: 'Laundry' },
+                        { id: 'ac', label: 'Air Conditioning' },
+                        { id: 'heating', label: 'Heating' },
+                        { id: 'kitchen', label: 'Kitchen' },
+                        { id: 'balcony', label: 'Balcony' },
+                        { id: 'garden', label: 'Garden' },
+                        { id: 'security', label: 'Security' },
+                        { id: 'elevator', label: 'Elevator' },
+                        { id: 'power_backup', label: 'Power Backup' },
+                        { id: 'furnished', label: 'Furnished' },
+                        { id: 'tv', label: 'TV' },
+                        { id: 'transportation', label: 'Transportation' },
+                        { id: 'microwave', label: 'Microwave' },
+                        { id: 'refrigerator', label: 'Refrigerator' }
+                      ];
+                      
+                      const allSelected = amenityOptions.every(opt => field.value?.includes(opt.id));
                       
                       return (
-                        <div key={type} className="flex items-center space-x-2">
-                          <span className="capitalize font-medium w-16">
-                            {type === 'single' ? 'Single' : type === 'double' ? 'Double' : type === 'triple' ? 'Triple' : 'Quad'}
-                          </span>
+                        <div className="flex items-center space-x-2">
                           <Switch
-                            checked={isSelected}
+                            checked={allSelected}
                             onCheckedChange={(checked) => {
-                              const currentTypes: SharingType[] = watch('sharingType') || [];
-                              const updated = checked
-                                ? [...currentTypes, { type, price: 0 }]
-                                : currentTypes.filter(st => st.type !== type);
-                              setValue('sharingType', updated, { shouldValidate: true });
+                              field.onChange(checked ? amenityOptions.map(opt => opt.id) : []);
                             }}
                           />
+                          <Label className="text-sm text-muted-foreground">Select All</Label>
                         </div>
                       );
-                    })}
-                  </div>
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Controller
+                  control={control}
+                  name="amenities"
+                  render={({ field }) => (
+                    <>
+                      {[
+                        { id: 'wifi', label: 'WiFi' },
+                        { id: 'parking', label: 'Parking' },
+                        { id: 'gym', label: 'Gym' },
+                        { id: 'daily_cleaning', label: 'Daily Cleaning' },
+                        { id: 'laundry', label: 'Laundry' },
+                        { id: 'ac', label: 'Air Conditioning' },
+                        { id: 'heating', label: 'Heating' },
+                        { id: 'kitchen', label: 'Kitchen' },
+                        { id: 'balcony', label: 'Balcony' },
+                        { id: 'garden', label: 'Garden' },
+                        { id: 'security', label: 'Security' },
+                        { id: 'elevator', label: 'Elevator' },
+                        { id: 'power_backup', label: 'Power Backup' },
+                        { id: 'furnished', label: 'Furnished' },
+                        { id: 'tv', label: 'TV' },
+                        { id: 'transportation', label: 'Transportation' },
+                        { id: 'microwave', label: 'Microwave' },
+                        { id: 'refrigerator', label: 'Refrigerator' }
+                      ].map(({ id, label }) => (
+                        <div key={id} className="flex items-center space-x-2">
+                          <Switch
+                            checked={field.value?.includes(id) || false}
+                            onCheckedChange={(checked) => {
+                              const newValue = checked
+                                ? [...(field.value || []), id]
+                                : (field.value || []).filter((v: string) => v !== id);
+                              field.onChange(newValue);
+                            }}
+                          />
+                          <Label>{label}</Label>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                />
+              </div>
+              {errors.amenities && <p className="text-sm text-red-500">{String(errors.amenities.message || '')}</p>}
+            </div>
 
-                  {/* Price Inputs */}
+            {/* Room Type Selection */}
+            <div className="space-y-4">
+              <Label>Select Room Types</Label>
+              <div className="flex gap-4 p-3 border rounded-md bg-muted/30">
+                {["single", "double", "triple", "quadruple"].map((type) => {
+                  const currentSharingTypes: SharingType[] = watch('sharingType') || [];
+                  const isSelected = currentSharingTypes.some(st => st.type === type);
+                  
+                  return (
+                    <div key={type} className="flex items-center space-x-2">
+                      <span className="capitalize font-medium w-16">
+                        {type === 'single' ? 'Single' : type === 'double' ? 'Double' : type === 'triple' ? 'Triple' : 'Quad'}
+                      </span>
+                      <Switch
+                        checked={isSelected}
+                        onCheckedChange={(checked) => {
+                          const currentTypes: SharingType[] = watch('sharingType') || [];
+                          const updated = checked
+                            ? [...currentTypes, { type, price: 0 }]
+                            : currentTypes.filter(st => st.type !== type);
+                          setValue('sharingType', updated, { shouldValidate: true });
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Room Pricing - Only show if at least one room type is selected */}
+              {(watch('sharingType') || []).length > 0 && (
+                <div className="space-y-4">
+                  <Label>Room Pricing</Label>
                   <div className="grid grid-cols-4 gap-4 p-3 border rounded-md">
-                    {["single", "double", "triple", "quad"].map((type) => {
+                    {["single", "double", "triple", "quadruple"].map((type) => {
                       const currentSharingTypes: SharingType[] = watch('sharingType') || [];
                       const roomType = currentSharingTypes.find(st => st.type === type);
                       
@@ -323,14 +413,10 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                             />
                           </div>
                         </div>
-                      ) : (
-                        <div key={type} className="h-[58px] flex items-end">
-                          <p className="text-sm text-muted-foreground">-</p>
-                        </div>
-                      );
+                      ) : null;
                     })}
                   </div>
-
+                  
                   {errors.sharingType && (
                     <p className="text-sm text-red-500">
                       {String(errors.sharingType.message || '')}
@@ -338,7 +424,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                   )}
                 </div>
               )}
-            />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="type">Select Gender</Label>
@@ -505,61 +591,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
             {/*  */}
 
-            {/* Amenities */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <Label>Amenities</Label>
-                <div className="flex items-center space-x-2">
-                  <Controller
-                    control={control}
-                    name="amenities"
-                    render={({ field }) => {
-                      const allAmenities = ["wifi", "parking", "gym", "daily_cleaning", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "power_backup", "furnished", "tv", "transportation", "microwave", "refrigerator"];
-                      const allSelected = allAmenities.every(item => field.value?.includes(item));
-                      return (
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={allSelected}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked ? [...allAmenities] : []);
-                            }}
-                          />
-                          <Label className="text-sm text-muted-foreground">Select All</Label>
-                        </div>
-                      );
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {["wifi", "parking", "gym", "daily_cleaning", "laundry", "ac", "heating", "kitchen", "balcony", "garden", "security", "elevator", "power_backup", "furnished", "tv", "transportation", "microwave", "refrigerator",].map((item) => (
-                  <div key={item} className="flex items-center space-x-2">
-                    <Controller
-                      control={control}
-                      name="amenities"
-                      render={({ field }) => {
-                        const isChecked = field.value?.includes(item);
-                        return (
-                          <>
-                            <Switch
-                              checked={isChecked}
-                              onCheckedChange={(checked) => {
-                                const newValue = checked
-                                  ? [...(field.value || []), item]
-                                  : (field.value || []).filter((v) => v !== item);
-                                field.onChange(newValue);
-                              }}
-                            />
-                            <Label>{item}</Label>
-                          </>
-                        );
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-              {errors.amenities && <p className="text-sm text-red-500">{errors.amenities.message}</p>}
-            </div>
+           
 
             {/* isAvailable + isFeatured */}
             <div className="flex items-center gap-6">
