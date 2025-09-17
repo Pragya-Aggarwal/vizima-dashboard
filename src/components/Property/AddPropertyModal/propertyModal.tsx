@@ -18,7 +18,7 @@ import {
   Upload, ImageIcon, Trash2
 } from "lucide-react"
 
-import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { useForm, Controller, useFieldArray, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { propertySchema, PropertyFormData } from "../Schema/property-schema"

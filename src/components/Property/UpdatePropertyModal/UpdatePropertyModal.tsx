@@ -487,7 +487,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                     return (
                                         <Select 
                                             onValueChange={onChange} 
-                                            value={value || undefined}
+                                            value={value || ""}
                                             {...field}
                                         >
                                             <SelectTrigger>

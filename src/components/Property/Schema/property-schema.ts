@@ -34,7 +34,7 @@ export const propertySchema = z.object({
     isFeatured: z.boolean().default(false),
     rules: z.array(z.string()).optional().default([]),
     microSiteLink: z.string().optional(),
-    youtubeLink: z.string().url("Please enter a valid YouTube URL").optional().default(""),
+    youtubeLink: z.string().optional(),
     nearbyPlaces: z
         .array(
             z.object({
