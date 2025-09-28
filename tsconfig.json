@@ -23,7 +23,7 @@
       "@/types/*": ["./src/types/*"],
       "@/components/*": ["./components/*"],
       "@/services/*": ["./src/services/*"],
-      "@/hooks/*": ["./src/hooks/*"],
+      "@/hooks/*": ["./hooks/*"],
       "@/utils/*": ["./src/utils/*"],
       "@/app/*": ["./src/app/*"],
       "@/src/*": ["./src/*"]
