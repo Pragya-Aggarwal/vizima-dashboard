@@ -11,7 +11,8 @@ export const propertySchema = z.object({
     sharingType: z.array(
       z.object({
         type: z.string(),
-        price: z.number().min(0, "Price must be a positive number")
+        price: z.number().min(0, "Price must be a positive number"),
+        description: z.string().optional()
       })
     ).min(1, "At least one sharing type is required"),
  

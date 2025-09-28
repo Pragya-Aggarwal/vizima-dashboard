@@ -1,25 +1,24 @@
 'use client';
-
 import { useState, useEffect } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Eye, Trash2, Loader2, AlertCircle, Trash } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Eye, Trash2, Loader2, AlertCircle, Trash, List, FileText } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import { LeadDetails } from './components/lead-details';
 import { DeleteModal } from '@/src/common/DeleteModal/deleteModal';
+import FormsList from '@/src/components/Forms/FormsList';
+import FormDetails from '@/src/components/Forms/FormDetails';
+import { FormData } from '@/src/types/form';
 
 interface Lead {
-  _id: string;
-  fullName: string;
+  id: string;
+  _id?: string; // Keep for backward compatibility
+  name: string;
+  fullName?: string; // Keep for backward compatibility
   email: string;
-  mobileNumber: string;
+  phone: string;
+  mobileNumber?: string; // Keep for backward compatibility
   message: string;
   createdAt: string;
   status?: string;
@@ -42,6 +41,7 @@ interface ApiResponse {
 }
 
 export default function CustomerLeadPage() {
+  // Leads state
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +54,9 @@ export default function CustomerLeadPage() {
     total: 0,
     totalPages: 1,
   });
+  
+  // Forms state
+  const [selectedForm, setSelectedForm] = useState<FormData | null>(null);
 
   useEffect(() => {
     fetchLeads();
@@ -215,16 +218,41 @@ export default function CustomerLeadPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Lead Details Modal */}
       {selectedLead && (
         <LeadDetails
           lead={selectedLead}
           onClose={() => setSelectedLead(null)}
         />
       )}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Customer Leads</h1>
-      </div>
+      
+      {/* Form Details Modal */}
+      {selectedForm && (
+        <FormDetails
+          form={selectedForm}
+          open={!!selectedForm}
+          onOpenChange={(open) => !open && setSelectedForm(null)}
+        />
+      )}
+
+      <Tabs defaultValue="leads" className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Customer Management</h1>
+        </div>
+        
+        <TabsList>
+          <TabsTrigger value="leads" className="flex items-center gap-2">
+            <List className="h-4 w-4" />
+            Customer Leads
+          </TabsTrigger>
+          <TabsTrigger value="details" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Customer Details
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="leads" className="space-y-4">
 
       <div className="rounded-md border">
         <Table>
@@ -259,7 +287,7 @@ export default function CustomerLeadPage() {
                       variant="ghost"
                       size="icon"
                       className="text-destructive hover:text-destructive"
-                      onClick={() => handleDeleteClick(lead?._id)}
+                      onClick={() => lead?._id && handleDeleteClick(lead._id)}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
@@ -275,52 +303,63 @@ export default function CustomerLeadPage() {
             )}
           </TableBody>
         </Table>
-      </div>
-      {/* Pagination Bar */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between px-2">
-          <div className="text-sm text-muted-foreground">
-            Showing page {pagination.page} of {pagination.totalPages}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPagination(prev => ({ ...prev, page: 1 }))}
-              disabled={pagination.page === 1}
-            >
-              First
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
-              disabled={pagination.page === 1}
-            >
-              Previous
-            </Button>
-            <div className="px-2 text-sm">
-              {pagination.page} / {pagination.totalPages}
+          {/* Pagination Bar */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between px-2">
+              <div className="text-sm text-muted-foreground">
+                Showing page {pagination.page} of {pagination.totalPages}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPagination(prev => ({ ...prev, page: 1 }))}
+                  disabled={pagination.page === 1}
+                >
+                  First
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+                  disabled={pagination.page === 1}
+                >
+                  Previous
+                </Button>
+                <div className="px-2 text-sm">
+                  {pagination.page} / {pagination.totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.totalPages, prev.page + 1) }))}
+                  disabled={pagination.page === pagination.totalPages}
+                >
+                  Next
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPagination(prev => ({ ...prev, page: prev.totalPages }))}
+                  disabled={pagination.page === pagination.totalPages}
+                >
+                  Last
+                </Button>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPagination(prev => ({ ...prev, page: Math.min(prev.totalPages, prev.page + 1) }))}
-              disabled={pagination.page === pagination.totalPages}
-            >
-              Next
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPagination(prev => ({ ...prev, page: prev.totalPages }))}
-              disabled={pagination.page === pagination.totalPages}
-            >
-              Last
-            </Button>
-          </div>
+          )}
         </div>
-      )}
+        </TabsContent>
+
+        <TabsContent value="details" className="space-y-4">
+          <div className="rounded-md border p-4">
+            <FormsList 
+              onView={(form: FormData) => setSelectedForm(form)}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+
       <DeleteModal
         open={deleteModalOpen}
         setOpen={setDeleteModalOpen}

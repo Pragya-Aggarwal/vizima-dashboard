@@ -53,6 +53,7 @@ import FaqMain from "@/src/components/Faq"
 import BannerMain from "@/src/components/Banner"
 import CityMain from "@/src/components/City"
 import TestimonialMain from "@/src/components/Testimonial"
+import NumberDetail from "@/src/components/NumberDetail"
 
 // Local implementation of blog service
 const createBlog = async (data: any) => {
@@ -574,6 +575,7 @@ export default function CMSPage() {
           <TabsTrigger value="cities">Cities</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="faqs">Faqs</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
           {/* <TabsTrigger value="pages">Static Pages</TabsTrigger> */}
         </TabsList>
 
@@ -654,6 +656,10 @@ export default function CMSPage() {
           <FaqMain />
         </TabsContent>
 
+        {/* Contact Section */}
+        <TabsContent value="contact" className="space-y-4">
+          <NumberDetail  />
+        </TabsContent>
         {/* Banners Section */}
         <TabsContent value="banners" className="space-y-4">
           <Card>

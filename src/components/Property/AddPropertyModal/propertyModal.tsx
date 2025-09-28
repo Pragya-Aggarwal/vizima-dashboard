@@ -29,6 +29,7 @@ import { useRef } from "react"
 type SharingType = {
   type: string;
   price: number;
+  description?: string;
 };
 
 type AddPropertyModalProps = {
@@ -354,26 +355,70 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
             {/* Room Type Selection */}
             <div className="space-y-4">
               <Label>Select Room Types</Label>
-              <div className="flex gap-4 p-3 border rounded-md bg-muted/30">
+              <div className="space-y-4 p-3 border rounded-md bg-muted/30">
                 {["single", "double", "triple", "quadruple"].map((type) => {
                   const currentSharingTypes: SharingType[] = watch('sharingType') || [];
-                  const isSelected = currentSharingTypes.some(st => st.type === type);
+                  const currentType = currentSharingTypes.find(st => st.type === type);
+                  const isSelected = !!currentType;
                   
                   return (
-                    <div key={type} className="flex items-center space-x-2">
-                      <span className="capitalize font-medium w-16">
-                        {type === 'single' ? 'Single' : type === 'double' ? 'Double' : type === 'triple' ? 'Triple' : 'Quad'}
-                      </span>
-                      <Switch
-                        checked={isSelected}
-                        onCheckedChange={(checked) => {
-                          const currentTypes: SharingType[] = watch('sharingType') || [];
-                          const updated = checked
-                            ? [...currentTypes, { type, price: 0 }]
-                            : currentTypes.filter(st => st.type !== type);
-                          setValue('sharingType', updated, { shouldValidate: true });
-                        }}
-                      />
+                    <div key={type} className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="capitalize font-medium w-16">
+                          {type === 'single' ? 'Single' : type === 'double' ? 'Double' : type === 'triple' ? 'Triple' : 'Quad'}
+                        </span>
+                        <Switch
+                          checked={isSelected}
+                          onCheckedChange={(checked) => {
+                            const currentTypes: SharingType[] = watch('sharingType') || [];
+                            const updated = checked
+                              ? [...currentTypes, { type, price: 0, description: '' }]
+                              : currentTypes.filter(st => st.type !== type);
+                            setValue('sharingType', updated, { shouldValidate: true });
+                          }}
+                        />
+                      </div>
+                      {isSelected && (
+                        <div className="pl-8">
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <Label htmlFor={`${type}-price`}>Price</Label>
+                                <Input
+                                  id={`${type}-price`}
+                                  type="number"
+                                  min="0"
+                                  value={currentType?.price || 0}
+                                  onChange={(e) => {
+                                    const value = parseFloat(e.target.value) || 0;
+                                    const updated = (watch('sharingType') || []).map(st => 
+                                      st.type === type ? { ...st, price: value } : st
+                                    );
+                                    setValue('sharingType', updated, { shouldValidate: true });
+                                  }}
+                                  placeholder="Enter price"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor={`${type}-description`}>Description</Label>
+                              <Textarea
+                                id={`${type}-description`}
+                                value={currentType?.description || ''}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  const updated = (watch('sharingType') || []).map(st => 
+                                    st.type === type ? { ...st, description: value } : st
+                                  );
+                                  setValue('sharingType', updated, { shouldValidate: true });
+                                }}
+                                placeholder={`Enter description for ${type} room`}
+                                rows={2}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -382,7 +427,16 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
               {/* Room Pricing - Only show if at least one room type is selected */}
               {(watch('sharingType') || []).length > 0 && (
                 <div className="space-y-4">
-                  <Label>Room Pricing</Label>
+                  <div className="flex justify-between items-center">
+                    <Label>Room Pricing</Label>
+                    {errors.sharingType && (
+                      <p className="text-sm text-red-500">
+                        {Array.isArray(errors.sharingType) 
+                          ? errors.sharingType[0]?.message 
+                          : String(errors.sharingType?.message || '')}
+                      </p>
+                    )}
+                  </div>
                   <div className="grid grid-cols-4 gap-4 p-3 border rounded-md">
                     {["single", "double", "triple", "quadruple"].map((type) => {
                       const currentSharingTypes: SharingType[] = watch('sharingType') || [];
