@@ -416,7 +416,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                             <div key={type} className="space-y-2">
                                               <div className="flex items-center space-x-2">
                                                 <span className="capitalize font-medium w-16">
-                                                  {type === 'single' ? 'Single' : type === 'double' ? 'Double' : type === 'triple' ? 'Triple' : 'Quad'}
+                                                  {type === 'single' ? 'single' : type === 'double' ? 'double' : type === 'triple' ? 'triple' : 'quad'}
                                                 </span>
                                                 <Switch
                                                   checked={isSelected}
@@ -476,7 +476,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                       </div>
                                       
                                       {/* Room Pricing - Only show if at least one room type is selected */}
-                                      {(watch('sharingType') || []).length > 0 && (
+                                      {/* {(watch('sharingType') || []).length > 0 && (
                                         <div className="space-y-4">
                                           <Label>Room Pricing</Label>
                                           <div className="grid grid-cols-4 gap-4 p-3 border rounded-md">
@@ -519,7 +519,7 @@ const UpdatePropertyModal = ({ open, setOpen, onSubmit, propertyId, setPropertyI
                                             </p>
                                           )}
                                         </div>
-                                      )}
+                                      )} */}
                                     </div>
 
                         <div className="space-y-2">

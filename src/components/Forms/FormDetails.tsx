@@ -26,9 +26,13 @@ export default function FormDetails({ form, open, onOpenChange }: FormDetailsPro
               <p className="font-medium">{form.name || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{form.email || 'N/A'}</p>
+            <p className="text-sm text-muted-foreground">PG Type</p>
+            <div className="mt-1">
+              <Badge variant="outline" className="capitalize">
+                {form.pgType || 'N/A'}
+              </Badge>
             </div>
+          </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -42,14 +46,7 @@ export default function FormDetails({ form, open, onOpenChange }: FormDetailsPro
             </div>
           </div>
 
-          <div>
-            <p className="text-sm text-muted-foreground">PG Type</p>
-            <div className="mt-1">
-              <Badge variant="outline" className="capitalize">
-                {form.pgType || 'N/A'}
-              </Badge>
-            </div>
-          </div>
+
 
           {form.message && (
             <div>

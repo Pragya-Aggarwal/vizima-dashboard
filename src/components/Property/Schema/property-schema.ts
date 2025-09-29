@@ -1,5 +1,13 @@
 import { z } from "zod"
 
+export type RoomType = 'single' | 'double' | 'triple' | 'quad';
+
+export type SharingType = {
+  type: RoomType;
+  price: number;
+  description?: string;
+};
+
 export const propertySchema = z.object({
     title: z.string().min(1, "Title is required"),
     description: z.string().min(1, "Description is required"),
@@ -10,7 +18,7 @@ export const propertySchema = z.object({
     bulkAccommodationType: z.array(z.string()).min(0, "Select at least one"),
     sharingType: z.array(
       z.object({
-        type: z.string(),
+        type: z.enum(['single', 'double', 'triple', 'quad']),
         price: z.number().min(0, "Price must be a positive number"),
         description: z.string().optional()
       })

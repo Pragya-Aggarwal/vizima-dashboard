@@ -6,84 +6,89 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Plus,
   FolderSyncIcon as Sync,
-  Upload, ImageIcon, Trash2
+  Upload, 
+  ImageIcon, 
+  Trash2,
+  X
 } from "lucide-react"
 
-import { useForm, Controller, useFieldArray, SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { X } from "lucide-react";
+import { useForm, Controller, useFieldArray, SubmitHandler } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { propertySchema, PropertyFormData } from "../Schema/property-schema"
-import { useState } from "react"
 import { uploadToCloudinary, deleteImage } from "@/lib/utils/uploadToCloudinary"
 import { useRef } from "react"
 
+type RoomType = 'single' | 'double' | 'triple' | 'quad';
+
 type SharingType = {
-  type: string;
+  type: RoomType;
   price: number;
   description?: string;
 };
 
 type AddPropertyModalProps = {
-  open: boolean
+  open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
   onSubmit: (data: PropertyFormData, onSuccess: () => void) => void
 }
 
 const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) => {
-  const {
+  const { 
     register, 
     control, 
     handleSubmit, 
-    formState: { errors, isSubmitting }, 
+    formState: { errors, isSubmitting, isSubmitSuccessful }, 
     setValue, 
     watch, 
     reset, 
-    trigger,
-    formState: { isSubmitSuccessful }
+    trigger
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
-
-
-
     defaultValues: {
-      name: "",
+      title: "",
+      description: "",
       type: "",
       phone: "",
-      city: "",
-      area: "",
-      price: 0,
-      microSiteLink: "",
-      youtubeLink: "",    
-      rooms: 0,
-      deposit: 0,
-      description: "",
-      featured: false,
-      amenities: [],
+      gender: "",
+      bulkAccommodation: false,
       bulkAccommodationType: [],
       sharingType: [],
-      rules: [],
-      nearbyPlaces: [], // ✅ must be array of objects
-
-
-
+      location: {
+        address: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        coordinates: { lat: 0, lng: 0 }
+      },
+      amenities: [],
       images: [],
-      isAvailable: true,  // ✅ very important
+      area: 0,
+      isAvailable: true,
       isFeatured: false,
+      rules: [],
+      microSiteLink: "",
+      youtubeLink: "",
+      nearbyPlaces: []
     },
   })
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields: nearbyPlaces, append: appendNearbyPlace, remove: removeNearbyPlace } = useFieldArray({
     control,
-    name: "nearbyPlaces",
+    name: "nearbyPlaces"
+  });
+
+  const { fields: sharingTypes, append: appendSharingType, remove: removeSharingType } = useFieldArray({
+    control,
+    name: "sharingType"
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -95,36 +100,73 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
     return cleaned.startsWith('+') ? cleaned : `+91${cleaned}`;
   };
 
-  const onFormSubmit: SubmitHandler<PropertyFormData> = async (data) => {
+  const onFormSubmit: SubmitHandler<PropertyFormData> = async (formData) => {
     try {
-      // Format phone number before submission
-      const formattedData = {
-        ...data,
-        phone: data.phone ? formatPhoneNumber(data.phone) : ''
-      } as PropertyFormData;
+      // Transform sharing types to match the schema
+      const sharingTypes = (formData.sharingType || []).map(st => {
+        // Ensure the type is lowercase to match the schema
+        const typeValue = (typeof st.type === 'string' ? st.type.toLowerCase() : 'single') as RoomType;
+        
+        return {
+          type: typeValue,
+          price: Number(st.price) || 0,
+          description: String(st.description || '')
+        };
+      }).filter(st => st.type);
+
+      // Ensure all required fields have values
+      const formattedData: PropertyFormData = {
+        ...formData,
+        phone: formData.phone ? formatPhoneNumber(formData.phone) : '',
+        sharingType: sharingTypes,
+        location: {
+          address: String(formData.location?.address || ''),
+          city: String(formData.location?.city || ''),
+          state: String(formData.location?.state || ''),
+          zipCode: String(formData.location?.zipCode || ''),
+          coordinates: formData.location?.coordinates || { lat: 0, lng: 0 }
+        },
+        area: Number(formData.area) || 0,
+        isAvailable: formData.isAvailable !== undefined ? Boolean(formData.isAvailable) : true,
+        isFeatured: Boolean(formData.isFeatured) || false,
+        nearbyPlaces: (formData.nearbyPlaces || []).map(np => ({
+          name: String(np.name || ''),
+          distance: String(np.distance || ''),
+          type: String(np.type || '')
+        })),
+        // Ensure arrays are always arrays, not undefined
+        amenities: Array.isArray(formData.amenities) ? formData.amenities : [],
+        bulkAccommodationType: Array.isArray(formData.bulkAccommodationType) ? formData.bulkAccommodationType : [],
+        rules: Array.isArray(formData.rules) ? formData.rules : [],
+        images: Array.isArray(formData.images) ? formData.images : []
+      };
+
       await onSubmit(formattedData, () => {
         reset({
-          name: "",
+          title: "",
+          description: "",
           type: "",
           phone: "",
-          city: "",
-          area: "",
-          microSiteLink: "",
-          youtubeLink: "",    
-          rooms: 0,
-          description: "",
-          featured: false,
-          amenities: [],
+          gender: "",
+          bulkAccommodation: false,
           bulkAccommodationType: [],
           sharingType: [],
-          rules: [],
-          nearbyPlaces: [], 
-
-
-
+          location: {
+            address: "",
+            city: "",
+            state: "",
+            zipCode: "",
+            coordinates: { lat: 0, lng: 0 }
+          },
+          amenities: [],
           images: [],
-          isAvailable: false,  
+          area: 0,
+          isAvailable: true,
           isFeatured: false,
+          rules: [],
+          microSiteLink: "",
+          youtubeLink: "",
+          nearbyPlaces: []
         });
         setOpen(false);
       });
@@ -183,7 +225,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
               <div className="space-y-2">
                 <Label htmlFor="title">Property Title</Label>
                 <Input id="title" {...register("title")} placeholder="Enter title" />
-                {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
+                {errors?.title && <p className="text-sm text-red-500">{String(errors.title.message || '')}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="type">Property Type</Label>
@@ -206,7 +248,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                     </Select>
                   )}
                 />
-                {errors.type && <p className="text-sm text-red-500">{errors.type.message}</p>}
+                {errors?.type && <p className="text-sm text-red-500">{String(errors.type.message || '')}</p>}
               </div>
             </div>
 
@@ -225,7 +267,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                   className="pl-10"
                 />
               </div>
-              {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+              {errors?.phone && <p className="text-sm text-red-500">{String(errors.phone.message || '')}</p>}
             </div>
 
             {/* gender */}
@@ -249,8 +291,8 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                   </Select>
                 )}
               />
-              {errors.bulkAccommodation && (
-                <p className="text-sm text-red-500">{errors.bulkAccommodation.message}</p>
+              {errors?.bulkAccommodation && (
+                <p className="text-sm text-red-500">{String(errors.bulkAccommodation.message || '')}</p>
               )}
             </div>
 
@@ -349,30 +391,36 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                   )}
                 />
               </div>
-              {errors.amenities && <p className="text-sm text-red-500">{String(errors.amenities.message || '')}</p>}
+              {errors?.amenities && <p className="text-sm text-red-500">{String(errors.amenities.message || '')}</p>}
             </div>
 
             {/* Room Type Selection */}
             <div className="space-y-4">
               <Label>Select Room Types</Label>
               <div className="space-y-4 p-3 border rounded-md bg-muted/30">
-                {["single", "double", "triple", "quadruple"].map((type) => {
+                {["single", "double", "triple", "quad"].map((type) => {
                   const currentSharingTypes: SharingType[] = watch('sharingType') || [];
-                  const currentType = currentSharingTypes.find(st => st.type === type);
+                  const currentType = currentSharingTypes.find(st => 
+                    st.type === type
+                  );
                   const isSelected = !!currentType;
                   
                   return (
                     <div key={type} className="space-y-2">
                       <div className="flex items-center space-x-2">
                         <span className="capitalize font-medium w-16">
-                          {type === 'single' ? 'Single' : type === 'double' ? 'Double' : type === 'triple' ? 'Triple' : 'Quad'}
+                          {type}
                         </span>
                         <Switch
                           checked={isSelected}
                           onCheckedChange={(checked) => {
                             const currentTypes: SharingType[] = watch('sharingType') || [];
                             const updated = checked
-                              ? [...currentTypes, { type, price: 0, description: '' }]
+                              ? [...currentTypes, { 
+                                  type: type as RoomType, 
+                                  price: 0, 
+                                  description: '' 
+                                }]
                               : currentTypes.filter(st => st.type !== type);
                             setValue('sharingType', updated, { shouldValidate: true });
                           }}
@@ -392,7 +440,9 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                                   onChange={(e) => {
                                     const value = parseFloat(e.target.value) || 0;
                                     const updated = (watch('sharingType') || []).map(st => 
-                                      st.type === type ? { ...st, price: value } : st
+                                      st.type === type 
+                                        ? { ...st, price: value } 
+                                        : st
                                     );
                                     setValue('sharingType', updated, { shouldValidate: true });
                                   }}
@@ -407,7 +457,8 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                                 value={currentType?.description || ''}
                                 onChange={(e) => {
                                   const value = e.target.value;
-                                  const updated = (watch('sharingType') || []).map(st => 
+                                  const currentSharingTypes = watch('sharingType') || [];
+                                  const updated = currentSharingTypes.map(st => 
                                     st.type === type ? { ...st, description: value } : st
                                   );
                                   setValue('sharingType', updated, { shouldValidate: true });
@@ -424,7 +475,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                 })}
               </div>
               
-              {/* Room Pricing - Only show if at least one room type is selected */}
+              {/* Room Pricing - Only show if at least one room type is selected
               {(watch('sharingType') || []).length > 0 && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
@@ -477,7 +528,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                     </p>
                   )}
                 </div>
-              )}
+              )} */}
             </div>
 
             <div className="space-y-2">
@@ -685,7 +736,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
             <div className="space-y-4">
               <Label>Nearby Places</Label>
 
-              {fields.map((field, index) => (
+              {nearbyPlaces.map((field, index) => (
                 <div key={field.id} className="grid grid-cols-3 gap-4 items-start">
                   <div>
                     <Label>Name</Label>
@@ -747,7 +798,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                   <Button
                     type="button"
                     variant="destructive"
-                    onClick={() => remove(index)}
+                    onClick={() => removeNearbyPlace(index)}
                   >
                     Remove
                   </Button>
@@ -756,10 +807,10 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
               <Button
                 type="button"
-                onClick={() =>
-                  append({ name: "", distance: "", type: "" })
-                }
+                onClick={() => appendNearbyPlace({ name: '', distance: '', type: '' })}
+                className="w-full"
               >
+                <Plus className="h-4 w-4 mr-2" />
                 Add Nearby Place
               </Button>
             </div>
@@ -767,7 +818,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
             <Controller
               control={control}
               name="images"
-              render={({ field }) => (
+              render={({ field: { value = [], onChange } }) => (
                 <div className="space-y-4">
                   <Label>Property Images</Label>
 
@@ -813,7 +864,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                         try {
                           const uploadPromises = files.map(file => uploadToCloudinary(file));
                           const urls = await Promise.all(uploadPromises);
-                          field.onChange([...(field.value || []), ...urls]);
+                          onChange([...(value || []), ...urls]);
                         } catch (err) {
                           console.error("Upload failed:", err);
                         } finally {
@@ -828,7 +879,7 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
 
                   {/* Show uploaded images preview */}
                   <div className="grid grid-cols-4 gap-4 mt-4">
-                    {(field.value || []).map((url, idx) => (
+                    {(value || []).map((url: string, idx: number) => (
                       <div key={idx} className="relative">
                         <img src={url} alt={`uploaded-${idx}`} className="w-full h-24 object-cover rounded" />
                         <Button
@@ -842,8 +893,8 @@ const AddPropertyModal = ({ open, setOpen, onSubmit }: AddPropertyModalProps) =>
                               console.log(url);
                               if (url) {
                                 await deleteImage(url);
-                                const updated = field.value.filter((_, i) => i !== idx);
-                                field.onChange(updated);
+                                const updated = value.filter((_: any, i: number) => i !== idx);
+                                onChange(updated);
                               }
                             } catch (error) {
                               console.error('Failed to delete image:', error);
